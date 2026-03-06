@@ -120,6 +120,14 @@ export type BusinessSettings = {
   updated_at: string;
 };
 
+export type ClientMessage = {
+  id: string;
+  from: "client" | "caterer";
+  message: string;
+  action?: "accepted" | "declined" | "revision_requested";
+  created_at: string;
+};
+
 export type Proposal = {
   id: string;
   user_id: string;
@@ -130,6 +138,8 @@ export type Proposal = {
   terms: string | null;
   pdf_url: string | null;
   share_token: string | null;
+  client_messages: ClientMessage[];
+  revision_number: number;
   created_at: string;
   updated_at: string;
   event?: Event; // joined data

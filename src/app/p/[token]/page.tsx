@@ -217,7 +217,7 @@ export default async function PublicProposalPage({ params }: Props) {
         )}
 
         {/* Client response */}
-        <ClientResponse shareToken={token} currentStatus={proposal.status} />
+        <ClientResponse shareToken={token} currentStatus={proposal.status} clientMessages={proposal.client_messages ?? []} />
 
         {/* Footer */}
         <div className="text-center text-xs text-[#6b5a4a] pt-4 pb-8">

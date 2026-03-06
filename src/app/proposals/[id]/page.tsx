@@ -2,10 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, CalendarDays, Users, MapPin, FileText, Mail } from "lucide-react";
+import { ArrowLeft, CalendarDays, Users, MapPin, FileText, Mail, MessageSquare } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import type { Proposal, Event, PricingData } from "@/types";
+import type { Proposal, Event, PricingData, ClientMessage } from "@/types";
 import { ProposalActions } from "./ProposalActions";
+import { ReplyToClient } from "./ReplyToClient";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -100,6 +101,49 @@ export default async function ProposalDetailPage({ params }: Props) {
               <h2 className="font-medium text-sm mb-3">Client Message</h2>
               <p className="text-sm text-[#9c8876] italic leading-relaxed">{proposal.custom_message}</p>
             </div>
+          )}
+
+          {/* Client messages */}
+          {proposal.client_messages && proposal.client_messages.length > 0 && (
+            <div className="card p-5">
+              <h2 className="font-medium text-sm mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#9c8876]" />
+                Client Messages
+                <span className="text-xs text-[#9c8876]">({proposal.client_messages.length})</span>
+              </h2>
+              <div className="space-y-3">
+                {proposal.client_messages.map((m: ClientMessage) => (
+                  <div key={m.id} className={`p-3 rounded-lg text-sm ${m.from === "client" ? "bg-brand-950/50 border border-brand-800/30" : "bg-[#1a1714] border border-[#2e271f]"}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-medium text-[#9c8876] uppercase">
+                          {m.from === "client" ? "Client" : "You"}
+                        </span>
+                        {m.action === "revision_requested" && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-900/40 text-yellow-400 border border-yellow-800/40">
+                            Revision requested
+                          </span>
+                        )}
+                        {m.action === "accepted" && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-900/40 text-green-400 border border-green-800/40">
+                            Accepted
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-[#6b5a4a]">
+                        {format(new Date(m.created_at), "MMM d 'at' h:mm a")}
+                      </span>
+                    </div>
+                    <p className="text-[#f5ede0]">{m.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Reply to client */}
+          {proposal.status === "sent" && (
+            <ReplyToClient proposalId={proposal.id} />
           )}
 
           {/* Pricing breakdown */}

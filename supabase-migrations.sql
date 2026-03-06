@@ -133,6 +133,15 @@ ALTER TABLE rental_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own rental items" ON rental_items
   FOR ALL USING (auth.uid() = user_id);
 
--- 12. Profile welcome flag
+-- 12. Proposal client interaction fields
+ALTER TABLE proposals
+  ADD COLUMN IF NOT EXISTS client_messages JSONB DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS revision_number INTEGER DEFAULT 1;
+
+-- Allow public read of proposals by share_token (for client responses)
+CREATE POLICY "Public can read proposals by share_token" ON proposals
+  FOR SELECT USING (share_token IS NOT NULL);
+
+-- 13. Profile welcome flag
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT FALSE;

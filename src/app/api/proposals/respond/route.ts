@@ -2,9 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { share_token, action } = await req.json();
+  const { share_token, action, message } = await req.json();
 
-  if (!share_token || !["accepted", "declined"].includes(action)) {
+  if (!share_token || !["accepted", "declined", "revision_requested"].includes(action)) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   // Find proposal by share token
   const { data: proposal, error: findError } = await supabase
     .from("proposals")
-    .select("id, status, event_id, user_id")
+    .select("id, status, event_id, user_id, client_messages")
     .eq("share_token", share_token)
     .single();
 
@@ -29,18 +29,37 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Proposal has already been responded to" }, { status: 400 });
   }
 
-  // Update proposal status
+  // Build client message entry
+  const clientMessages = Array.isArray(proposal.client_messages) ? proposal.client_messages : [];
+  if (message?.trim()) {
+    clientMessages.push({
+      id: crypto.randomUUID(),
+      from: "client",
+      message: message.trim(),
+      action,
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  // Determine new proposal status
+  const newStatus = action === "revision_requested" ? "sent" : action;
+
+  // Update proposal
   const { error: updateError } = await supabase
     .from("proposals")
-    .update({ status: action, updated_at: new Date().toISOString() })
+    .update({
+      status: newStatus,
+      client_messages: clientMessages,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", proposal.id);
 
   if (updateError) {
     return NextResponse.json({ error: "Failed to update proposal" }, { status: 500 });
   }
 
-  // Auto-update linked event status
-  if (proposal.event_id) {
+  // Auto-update linked event status for accept/decline
+  if (proposal.event_id && action !== "revision_requested") {
     const eventStatus = action === "accepted" ? "confirmed" : "canceled";
     await supabase
       .from("events")
@@ -48,5 +67,5 @@ export async function POST(req: Request) {
       .eq("id", proposal.event_id);
   }
 
-  return NextResponse.json({ success: true, status: action });
+  return NextResponse.json({ success: true, status: newStatus });
 }

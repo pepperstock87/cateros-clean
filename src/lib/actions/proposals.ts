@@ -60,6 +60,40 @@ export async function updateProposalStatusAction(
   return {};
 }
 
+export async function replyToClientAction(proposalId: string, message: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: proposal } = await supabase
+    .from("proposals")
+    .select("client_messages")
+    .eq("id", proposalId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!proposal) return { error: "Proposal not found" };
+
+  const messages = Array.isArray(proposal.client_messages) ? proposal.client_messages : [];
+  messages.push({
+    id: crypto.randomUUID(),
+    from: "caterer",
+    message: message.trim(),
+    created_at: new Date().toISOString(),
+  });
+
+  const { error } = await supabase
+    .from("proposals")
+    .update({ client_messages: messages, updated_at: new Date().toISOString() })
+    .eq("id", proposalId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/proposals/${proposalId}`);
+  return {};
+}
+
 export async function deleteProposalAction(proposalId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
