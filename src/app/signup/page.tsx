@@ -21,7 +21,7 @@ export default function SignupPage() {
             <span className="font-display text-xl font-semibold">Cateros</span>
           </div>
           <h1 className="font-display text-2xl font-semibold mb-2">Create your account</h1>
-          <p className="text-sm text-[#9c8876]">Start your 14-day free trial</p>
+          <p className="text-sm text-[#9c8876]">Start your 14-day trial</p>
         </div>
 
         <div className="card p-6">
