@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-gold: #d4801f;
+  --surface-bg: #0f0d0b;
+  --surface-card: #1c1814;
+  --surface-border: #2e271f;
+  --text-primary: #f5ede0;
+  --text-secondary: #9c8876;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f0d0b; }
+::-webkit-scrollbar-thumb { background: #2e271f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #d4801f; }
+*:focus-visible { outline: 2px solid #d4801f; outline-offset: 2px; }
+::selection { background: rgba(212, 128, 31, 0.3); }
+
+@layer components {
+  .card { @apply bg-[#1c1814] border border-[#2e271f] rounded-xl; }
+  .card-hover { @apply hover:border-brand-600 transition-colors duration-200; }
+  .btn-primary { @apply bg-brand-500 hover:bg-brand-400 text-white font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-secondary { @apply bg-[#251f19] hover:bg-[#2e271f] text-[#f5ede0] border border-[#2e271f] hover:border-[#3d3028] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
+  .btn-ghost { @apply hover:bg-[#251f19] text-[#9c8876] hover:text-[#f5ede0] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
+  .btn-danger { @apply bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
+  .input { @apply w-full bg-[#1c1814] border border-[#2e271f] text-[#f5ede0] placeholder-[#6b5a4a] rounded-lg px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none transition-colors; }
+  .label { @apply block text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-1.5; }
+  .stat-card { @apply card p-5 flex flex-col gap-1; }
+  .stat-value { @apply text-2xl font-semibold text-[#f5ede0] font-display; }
+  .stat-label { @apply text-xs text-[#9c8876] uppercase tracking-wider; }
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium; }
+  .badge-draft { @apply badge bg-[#251f19] text-[#9c8876]; }
+  .badge-proposed { @apply badge bg-blue-900/40 text-blue-400; }
+  .badge-confirmed { @apply badge bg-green-900/40 text-green-400; }
+  .badge-completed { @apply badge bg-brand-900/40 text-brand-400; }
+  .badge-canceled { @apply badge bg-red-900/40 text-red-400; }
+}

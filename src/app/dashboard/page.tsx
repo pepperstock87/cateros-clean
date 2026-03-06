@@ -1,0 +1,197 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { formatCurrency, formatPercent } from "@/lib/utils";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
+import type { Event, PricingData } from "@/types";
+import { DashboardChart } from "@/components/dashboard/DashboardChart";
+
+async function getDashboardData(userId: string) {
+  const supabase = await createClient();
+  const now = new Date();
+  const monthStart = startOfMonth(now).toISOString();
+  const monthEnd = endOfMonth(now).toISOString();
+
+  const { data: allEvents } = await supabase
+    .from("events").select("*").eq("user_id", userId).order("event_date", { ascending: false });
+
+  const events: Event[] = allEvents ?? [];
+  const thisMonthEvents = events.filter(e => e.event_date >= monthStart && e.event_date <= monthEnd);
+  const active = thisMonthEvents.filter(e => e.status === "confirmed" || e.status === "completed");
+
+  const monthRevenue = active.reduce((s, e) => s + ((e.pricing_data as PricingData)?.suggestedPrice ?? 0), 0);
+  const monthCost = active.reduce((s, e) => s + ((e.pricing_data as PricingData)?.totalCost ?? 0), 0);
+  const monthProfit = monthRevenue - monthCost;
+  const avgMargin = monthRevenue > 0 ? (monthProfit / monthRevenue) * 100 : 0;
+
+  const monthlyData = Array.from({ length: 6 }, (_, i) => {
+    const d = subMonths(now, 5 - i);
+    const start = startOfMonth(d).toISOString();
+    const end = endOfMonth(d).toISOString();
+    const mEvents = events.filter(e =>
+      e.event_date >= start && e.event_date <= end &&
+      (e.status === "confirmed" || e.status === "completed")
+    );
+    const revenue = mEvents.reduce((s, e) => s + ((e.pricing_data as PricingData)?.suggestedPrice ?? 0), 0);
+    const cost = mEvents.reduce((s, e) => s + ((e.pricing_data as PricingData)?.totalCost ?? 0), 0);
+    return { month: format(d, "MMM"), revenue, profit: revenue - cost, events: mEvents.length };
+  });
+
+  return {
+    totalEventsThisMonth: thisMonthEvents.length,
+    totalRevenueThisMonth: monthRevenue,
+    totalProfitThisMonth: monthProfit,
+    avgMarginThisMonth: avgMargin,
+    upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 5),
+    recentEvents: events.slice(0, 8),
+    monthlyData,
+  };
+}
+
+const STATUS_CLASSES: Record<string, string> = {
+  draft: "badge-draft", proposed: "badge-proposed",
+  confirmed: "badge-confirmed", completed: "badge-completed", canceled: "badge-canceled",
+};
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+  const stats = await getDashboardData(user.id);
+  const h = new Date().getHours();
+  const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
+
+  return (
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      {/* Header - Mobile friendly */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 className="font-display text-xl md:text-2xl font-semibold">
+            Good {greeting}, {profile?.full_name?.split(" ")[0] ?? "there"} 👋
+          </h1>
+          <p className="text-xs md:text-sm text-[#9c8876] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
+        </div>
+        <Link href="/events/new" className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+          <Plus className="w-4 h-4" />
+          <span>New event</span>
+        </Link>
+      </div>
+
+      {/* Stats Grid - Responsive */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+        {[
+          { icon: CalendarDays, label: "Events", fullLabel: "Events this month", value: stats.totalEventsThisMonth, color: "text-brand-400", raw: true },
+          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue", value: stats.totalRevenueThisMonth, color: "text-brand-400" },
+          { icon: TrendingUp, label: "Profit", fullLabel: "Profit", value: stats.totalProfitThisMonth, color: "text-green-400", green: true },
+          { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, color: "text-brand-400", pct: true },
+        ].map(({ icon: Icon, label, fullLabel, value, color, green, pct, raw }) => (
+          <div key={label} className="stat-card">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon className={`w-4 h-4 ${color}`} />
+              <span className="stat-label">
+                <span className="hidden sm:inline">{fullLabel}</span>
+                <span className="sm:hidden">{label}</span>
+              </span>
+            </div>
+            <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
+              {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart & Upcoming Events - Stack on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="lg:col-span-2 card p-4 md:p-5">
+          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
+            <span className="hidden sm:inline">Revenue vs Profit — 6 months</span>
+            <span className="sm:hidden">6 Month Overview</span>
+          </h2>
+          <DashboardChart data={stats.monthlyData} />
+        </div>
+
+        <div className="card p-4 md:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Upcoming</h2>
+            <Link href="/events" className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
+              All<ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          {stats.upcomingEvents.length === 0 ? (
+            <p className="text-xs md:text-sm text-[#6b5a4a] text-center py-6">No upcoming events</p>
+          ) : (
+            <div className="space-y-3">
+              {stats.upcomingEvents.map(e => (
+                <Link key={e.id} href={`/events/${e.id}`} className="block p-3 rounded-lg hover:bg-[#1c1814] transition-colors border border-[#2e271f]">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="font-medium text-xs md:text-sm truncate">{e.name}</span>
+                    <span className={`${STATUS_CLASSES[e.status]} text-[10px] md:text-xs whitespace-nowrap`}>{e.status}</span>
+                  </div>
+                  <div className="text-[10px] md:text-xs text-[#6b5a4a]">{format(new Date(e.event_date), "MMM d")} • {e.guest_count} guests</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Events - Mobile scrollable */}
+      <div className="card p-4 md:p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Recent Events</h2>
+          <Link href="/events" className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
+            View all<ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        {stats.recentEvents.length === 0 ? (
+          <p className="text-sm text-[#6b5a4a] text-center py-8">
+            No events yet.{" "}
+            <Link href="/events/new" className="text-brand-400 hover:text-brand-300 underline">Create your first event</Link>
+          </p>
+        ) : (
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <div className="inline-block min-w-full align-middle px-4 md:px-0">
+              <table className="w-full text-xs md:text-sm">
+                <thead className="text-[#6b5a4a] border-b border-[#2e271f]">
+                  <tr>
+                    <th className="text-left py-2 font-medium">Event</th>
+                    <th className="text-left py-2 font-medium hidden sm:table-cell">Client</th>
+                    <th className="text-left py-2 font-medium">Date</th>
+                    <th className="text-right py-2 font-medium hidden md:table-cell">Value</th>
+                    <th className="text-right py-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#2e271f]">
+                  {stats.recentEvents.map(e => (
+                    <tr key={e.id} className="hover:bg-[#1c1814] transition-colors">
+                      <td className="py-3">
+                        <Link href={`/events/${e.id}`} className="font-medium hover:text-brand-300 block truncate max-w-[120px] sm:max-w-none">
+                          {e.name}
+                        </Link>
+                      </td>
+                      <td className="py-3 hidden sm:table-cell">
+                        <span className="text-[#9c8876] truncate block max-w-[150px]">{e.client_name}</span>
+                      </td>
+                      <td className="py-3">
+                        <span className="text-[#9c8876] whitespace-nowrap">{format(new Date(e.event_date), "MMM d")}</span>
+                      </td>
+                      <td className="py-3 text-right hidden md:table-cell">
+                        {e.pricing_data ? formatCurrency((e.pricing_data as PricingData).suggestedPrice) : "—"}
+                      </td>
+                      <td className="py-3 text-right">
+                        <span className={STATUS_CLASSES[e.status]}>{e.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
