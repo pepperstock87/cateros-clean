@@ -115,6 +115,7 @@ export type BusinessSettings = {
   address: string | null;
   proposal_terms: string | null;
   proposal_template: "simple" | "modern";
+  brand_color: string | null;
   created_at: string;
   updated_at: string;
 };

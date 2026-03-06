@@ -135,6 +135,20 @@ export default async function ProposalDetailPage({ params }: Props) {
                 </div>
               )}
 
+              {pricing.rentals.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Rentals & Equipment</h3>
+                  <div className="space-y-1.5">
+                    {pricing.rentals.map((r) => (
+                      <div key={r.id} className="flex justify-between text-sm">
+                        <span>{r.item} (x{r.quantity})</span>
+                        <span className="text-[#9c8876]">{formatCurrency(r.unitCost * r.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-[#2e271f] pt-3 space-y-1.5">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#9c8876]">Subtotal</span>

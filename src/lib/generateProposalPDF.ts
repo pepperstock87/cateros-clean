@@ -19,7 +19,6 @@ export async function generateProposalPDF(
   const contentW = pageW - margin * 2;
 
   const DARK: [number,number,number] = [15, 13, 11];
-  const GOLD: [number,number,number] = [212, 128, 31];
   const LIGHT: [number,number,number] = [245, 237, 224];
   const MID: [number,number,number] = [156, 136, 118];
   const CARD: [number,number,number] = [28, 24, 20];
@@ -27,6 +26,9 @@ export async function generateProposalPDF(
   // Determine template (Pro feature)
   const template = isPro && businessSettings?.proposal_template === "modern" ? "modern" : "simple";
   const useCustomBranding = isPro && businessSettings ? businessSettings : null;
+
+  // Parse brand color (hex to RGB), default to gold
+  const GOLD: [number,number,number] = parseBrandColor(useCustomBranding?.brand_color);
 
   // Header
   const headerHeight = useCustomBranding?.logo_url ? 130 : 110;
@@ -162,6 +164,26 @@ export async function generateProposalPDF(
     y = (doc as any).lastAutoTable.finalY + (template === "modern" ? 25 : 20);
   }
 
+  // Rentals
+  if (p?.rentals?.length > 0) {
+    if (y > 620) { doc.addPage(); y = 56; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(template === "modern" ? 12 : 11);
+    doc.setTextColor(...GOLD);
+    doc.text("RENTALS & EQUIPMENT", margin, y);
+    y += template === "modern" ? 8 : 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [["Item", "Qty", "Unit Cost", "Total"]],
+      body: p.rentals.map(r => [r.item, r.quantity, formatCurrency(r.unitCost), formatCurrency(r.unitCost * r.quantity)]),
+      styles: { fontSize: template === "modern" ? 10 : 9, cellPadding: template === "modern" ? 8 : 6, textColor: [245,237,224] as [number,number,number], fillColor: [28,24,20] as [number,number,number], lineColor: [46,39,31] as [number,number,number], lineWidth: 0.3 },
+      headStyles: { fillColor: [30,25,18] as [number,number,number], textColor: [156,136,118] as [number,number,number], fontStyle: "bold", fontSize: template === "modern" ? 9 : 8 },
+      alternateRowStyles: { fillColor: [22,18,14] as [number,number,number] },
+      columnStyles: { 1: { cellWidth: 50, halign: "right" }, 2: { cellWidth: 80, halign: "right" }, 3: { cellWidth: 80, halign: "right" } },
+    });
+    y = (doc as any).lastAutoTable.finalY + (template === "modern" ? 25 : 20);
+  }
+
   if (y > 620) { doc.addPage(); y = 56; }
 
   // Pricing summary
@@ -243,6 +265,15 @@ export async function generateProposalPDF(
   }
 
   return doc;
+}
+
+// Parse hex color to RGB tuple, default to gold accent
+function parseBrandColor(hex?: string | null): [number, number, number] {
+  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return [212, 128, 31];
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return [r, g, b];
 }
 
 // Helper to load image from URL
