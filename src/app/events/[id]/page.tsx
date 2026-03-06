@@ -10,6 +10,7 @@ import { EventLifecycle } from "@/components/events/EventLifecycle";
 import { EventProfitLoss } from "@/components/events/EventProfitLoss";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
 import { PaymentTracker } from "@/components/events/PaymentTracker";
+import { StaffAssignments } from "@/components/events/StaffAssignments";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { formatCurrency } from "@/lib/utils";
 import type { Event, PricingData, PaymentData } from "@/types";
@@ -37,7 +38,7 @@ export default async function EventDetailPage({ params }: Props) {
   const e = event as Event;
 
   // Fetch related data in parallel
-  const [proposalsRes, receiptsRes, invoicesRes] = await Promise.all([
+  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes] = await Promise.all([
     supabase
       .from("proposals")
       .select("id, title, status, share_token, created_at")
@@ -54,10 +55,22 @@ export default async function EventDetailPage({ params }: Props) {
       .from("distributor_invoices")
       .select("id, distributor, total_amount, invoice_date")
       .eq("user_id", user.id),
+    supabase
+      .from("event_staff_assignments")
+      .select("id, staff_member_id, role, start_time, end_time, confirmed, notes, staff_members(name, role, hourly_rate, phone)")
+      .eq("event_id", id)
+      .eq("user_id", user.id),
+    supabase
+      .from("staff_members")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("name"),
   ]);
 
   const proposals = proposalsRes.data ?? [];
   const receipts = receiptsRes.data ?? [];
+  const assignments = assignmentsRes.data ?? [];
+  const allStaff = staffRes.data ?? [];
   const spendingTotal = receipts.reduce((s: number, r: any) => s + (Number(r.total_amount) || 0), 0);
   const pricing = e.pricing_data as PricingData | null;
 
@@ -217,6 +230,17 @@ export default async function EventDetailPage({ params }: Props) {
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{e.notes}</p>
         </div>
       )}
+
+      {/* Staff Assignments */}
+      <div className="mb-6">
+        <StaffAssignments
+          eventId={e.id}
+          assignments={assignments as any}
+          staffMembers={allStaff}
+          eventStartTime={e.start_time}
+          eventEndTime={e.end_time}
+        />
+      </div>
 
       {/* Profit & Loss - show when pricing exists */}
       {pricing && (

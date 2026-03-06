@@ -182,6 +182,20 @@ export type RentalItem = {
   created_at: string;
 };
 
+export type StaffAssignment = {
+  id: string;
+  event_id: string;
+  staff_member_id: string;
+  user_id: string;
+  role: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  confirmed: boolean;
+  notes: string | null;
+  created_at: string;
+  staff_member?: StaffMember;
+};
+
 export type UserEntitlements = {
   plan: "basic" | "pro";
   subscription_status: "active" | "trialing" | "past_due" | "canceled" | "none";

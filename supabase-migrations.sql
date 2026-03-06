@@ -142,6 +142,27 @@ ALTER TABLE proposals
 CREATE POLICY "Public can read proposals by share_token" ON proposals
   FOR SELECT USING (share_token IS NOT NULL);
 
--- 13. Profile welcome flag
+-- 13. Event staff assignments
+CREATE TABLE IF NOT EXISTS event_staff_assignments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+  staff_member_id UUID REFERENCES staff_members(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  role VARCHAR(100),
+  start_time TIME,
+  end_time TIME,
+  confirmed BOOLEAN DEFAULT FALSE,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE event_staff_assignments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own staff assignments" ON event_staff_assignments
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_staff_assignments_event ON event_staff_assignments(event_id);
+CREATE INDEX IF NOT EXISTS idx_staff_assignments_staff ON event_staff_assignments(staff_member_id);
+
+-- 14. Profile welcome flag
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT FALSE;
