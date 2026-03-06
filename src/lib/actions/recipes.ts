@@ -54,7 +54,7 @@ export async function updateRecipeAction(recipeId: string, formData: FormData) {
 export async function deleteRecipeAction(recipeId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return { error: "Unauthorized" };
   const { error } = await supabase.from("recipes").delete().eq("id", recipeId).eq("user_id", user.id);
   if (error) return { error: error.message };
   revalidatePath("/recipes");

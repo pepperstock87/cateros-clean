@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createRecipeAction } from "@/lib/actions/recipes";
 import { useActionState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import type { RecipeIngredient } from "@/types";
 
 const UNITS = ["oz", "lb", "g", "kg", "cup", "qt", "gal", "each", "bunch", "pkg", "tsp", "tbsp"] as const;
@@ -11,10 +12,16 @@ const UNITS = ["oz", "lb", "g", "kg", "cup", "qt", "gal", "each", "bunch", "pkg"
 export default function NewRecipePage() {
   const [state, action, pending] = useActionState(createRecipeAction, { error: "" });
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
+  const [servingsValue, setServingsValue] = useState("4");
   const [casePrice, setCasePrice] = useState("");
   const [unitsPerCase, setUnitsPerCase] = useState("");
   const [caseUnitType, setCaseUnitType] = useState("");
   const [yieldPercent, setYieldPercent] = useState("100");
+
+  const totalCost = ingredients.reduce((s, i) => s + (i.quantity * i.cost_per_unit), 0);
+  const costPerServing = parseFloat(servingsValue) > 0 ? totalCost / parseFloat(servingsValue) : 0;
+  const costPerUnit = (parseFloat(casePrice) || 0) / (parseFloat(unitsPerCase) || 1);
+  const effectiveCostPerUnit = costPerUnit / ((parseFloat(yieldPercent) || 100) / 100);
 
   const addIngredient = () => setIngredients(p => [...p, {
     id: crypto.randomUUID(),
@@ -52,7 +59,7 @@ export default function NewRecipePage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Servings</label>
-              <input type="number" name="servings" required min="1" className="input" placeholder="4" />
+              <input type="number" name="servings" required min="1" className="input" placeholder="4" value={servingsValue} onChange={e => setServingsValue(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Category</label>
@@ -161,11 +168,43 @@ export default function NewRecipePage() {
               <input type="number" value={yieldPercent} onChange={e => setYieldPercent(e.target.value)} className="input w-full text-sm" placeholder="100" min="1" max="100" step="1" />
             </div>
           </div>
+          {casePrice && unitsPerCase && (
+            <div className="mt-4 pt-4 border-t border-[#2e271f] grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-lg font-semibold text-brand-300">{formatCurrency(costPerUnit)}</div>
+                <div className="text-xs text-[#9c8876]">cost per {caseUnitType || "unit"}</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-brand-300">{formatCurrency(effectiveCostPerUnit)}</div>
+                <div className="text-xs text-[#9c8876]">effective cost (after yield)</div>
+              </div>
+            </div>
+          )}
           <input type="hidden" name="case_price" value={casePrice} />
           <input type="hidden" name="units_per_case" value={unitsPerCase} />
           <input type="hidden" name="case_unit_type" value={caseUnitType} />
           <input type="hidden" name="yield_percent" value={yieldPercent} />
         </div>
+
+        {/* Live cost summary */}
+        {ingredients.some(i => i.quantity > 0 && i.cost_per_unit > 0) && (
+          <div className="card p-5">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-lg font-semibold text-brand-300">{formatCurrency(costPerServing)}</div>
+                <div className="text-xs text-[#9c8876] mt-0.5">cost per serving</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{formatCurrency(totalCost)}</div>
+                <div className="text-xs text-[#9c8876] mt-0.5">total cost</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{servingsValue || 0}</div>
+                <div className="text-xs text-[#9c8876] mt-0.5">servings</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {state?.error && (
           <div className="card p-4 bg-red-900/20 border-red-800/50">
