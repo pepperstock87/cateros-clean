@@ -90,7 +90,24 @@ ALTER TABLE business_settings
 ALTER TABLE proposals
   ADD COLUMN IF NOT EXISTS share_token VARCHAR(32) UNIQUE;
 
--- 8. Event time and contact fields
+-- 8. Staff members table
+CREATE TABLE IF NOT EXISTS staff_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  role VARCHAR(100) NOT NULL,
+  hourly_rate DECIMAL(10,2) NOT NULL DEFAULT 25,
+  phone VARCHAR(30),
+  email VARCHAR(255),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE staff_members ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own staff" ON staff_members
+  FOR ALL USING (auth.uid() = user_id);
+
+-- 9. Event time and contact fields
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS start_time TIME,
   ADD COLUMN IF NOT EXISTS end_time TIME,

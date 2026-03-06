@@ -8,7 +8,8 @@ import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from
 import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { RecipePickerModal } from "./RecipePickerModal";
-import type { Recipe } from "@/types";
+import { StaffPickerModal } from "./StaffPickerModal";
+import type { Recipe, StaffMember } from "@/types";
 
 interface Props { eventId: string; guestCount: number; initialPricing?: PricingData | null; }
 
@@ -52,6 +53,20 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
     }));
     setMenuItems(p => [...p, ...newItems]);
     toast.success(`Imported ${recipes.length} recipe${recipes.length !== 1 ? "s" : ""}`);
+  };
+
+  const [staffPickerOpen, setStaffPickerOpen] = useState(false);
+
+  const handleImportStaff = (staff: StaffMember[]) => {
+    const newStaff = staff.map(s => ({
+      id: generateId(),
+      role: `${s.name} (${s.role})`,
+      hourlyRate: Number(s.hourly_rate),
+      hours: 8,
+      headcount: 1,
+    }));
+    setStaffing(p => [...p, ...newStaff]);
+    toast.success(`Imported ${staff.length} staff member${staff.length !== 1 ? "s" : ""}`);
   };
 
   const pricing = calculatePricing({ guestCount, menuItems, staffing, rentals, barPackage, adminPercent, taxPercent, targetMarginPercent: targetMargin });
@@ -123,7 +138,19 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           </div>
 
           {/* Staffing */}
-          <Section title="Staffing" onAdd={() => setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }])} addLabel="Add staff">
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-sm">Staffing</h3>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setStaffPickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                  <Users className="w-3.5 h-3.5" />Import from Staff
+                </button>
+                <button type="button" onClick={() => setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }])} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                  <Plus className="w-3.5 h-3.5" />Add staff
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
             {staffing.length === 0 ? (
               <p className="text-xs text-[#6b5a4a] py-2">No staffing added</p>
             ) : (
@@ -155,7 +182,8 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 </div>
               </div>
             )}
-          </Section>
+            </div>
+          </div>
 
           {/* Rentals */}
           <Section title="Rentals & Equipment" onAdd={() => setRentals(p => [...p, { id: generateId(), item: "", unitCost: 0, quantity: 1 }])} addLabel="Add rental">
@@ -263,6 +291,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
         </div>
       </div>
       <RecipePickerModal open={recipePickerOpen} onClose={() => setRecipePickerOpen(false)} onSelect={handleImportRecipes} />
+      <StaffPickerModal open={staffPickerOpen} onClose={() => setStaffPickerOpen(false)} onSelect={handleImportStaff} />
     </div>
   );
 }

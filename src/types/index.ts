@@ -133,6 +133,18 @@ export type Proposal = {
   event?: Event; // joined data
 };
 
+export type StaffMember = {
+  id: string;
+  user_id: string;
+  name: string;
+  role: string;
+  hourly_rate: number;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
 export type UserEntitlements = {
   plan: "basic" | "pro";
   subscription_status: "active" | "trialing" | "past_due" | "canceled" | "none";
