@@ -26,22 +26,34 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Subscription paywall: redirect authenticated users without active subscription to /pricing
-  const allowedPaths = ["/pricing", "/billing", "/check-email", "/login", "/signup", "/api/", "/auth/"];
+  const allowedPaths = ["/pricing", "/billing", "/check-email", "/login", "/signup", "/api/", "/auth/", "/settings"];
   const pathname = request.nextUrl.pathname;
-  const isAllowedPath = allowedPaths.some((path) => pathname.startsWith(path));
+  const isAllowedPath = pathname === "/" || allowedPaths.some((path) => pathname.startsWith(path));
 
   if (user && !isAllowedPath) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_status")
-      .eq("id", user.id)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("subscription_status")
+        .eq("id", user.id)
+        .single();
 
-    const status = profile?.subscription_status;
-    if (status !== "active" && status !== "trialing") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/pricing";
-      return NextResponse.redirect(url);
+      // If the query fails, let the user through rather than blocking them
+      if (!error && profile) {
+        const status = profile.subscription_status;
+        if (status !== "active" && status !== "trialing") {
+          const url = request.nextUrl.clone();
+          url.pathname = "/pricing";
+          // Copy cookies to the redirect response so auth session is preserved
+          const redirectResponse = NextResponse.redirect(url);
+          supabaseResponse.cookies.getAll().forEach(cookie => {
+            redirectResponse.cookies.set(cookie.name, cookie.value);
+          });
+          return redirectResponse;
+        }
+      }
+    } catch {
+      // On any error, let the user through
     }
   }
 
