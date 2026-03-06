@@ -86,6 +86,12 @@ CREATE INDEX IF NOT EXISTS idx_ai_conversations_user ON ai_conversations(user_id
 ALTER TABLE business_settings
   ADD COLUMN IF NOT EXISTS brand_color VARCHAR(7) DEFAULT '#1a1a1a';
 
--- 7. Profile welcome flag
+-- 7. Event time and contact fields
+ALTER TABLE events
+  ADD COLUMN IF NOT EXISTS start_time TIME,
+  ADD COLUMN IF NOT EXISTS end_time TIME,
+  ADD COLUMN IF NOT EXISTS client_phone VARCHAR(30);
+
+-- 8. Profile welcome flag
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT FALSE;

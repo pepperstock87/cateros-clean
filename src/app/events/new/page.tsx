@@ -38,6 +38,16 @@ export default function NewEventPage() {
               <input name="guest_count" type="number" className="input" placeholder="120" min={1} required />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Start time</label>
+              <input name="start_time" type="time" className="input" />
+            </div>
+            <div>
+              <label className="label">End time</label>
+              <input name="end_time" type="time" className="input" />
+            </div>
+          </div>
           <div>
             <label className="label">Venue</label>
             <input name="venue" className="input" placeholder="Grand Ballroom, The Riverside Hotel" />
@@ -50,9 +60,15 @@ export default function NewEventPage() {
             <label className="label">Client name *</label>
             <input name="client_name" className="input" placeholder="Sarah & Michael Smith" required />
           </div>
-          <div>
-            <label className="label">Client email</label>
-            <input name="client_email" type="email" className="input" placeholder="client@email.com" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Client email</label>
+              <input name="client_email" type="email" className="input" placeholder="client@email.com" />
+            </div>
+            <div>
+              <label className="label">Client phone</label>
+              <input name="client_phone" type="tel" className="input" placeholder="(555) 123-4567" />
+            </div>
           </div>
         </div>
 

@@ -21,6 +21,7 @@ export type Event = {
   end_time: string | null;
   guest_count: number;
   venue: string | null;
+  client_phone: string | null;
   notes: string | null;
   status: "draft" | "proposed" | "confirmed" | "completed" | "canceled";
   pricing_data: PricingData | null;
