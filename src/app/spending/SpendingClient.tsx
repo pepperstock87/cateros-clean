@@ -2,8 +2,10 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Check, Loader2, Receipt, FileText } from "lucide-react";
+import { Upload, X, Check, Loader2, Receipt, FileText, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { deleteReceiptAction, deleteInvoiceAction } from "@/lib/actions/spending";
+import { toast } from "sonner";
 import type { Receipt as ReceiptType, DistributorInvoice, InvoiceLineItem } from "./page";
 
 type Tab = "receipts" | "invoices";
@@ -37,7 +39,26 @@ export function SpendingClient({
   const [reviewType, setReviewType] = useState<Tab>("receipts");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleDeleteReceipt(id: string) {
+    if (!confirm("Delete this receipt?")) return;
+    setDeleting(id);
+    const result = await deleteReceiptAction(id);
+    if (result.error) toast.error(result.error);
+    else { toast.success("Receipt deleted"); router.refresh(); }
+    setDeleting(null);
+  }
+
+  async function handleDeleteInvoice(id: string) {
+    if (!confirm("Delete this invoice?")) return;
+    setDeleting(id);
+    const result = await deleteInvoiceAction(id);
+    if (result.error) toast.error(result.error);
+    else { toast.success("Invoice deleted"); router.refresh(); }
+    setDeleting(null);
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -350,6 +371,7 @@ export function SpendingClient({
                       <th className="text-right py-2 font-medium">Amount</th>
                       <th className="text-left py-2 font-medium hidden sm:table-cell">Category</th>
                       <th className="text-left py-2 font-medium hidden md:table-cell">Week</th>
+                      <th className="w-10 py-2"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#2e271f]">
@@ -371,6 +393,15 @@ export function SpendingClient({
                         </td>
                         <td className="py-3 text-[#6b5a4a] hidden md:table-cell">
                           {r.week_label ?? "--"}
+                        </td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => handleDeleteReceipt(r.id)}
+                            disabled={deleting === r.id}
+                            className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -400,6 +431,7 @@ export function SpendingClient({
                       <th className="text-left py-2 font-medium hidden sm:table-cell">Invoice #</th>
                       <th className="text-right py-2 font-medium">Total</th>
                       <th className="text-right py-2 font-medium">Status</th>
+                      <th className="w-10 py-2"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#2e271f]">
@@ -419,6 +451,15 @@ export function SpendingClient({
                           <span className={STATUS_CLASSES[inv.status] ?? "badge"}>
                             {inv.status}
                           </span>
+                        </td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => handleDeleteInvoice(inv.id)}
+                            disabled={deleting === inv.id}
+                            className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))}

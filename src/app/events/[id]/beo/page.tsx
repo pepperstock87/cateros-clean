@@ -236,8 +236,8 @@ export default async function BEOPage({ params }: Props) {
                       <td className="text-right py-1 text-xs">{formatCurrency(p.suggestedPrice)}</td>
                     </tr>
                     <tr className="text-gray-600">
-                      <td className="py-1 text-xs">Projected Margin ({p.targetMarginPercent}%)</td>
-                      <td className="text-right py-1 text-xs">{formatCurrency(p.projectedMargin)}</td>
+                      <td className="py-1 text-xs">Projected Margin</td>
+                      <td className="text-right py-1 text-xs">{p.projectedMargin.toFixed(1)}%</td>
                     </tr>
                   </tfoot>
                 </table>
