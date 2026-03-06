@@ -6,6 +6,8 @@ import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, 
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
+import { EventLifecycle } from "@/components/events/EventLifecycle";
+import { EventProfitLoss } from "@/components/events/EventProfitLoss";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
 import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
@@ -82,6 +84,11 @@ export default async function EventDetailPage({ params }: Props) {
           <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />
           <DeleteEventButton eventId={e.id} eventName={e.name} />
         </div>
+      </div>
+
+      {/* Lifecycle Progress */}
+      <div className="card p-4 mb-6">
+        <EventLifecycle status={e.status} />
       </div>
 
       {/* Event info cards */}
@@ -201,6 +208,18 @@ export default async function EventDetailPage({ params }: Props) {
         <div className="card p-4 mb-6">
           <h2 className="font-medium text-sm mb-2 text-[#9c8876]">Notes</h2>
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{e.notes}</p>
+        </div>
+      )}
+
+      {/* Profit & Loss - show when pricing exists */}
+      {pricing && (
+        <div className="mb-6">
+          <EventProfitLoss
+            revenue={pricing.suggestedPrice}
+            estimatedCost={pricing.totalCost}
+            actualSpending={spendingTotal}
+            receiptCount={receipts.length}
+          />
         </div>
       )}
 

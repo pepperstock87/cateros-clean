@@ -90,7 +90,9 @@ export async function updateEventStatusAction(eventId: string, status: string) {
 
   if (error) return { error: error.message };
   revalidatePath(`/events/${eventId}`);
+  revalidatePath("/events");
   revalidatePath("/dashboard");
+  revalidatePath("/schedule");
   return { success: true };
 }
 

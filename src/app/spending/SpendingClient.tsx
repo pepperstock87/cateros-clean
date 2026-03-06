@@ -10,11 +10,17 @@ import type { Receipt as ReceiptType, DistributorInvoice, InvoiceLineItem } from
 
 type Tab = "receipts" | "invoices";
 
+type EventOption = {
+  id: string;
+  name: string;
+};
+
 type ExtractedReceipt = {
   vendor: string;
   date: string;
   amount: number;
   category: string;
+  event_id?: string;
 };
 
 type ExtractedInvoice = {
@@ -28,9 +34,11 @@ type ExtractedInvoice = {
 export function SpendingClient({
   receipts,
   invoices,
+  events = [],
 }: {
   receipts: ReceiptType[];
   invoices: DistributorInvoice[];
+  events?: EventOption[];
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("receipts");
@@ -262,6 +270,21 @@ export function SpendingClient({
                     placeholder="e.g. Produce, Meat, Supplies"
                   />
                 </div>
+                {events.length > 0 && (
+                  <div>
+                    <label className="block text-xs text-[#9c8876] mb-1">Link to Event (optional)</label>
+                    <select
+                      className="input w-full"
+                      value={(reviewData as ExtractedReceipt).event_id ?? ""}
+                      onChange={(e) => updateReviewField("event_id", e.target.value || undefined)}
+                    >
+                      <option value="">No event</option>
+                      {events.map(ev => (
+                        <option key={ev.id} value={ev.id}>{ev.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const { type, data } = body;
 
     if (type === "receipt") {
-      const { vendor, date, amount, category } = data;
+      const { vendor, date, amount, category, event_id } = data;
 
       if (!vendor || !date || amount == null) {
         return NextResponse.json({ error: "Missing required receipt fields" }, { status: 400 });
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         amount,
         category: category || null,
         week_label: weekLabel,
+        event_id: event_id || null,
       });
 
       if (insertError) {

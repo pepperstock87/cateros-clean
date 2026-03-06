@@ -58,8 +58,16 @@ export default async function SpendingPage() {
     .eq("user_id", user.id)
     .order("invoice_date", { ascending: false });
 
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, name")
+    .eq("user_id", user.id)
+    .in("status", ["draft", "proposed", "confirmed"])
+    .order("event_date", { ascending: false });
+
   const allReceipts: Receipt[] = receipts ?? [];
   const allInvoices: DistributorInvoice[] = invoices ?? [];
+  const activeEvents = events ?? [];
 
   // Weekly spend summary
   const weeklyReceiptSpend = allReceipts
@@ -107,7 +115,7 @@ export default async function SpendingPage() {
       </div>
 
       {/* Client Component for Tabs + Upload + Tables */}
-      <SpendingClient receipts={allReceipts} invoices={allInvoices} />
+      <SpendingClient receipts={allReceipts} invoices={allInvoices} events={activeEvents} />
     </div>
   );
 }

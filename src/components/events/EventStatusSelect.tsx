@@ -11,9 +11,25 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function EventStatusSelect({ eventId, currentStatus }: { eventId: string; currentStatus: string }) {
   async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const result = await updateEventStatusAction(eventId, e.target.value);
+    const newStatus = e.target.value;
+
+    if (newStatus === "completed") {
+      if (!confirm("Mark this event as completed? This indicates the event has taken place.")) {
+        e.target.value = currentStatus;
+        return;
+      }
+    }
+
+    if (newStatus === "canceled") {
+      if (!confirm("Cancel this event? You can change the status back later if needed.")) {
+        e.target.value = currentStatus;
+        return;
+      }
+    }
+
+    const result = await updateEventStatusAction(eventId, newStatus);
     if (result?.error) toast.error(result.error);
-    else toast.success(`Status updated to ${e.target.value}`);
+    else toast.success(`Status updated to ${newStatus}`);
   }
 
   return (

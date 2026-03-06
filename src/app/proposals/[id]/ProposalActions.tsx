@@ -127,10 +127,15 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       {/* Share link */}
       {proposal.share_token && (
         <button
-          onClick={() => {
+          onClick={async () => {
             const url = `${window.location.origin}/p/${proposal.share_token}`;
             navigator.clipboard.writeText(url);
             toast.success("Share link copied to clipboard");
+            if (proposal.status === "draft") {
+              await updateProposalStatusAction(proposal.id, "sent");
+              toast.success("Proposal marked as sent");
+              router.refresh();
+            }
           }}
           className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
         >
