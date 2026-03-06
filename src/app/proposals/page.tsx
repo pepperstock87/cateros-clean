@@ -51,7 +51,7 @@ export default async function ProposalsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {proposals.map(proposal => (
-            <Link key={proposal.id} href={`/events/${proposal.event_id}`} className="card card-hover p-5 block">
+            <Link key={proposal.id} href={`/proposals/${proposal.id}`} className="card card-hover p-5 block">
               <div className="flex items-start justify-between mb-3">
                 <h3 className="font-medium text-sm">{proposal.title}</h3>
                 <span className={`badge ${statusBadgeClass[proposal.status]}`}>{proposal.status}</span>

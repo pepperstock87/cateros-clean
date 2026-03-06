@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList } from "lucide-react";
+import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText } from "lucide-react";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
@@ -20,6 +20,13 @@ export default async function EventDetailPage({ params }: Props) {
   if (!event) notFound();
 
   const e = event as Event;
+
+  const { data: proposals } = await supabase
+    .from("proposals")
+    .select("id, title, status, created_at")
+    .eq("event_id", id)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -44,6 +51,24 @@ export default async function EventDetailPage({ params }: Props) {
           </Link>
         </div>
       </div>
+
+      {/* Linked proposals */}
+      {proposals && proposals.length > 0 && (
+        <div className="mb-6">
+          <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Proposals</h2>
+          <div className="flex flex-wrap gap-2">
+            {proposals.map((p: any) => (
+              <Link key={p.id} href={`/proposals/${p.id}`} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a1714] border border-[#2e271f] hover:border-[#3d3028] transition-colors text-sm">
+                <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
+                <span>{p.title}</span>
+                <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : p.status === "accepted" ? "badge-confirmed" : "badge-canceled"}`}>
+                  {p.status}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-4">
         <h2 className="font-display text-lg font-semibold mb-1">Pricing Engine</h2>
