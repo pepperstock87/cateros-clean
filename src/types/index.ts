@@ -160,6 +160,17 @@ export type StaffMember = {
   created_at: string;
 };
 
+export type RentalItem = {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string | null;
+  unit_cost: number;
+  vendor: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
 export type UserEntitlements = {
   plan: "basic" | "pro";
   subscription_status: "active" | "trialing" | "past_due" | "canceled" | "none";

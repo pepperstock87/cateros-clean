@@ -4,12 +4,21 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { Plus, CalendarDays } from "lucide-react";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, PaymentData } from "@/types";
 
 const STATUS_CLASSES: Record<string, string> = {
   draft: "badge-draft", proposed: "badge-proposed",
   confirmed: "badge-confirmed", completed: "badge-completed", canceled: "badge-canceled",
 };
+
+function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payment: PaymentData | null }) {
+  if (!pricing) return <span className="text-[#6b5a4a]">—</span>;
+  const paid = payment?.totalPaid ?? 0;
+  const total = pricing.suggestedPrice;
+  if (paid >= total) return <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-900/40 text-green-400 border border-green-800/40">Paid</span>;
+  if (paid > 0) return <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-900/40 text-yellow-400 border border-yellow-800/40">Partial</span>;
+  return <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#251f19] text-[#6b5a4a] border border-[#2e271f]">Unpaid</span>;
+}
 
 export default async function EventsListPage() {
   const supabase = await createClient();
@@ -40,13 +49,14 @@ export default async function EventsListPage() {
         <div className="card overflow-hidden">
           <table className="w-full">
             <thead><tr className="border-b border-[#2e271f]">
-              {["Event", "Client", "Date", "Guests", "Revenue", "Margin", "Status", ""].map(h => (
+              {["Event", "Client", "Date", "Guests", "Revenue", "Margin", "Payment", "Status", ""].map(h => (
                 <th key={h} className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {events.map(event => {
                 const p = event.pricing_data as PricingData | null;
+                const pay = event.payment_data as PaymentData | null;
                 return (
                   <tr key={event.id} className="border-b border-[#1c1814] hover:bg-[#1c1814] transition-colors">
                     <td className="px-5 py-3.5 font-medium text-sm max-w-[180px]">
@@ -57,6 +67,7 @@ export default async function EventsListPage() {
                     <td className="px-5 py-3.5 text-sm text-[#9c8876]">{event.guest_count}</td>
                     <td className="px-5 py-3.5 text-sm">{p ? formatCurrency(p.suggestedPrice) : <span className="text-[#6b5a4a]">—</span>}</td>
                     <td className="px-5 py-3.5 text-sm">{p ? formatPercent(p.projectedMargin) : <span className="text-[#6b5a4a]">—</span>}</td>
+                    <td className="px-5 py-3.5"><PaymentBadge pricing={p} payment={pay} /></td>
                     <td className="px-5 py-3.5"><span className={STATUS_CLASSES[event.status] ?? "badge-draft"}>{event.status}</span></td>
                     <td className="px-5 py-3.5">
                       <Link href={`/events/${event.id}`} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">Open →</Link>

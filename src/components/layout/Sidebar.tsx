@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/lib/actions/auth";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
   { href: "/staff", icon: Users, label: "Staff" },
+  { href: "/rentals", icon: Package, label: "Rentals" },
   { href: "/branding", icon: Palette, label: "Branding" },
   { href: "/proposals", icon: FileText, label: "Proposals" },
   { href: "/spending", icon: Receipt, label: "Spending" },

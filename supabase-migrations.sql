@@ -117,6 +117,22 @@ ALTER TABLE events
   ADD COLUMN IF NOT EXISTS end_time TIME,
   ADD COLUMN IF NOT EXISTS client_phone VARCHAR(30);
 
--- 8. Profile welcome flag
+-- 11. Rental items library
+CREATE TABLE IF NOT EXISTS rental_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(50),
+  unit_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+  vendor VARCHAR(255),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE rental_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own rental items" ON rental_items
+  FOR ALL USING (auth.uid() = user_id);
+
+-- 12. Profile welcome flag
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT FALSE;

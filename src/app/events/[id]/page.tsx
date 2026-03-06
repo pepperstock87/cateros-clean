@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign } from "lucide-react";
+import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2 } from "lucide-react";
+import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
@@ -68,12 +69,16 @@ export default async function EventDetailPage({ params }: Props) {
           <h1 className="font-display text-2xl font-semibold truncate">{e.name}</h1>
           <p className="text-sm text-[#9c8876] mt-1">{e.client_name}</p>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           <EventStatusSelect eventId={e.id} currentStatus={e.status} />
           {e.pricing_data && <GenerateProposalButton event={e} />}
           <Link href={`/events/${e.id}/beo`} className="btn-secondary flex items-center gap-2">
             <ClipboardList className="w-4 h-4" />BEO Sheet
           </Link>
+          <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
+            <Edit className="w-4 h-4" />Edit
+          </Link>
+          <DeleteEventButton eventId={e.id} eventName={e.name} />
         </div>
       </div>
 
