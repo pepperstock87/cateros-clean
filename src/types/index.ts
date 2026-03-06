@@ -127,6 +127,7 @@ export type Proposal = {
   custom_message: string | null;
   terms: string | null;
   pdf_url: string | null;
+  share_token: string | null;
   created_at: string;
   updated_at: string;
   event?: Event; // joined data

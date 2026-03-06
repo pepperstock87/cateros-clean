@@ -86,7 +86,11 @@ CREATE INDEX IF NOT EXISTS idx_ai_conversations_user ON ai_conversations(user_id
 ALTER TABLE business_settings
   ADD COLUMN IF NOT EXISTS brand_color VARCHAR(7) DEFAULT '#1a1a1a';
 
--- 7. Event time and contact fields
+-- 7. Proposal share token for client sharing
+ALTER TABLE proposals
+  ADD COLUMN IF NOT EXISTS share_token VARCHAR(32) UNIQUE;
+
+-- 8. Event time and contact fields
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS start_time TIME,
   ADD COLUMN IF NOT EXISTS end_time TIME,

@@ -45,6 +45,8 @@ export function GenerateProposalButton({ event }: { event: Event }) {
       doc.save(filename);
 
       // Save proposal record to database
+      const shareToken = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, "0")).join("");
       const { error: insertError } = await supabase.from("proposals").insert({
         event_id: event.id,
         user_id: user!.id,
@@ -52,6 +54,7 @@ export function GenerateProposalButton({ event }: { event: Event }) {
         status: "draft",
         custom_message: customMessage || null,
         terms: terms || null,
+        share_token: shareToken,
       });
 
       if (insertError) {

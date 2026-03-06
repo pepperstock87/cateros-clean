@@ -6,7 +6,7 @@ import { updateProposalStatusAction, deleteProposalAction } from "@/lib/actions/
 import { generateProposalPDF } from "@/lib/generateProposalPDF";
 import { createClient } from "@/lib/supabase/client";
 import type { Proposal, Event, BusinessSettings, UserEntitlements } from "@/types";
-import { Send, CheckCircle, XCircle, FileText, Trash2, RotateCcw, Loader2 } from "lucide-react";
+import { Send, CheckCircle, XCircle, FileText, Trash2, RotateCcw, Loader2, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 const statusConfig: Record<Proposal["status"], { label: string; className: string }> = {
@@ -121,6 +121,20 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
           className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
         >
           <RotateCcw className="w-3.5 h-3.5" />Reset to Draft
+        </button>
+      )}
+
+      {/* Share link */}
+      {proposal.share_token && (
+        <button
+          onClick={() => {
+            const url = `${window.location.origin}/p/${proposal.share_token}`;
+            navigator.clipboard.writeText(url);
+            toast.success("Share link copied to clipboard");
+          }}
+          className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
+        >
+          <Link2 className="w-3.5 h-3.5" />Copy Link
         </button>
       )}
 
