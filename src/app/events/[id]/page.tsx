@@ -89,7 +89,7 @@ export default async function EventDetailPage({ params }: Props) {
           <EventStatusSelect eventId={e.id} currentStatus={e.status} />
           {e.pricing_data && <GenerateProposalButton event={e} />}
           <Link href={`/events/${e.id}/beo`} className="btn-secondary flex items-center gap-2">
-            <ClipboardList className="w-4 h-4" />BEO Sheet
+            <ClipboardList className="w-4 h-4" />Production Sheet
           </Link>
           <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
             <Edit className="w-4 h-4" />Edit

@@ -3,9 +3,18 @@ import { redirect, notFound } from "next/navigation";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, Recipe } from "@/types";
 
 type Props = { params: Promise<{ id: string }> };
+
+function formatTime(time: string | null): string {
+  if (!time) return "";
+  const [h, m] = time.split(":");
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const display = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${display}:${m} ${ampm}`;
+}
 
 export default async function BEOPage({ params }: Props) {
   const { id } = await params;
@@ -18,6 +27,51 @@ export default async function BEOPage({ params }: Props) {
 
   const e = event as Event;
   const p = e.pricing_data as PricingData | null;
+
+  // Fetch staff assignments and recipes in parallel
+  const [assignmentsRes, recipesRes] = await Promise.all([
+    supabase
+      .from("event_staff_assignments")
+      .select("id, role, start_time, end_time, confirmed, notes, staff_members(name, role, phone)")
+      .eq("event_id", id)
+      .eq("user_id", user.id),
+    supabase
+      .from("recipes")
+      .select("id, name, servings, ingredients")
+      .eq("user_id", user.id),
+  ]);
+
+  const assignments = assignmentsRes.data ?? [];
+  const allRecipes: Recipe[] = (recipesRes.data as any) ?? [];
+
+  // Match menu items to recipes to build shopping list
+  type ShoppingItem = { name: string; quantity: number; unit: string; totalNeeded: number };
+  const shoppingMap = new Map<string, ShoppingItem>();
+
+  if (p?.menuItems) {
+    for (const menuItem of p.menuItems) {
+      const recipe = allRecipes.find(r => r.name === menuItem.name);
+      if (recipe?.ingredients) {
+        const servingsMultiplier = menuItem.quantity / (recipe.servings || 1);
+        for (const ing of recipe.ingredients) {
+          const key = `${ing.name}-${ing.unit}`;
+          const existing = shoppingMap.get(key);
+          const needed = ing.quantity * servingsMultiplier;
+          if (existing) {
+            existing.totalNeeded += needed;
+          } else {
+            shoppingMap.set(key, {
+              name: ing.name,
+              quantity: ing.quantity,
+              unit: ing.unit,
+              totalNeeded: needed,
+            });
+          }
+        }
+      }
+    }
+  }
+  const shoppingList = Array.from(shoppingMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <>
@@ -38,8 +92,8 @@ export default async function BEOPage({ params }: Props) {
         <div className="bg-white rounded-xl shadow-sm border border-[#2e271f] print:shadow-none print:border-none print:rounded-none">
           {/* Header */}
           <div className="bg-gray-900 text-white px-8 py-6 rounded-t-xl print:rounded-none">
-            <h1 className="text-2xl font-bold tracking-tight">BANQUET EVENT ORDER</h1>
-            <p className="text-gray-400 text-sm mt-1">Internal Use Only</p>
+            <h1 className="text-2xl font-bold tracking-tight">PRODUCTION SHEET</h1>
+            <p className="text-gray-400 text-sm mt-1">Internal Use Only · Generated {format(new Date(), "MMMM d, yyyy")}</p>
           </div>
 
           {/* Event Details */}
@@ -48,8 +102,13 @@ export default async function BEOPage({ params }: Props) {
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-700">
               <div><span className="font-semibold text-gray-900">Client:</span> {e.client_name}</div>
               <div><span className="font-semibold text-gray-900">Date:</span> {format(new Date(e.event_date), "EEEE, MMMM d, yyyy")}</div>
-              {e.start_time && e.end_time && (
-                <div><span className="font-semibold text-gray-900">Time:</span> {e.start_time} - {e.end_time}</div>
+              {(e.start_time || e.end_time) && (
+                <div>
+                  <span className="font-semibold text-gray-900">Time:</span>{" "}
+                  {e.start_time && formatTime(e.start_time)}
+                  {e.start_time && e.end_time && " – "}
+                  {e.end_time && formatTime(e.end_time)}
+                </div>
               )}
               <div><span className="font-semibold text-gray-900">Guests:</span> {e.guest_count}</div>
               {e.venue && (
@@ -61,6 +120,39 @@ export default async function BEOPage({ params }: Props) {
               <div><span className="font-semibold text-gray-900">Status:</span> <span className="capitalize">{e.status}</span></div>
             </div>
           </div>
+
+          {/* Staff Roster */}
+          {assignments.length > 0 && (
+            <div className="px-8 py-6 border-b border-gray-200">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Staff Roster</h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-300 text-gray-600">
+                    <th className="text-left py-2 font-semibold">Name</th>
+                    <th className="text-left py-2 font-semibold">Role</th>
+                    <th className="text-center py-2 font-semibold">Time</th>
+                    <th className="text-center py-2 font-semibold">Confirmed</th>
+                    <th className="text-left py-2 font-semibold">Phone</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-700">
+                  {assignments.map((a: any) => (
+                    <tr key={a.id} className="border-b border-gray-100">
+                      <td className="py-2 font-medium">{a.staff_members?.name ?? "—"}</td>
+                      <td className="py-2">{a.role ?? a.staff_members?.role ?? "—"}</td>
+                      <td className="py-2 text-center">
+                        {a.start_time && a.end_time
+                          ? `${formatTime(a.start_time)} – ${formatTime(a.end_time)}`
+                          : "—"}
+                      </td>
+                      <td className="py-2 text-center">{a.confirmed ? "✓" : "—"}</td>
+                      <td className="py-2">{a.staff_members?.phone ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {p && (
             <>
@@ -97,7 +189,35 @@ export default async function BEOPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Staffing Plan */}
+              {/* Shopping List */}
+              {shoppingList.length > 0 && (
+                <div className="px-8 py-6 border-b border-gray-200">
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Shopping List</h3>
+                  <p className="text-xs text-gray-500 mb-3">Aggregated from recipes · Based on {e.guest_count} guests</p>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-300 text-gray-600">
+                        <th className="text-left py-2 font-semibold">Ingredient</th>
+                        <th className="text-right py-2 font-semibold">Amount Needed</th>
+                        <th className="text-center py-2 font-semibold w-8">✓</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-gray-700">
+                      {shoppingList.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-100">
+                          <td className="py-2">{item.name}</td>
+                          <td className="text-right py-2">{Math.ceil(item.totalNeeded * 10) / 10} {item.unit}</td>
+                          <td className="text-center py-2">
+                            <div className="w-4 h-4 border border-gray-400 rounded mx-auto" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Staffing Plan (from pricing) */}
               {p.staffing?.length > 0 && (
                 <div className="px-8 py-6 border-b border-gray-200">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Staffing Plan</h3>
@@ -132,17 +252,16 @@ export default async function BEOPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Equipment / Rentals */}
+              {/* Equipment Checklist */}
               {p.rentals?.length > 0 && (
                 <div className="px-8 py-6 border-b border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Equipment / Rentals</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Equipment Checklist</h3>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-300 text-gray-600">
                         <th className="text-left py-2 font-semibold">Item</th>
                         <th className="text-right py-2 font-semibold">Qty</th>
-                        <th className="text-right py-2 font-semibold">Unit Cost</th>
-                        <th className="text-right py-2 font-semibold">Total</th>
+                        <th className="text-center py-2 font-semibold w-8">✓</th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-700">
@@ -150,17 +269,12 @@ export default async function BEOPage({ params }: Props) {
                         <tr key={r.id} className="border-b border-gray-100">
                           <td className="py-2">{r.item}</td>
                           <td className="text-right py-2">{r.quantity}</td>
-                          <td className="text-right py-2">{formatCurrency(r.unitCost)}</td>
-                          <td className="text-right py-2">{formatCurrency(r.unitCost * r.quantity)}</td>
+                          <td className="text-center py-2">
+                            <div className="w-4 h-4 border border-gray-400 rounded mx-auto" />
+                          </td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot>
-                      <tr className="font-semibold text-gray-900">
-                        <td className="py-2" colSpan={3}>Total</td>
-                        <td className="text-right py-2">{formatCurrency(p.rentalsTotal)}</td>
-                      </tr>
-                    </tfoot>
                   </table>
                 </div>
               )}
@@ -261,7 +375,7 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Footer */}
           <div className="px-8 py-4 text-xs text-gray-400 text-center">
-            Banquet Event Order &middot; Internal Use Only &middot; Generated {format(new Date(), "MMMM d, yyyy")}
+            Production Sheet &middot; Internal Use Only &middot; Generated {format(new Date(), "MMMM d, yyyy")}
           </div>
         </div>
       </div>
