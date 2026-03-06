@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2, ExternalLink } from "lucide-react";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
@@ -40,7 +40,7 @@ export default async function EventDetailPage({ params }: Props) {
   const [proposalsRes, receiptsRes, invoicesRes] = await Promise.all([
     supabase
       .from("proposals")
-      .select("id, title, status, created_at")
+      .select("id, title, status, share_token, created_at")
       .eq("event_id", id)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
@@ -161,13 +161,20 @@ export default async function EventDetailPage({ params }: Props) {
           <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Proposals</h2>
           <div className="flex flex-wrap gap-2">
             {proposals.map((p: any) => (
-              <Link key={p.id} href={`/proposals/${p.id}`} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a1714] border border-[#2e271f] hover:border-[#3d3028] transition-colors text-sm">
-                <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
-                <span>{p.title}</span>
-                <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : p.status === "accepted" ? "badge-confirmed" : "badge-canceled"}`}>
-                  {p.status}
-                </span>
-              </Link>
+              <div key={p.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a1714] border border-[#2e271f] text-sm">
+                <Link href={`/proposals/${p.id}`} className="inline-flex items-center gap-2 hover:text-brand-300 transition-colors">
+                  <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
+                  <span>{p.title}</span>
+                  <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : p.status === "accepted" ? "badge-confirmed" : "badge-canceled"}`}>
+                    {p.status}
+                  </span>
+                </Link>
+                {p.share_token && (
+                  <Link href={`/p/${p.share_token}/portal`} className="text-[#6b5a4a] hover:text-brand-400 transition-colors" title="Client portal">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
         </div>
