@@ -10,41 +10,6 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan_tier, subscription_status, trial_end")
-    .eq("id", user.id)
-    .single();
-
-  const planTier = profile?.plan_tier || "free";
-  const subscriptionStatus = profile?.subscription_status;
-  
-  const now = new Date();
-  const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null;
-  const trialExpired = trialEnd && now > trialEnd;
-
-  if (trialExpired && subscriptionStatus !== "active") {
-    return { error: "Your trial has expired. Please upgrade to continue creating events." };
-  }
-
-  if (subscriptionStatus === "past_due" || subscriptionStatus === "canceled") {
-    return { error: "Your subscription is inactive. Please update your billing to continue." };
-  }
-
-  const hasActivePlan = subscriptionStatus === "active" || subscriptionStatus === "trialing" || (trialEnd && now < trialEnd);
-  
-  if (planTier === "free" && !hasActivePlan) {
-    const { data: events } = await supabase
-      .from("events")
-      .select("id")
-      .eq("user_id", user.id)
-      .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
-
-    if (events && events.length >= 3) {
-      return { error: "Free plan limit reached. You can create up to 3 events per month. Upgrade to Basic or Pro for unlimited events." };
-    }
-  }
-
   const { data, error } = await supabase
     .from("events")
     .insert({
