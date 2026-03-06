@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const plan = body.plan || "pro";
 
-  const priceId = plan === "basic" 
-    ? process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY 
-    : process.env.STRIPE_PRICE_ID_PRO || process.env.STRIPE_PRICE_ID_MONTHLY;
+  const priceId = plan === "basic"
+    ? process.env.STRIPE_PRICE_ID_BASIC
+    : process.env.STRIPE_PRICE_ID_PRO;
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 

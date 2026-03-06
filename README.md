@@ -39,7 +39,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-STRIPE_PRICE_ID_MONTHLY=
+STRIPE_PRICE_ID_BASIC=
+STRIPE_PRICE_ID_PRO=
 
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -54,8 +55,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ### 4. Set Up Stripe
 
 1. Create a Stripe account at [stripe.com](https://stripe.com)
-2. Create a recurring product at $49/month
-3. Copy the price ID to `STRIPE_PRICE_ID_MONTHLY`
+2. Create two recurring products: Basic ($65/mo) and Pro ($149/mo)
+3. Copy the price IDs to `STRIPE_PRICE_ID_BASIC` and `STRIPE_PRICE_ID_PRO`
 4. Set up a webhook endpoint at `your-domain.com/api/stripe/webhook`
    - Listen for: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
    - Copy the webhook signing secret to `STRIPE_WEBHOOK_SECRET`
@@ -165,7 +166,7 @@ cateros/
 ## Customization
 
 - **Branding colors**: Edit `tailwind.config.ts` — change `brand.*` palette
-- **Subscription price**: Update `STRIPE_PRICE_ID_MONTHLY` and the UI price in `billing/page.tsx`
+- **Subscription price**: Update `STRIPE_PRICE_ID_BASIC` / `STRIPE_PRICE_ID_PRO` and the UI prices in `billing/page.tsx`
 - **Admin fee / tax defaults**: Edit `DEFAULT_PRICING` in `src/lib/pricing.ts`
 - **PDF styling**: Customize colors, fonts, and layout in `src/lib/generateProposalPDF.ts`
 
@@ -181,5 +182,6 @@ cateros/
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `STRIPE_PRICE_ID_MONTHLY` | Stripe price ID for $49/mo plan |
+| `STRIPE_PRICE_ID_BASIC` | Stripe price ID for Basic ($65/mo) plan |
+| `STRIPE_PRICE_ID_PRO` | Stripe price ID for Pro ($149/mo) plan |
 | `NEXT_PUBLIC_APP_URL` | Your deployed URL |

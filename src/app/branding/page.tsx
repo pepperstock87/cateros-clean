@@ -160,6 +160,29 @@ export default function BrandingPage() {
             />
           </div>
 
+          {/* Brand Color */}
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Brand Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                name="brand_color"
+                defaultValue={settings?.brand_color || "#c4956a"}
+                disabled={!isPro}
+                className="w-10 h-10 rounded border border-[#2e271f] bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <input
+                type="text"
+                value={settings?.brand_color || "#c4956a"}
+                onChange={(e) => setSettings(prev => prev ? { ...prev, brand_color: e.target.value } : null)}
+                disabled={!isPro}
+                className="input w-32"
+                placeholder="#c4956a"
+              />
+            </div>
+            <p className="text-xs text-[#6b5a4a] mt-1">Accent color used in proposals</p>
+          </div>
+
           {/* Proposal Template */}
           <div>
             <label className="block text-sm font-medium mb-1.5">Proposal Template</label>

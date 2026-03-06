@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.created":
     case "customer.subscription.updated": {
       const sub = event.data.object as Stripe.Subscription;
-      const planTier = sub.items.data[0].price.id === process.env.STRIPE_PRICE_ID_MONTHLY ? "basic" : "pro";
+      const priceId = sub.items.data[0].price.id;
+      const planTier = priceId === process.env.STRIPE_PRICE_ID_BASIC ? "basic" : "pro";
       
       await updateProfile(sub.customer as string, {
         stripe_subscription_id: sub.id,

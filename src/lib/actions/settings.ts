@@ -38,6 +38,7 @@ export async function updateBusinessSettings(formData: FormData) {
     address: formData.get("address") as string,
     proposal_terms: formData.get("proposal_terms") as string,
     proposal_template: (formData.get("proposal_template") as string) || "simple",
+    brand_color: (formData.get("brand_color") as string) || null,
     updated_at: new Date().toISOString(),
   };
 
