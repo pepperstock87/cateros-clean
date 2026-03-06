@@ -8,6 +8,7 @@ import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
 import { PaymentTracker } from "@/components/events/PaymentTracker";
+import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { formatCurrency } from "@/lib/utils";
 import type { Event, PricingData, PaymentData } from "@/types";
 
@@ -78,6 +79,7 @@ export default async function EventDetailPage({ params }: Props) {
           <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
             <Edit className="w-4 h-4" />Edit
           </Link>
+          <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />
           <DeleteEventButton eventId={e.id} eventName={e.name} />
         </div>
       </div>

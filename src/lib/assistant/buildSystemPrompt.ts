@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function buildSystemPrompt(userId: string): Promise<string> {
   const supabase = await createClient();
 
-  const [profileRes, eventsRes, recipesRes] = await Promise.all([
+  const [profileRes, eventsRes, recipesRes, receiptsRes, invoicesRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, company_name, plan_tier")
@@ -20,11 +20,25 @@ export async function buildSystemPrompt(userId: string): Promise<string> {
       .select("name, cost_per_serving, category")
       .eq("user_id", userId)
       .limit(20),
+    supabase
+      .from("receipts")
+      .select("vendor, date, amount, category")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(15),
+    supabase
+      .from("distributor_invoices")
+      .select("distributor, invoice_date, total")
+      .eq("user_id", userId)
+      .order("invoice_date", { ascending: false })
+      .limit(10),
   ]);
 
   const profile = profileRes.data;
   const events = eventsRes.data ?? [];
   const recipes = recipesRes.data ?? [];
+  const receipts = receiptsRes.data ?? [];
+  const invoices = invoicesRes.data ?? [];
 
   return `You are the CaterOS AI assistant for ${profile?.company_name ?? "a catering business"}.
 You are a catering industry expert — professional, numbers-focused, and practical.
@@ -45,6 +59,10 @@ ${JSON.stringify(events, null, 2)}
 
 ## Recipe Library (sample)
 ${JSON.stringify(recipes, null, 2)}
+
+## Recent Spending
+Receipts: ${JSON.stringify(receipts, null, 2)}
+Invoices: ${JSON.stringify(invoices, null, 2)}
 
 Today's date: ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`;
 }

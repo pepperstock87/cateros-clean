@@ -6,6 +6,7 @@ import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
 import type { Event, PricingData, PaymentData } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
+import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 
 async function getDashboardData(userId: string) {
   const supabase = await createClient();
@@ -94,10 +95,13 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-xs md:text-sm text-[#9c8876] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
         </div>
-        <Link href="/events/new" className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
-          <Plus className="w-4 h-4" />
-          <span>New event</span>
-        </Link>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="How's my business?" />
+          <Link href="/events/new" className="btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
+            <Plus className="w-4 h-4" />
+            <span>New event</span>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid - Responsive */}

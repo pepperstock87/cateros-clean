@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowLeft, Edit, BookOpen, Package, TrendingUp } from "lucide-react";
 import { DeleteRecipeButton } from "@/components/recipes/DeleteRecipeButton";
+import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import type { Recipe } from "@/types";
 
 export default async function RecipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +37,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
           <Link href={`/recipes/${recipe.id}/edit`} className="btn-secondary flex items-center gap-2 text-sm">
             <Edit className="w-4 h-4" />Edit
           </Link>
+          <InlineSuggestion prompt={`Suggest a sell price for "${recipe.name}" which costs ${recipe.cost_per_serving.toFixed(2)} per serving. What margin should I target for this type of dish?`} label="Suggest sell price" />
           <DeleteRecipeButton recipeId={recipe.id} recipeName={recipe.name} />
         </div>
       </div>
