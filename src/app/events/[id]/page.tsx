@@ -6,8 +6,9 @@ import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, 
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
+import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { formatCurrency } from "@/lib/utils";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, PaymentData } from "@/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -193,6 +194,17 @@ export default async function EventDetailPage({ params }: Props) {
         <div className="card p-4 mb-6">
           <h2 className="font-medium text-sm mb-2 text-[#9c8876]">Notes</h2>
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{e.notes}</p>
+        </div>
+      )}
+
+      {/* Payment Tracker - only show when pricing exists */}
+      {pricing && (
+        <div className="mb-6">
+          <PaymentTracker
+            eventId={e.id}
+            suggestedPrice={pricing.suggestedPrice}
+            initialPayment={e.payment_data as PaymentData | null}
+          />
         </div>
       )}
 

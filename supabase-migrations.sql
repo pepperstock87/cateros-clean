@@ -107,7 +107,11 @@ ALTER TABLE staff_members ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own staff" ON staff_members
   FOR ALL USING (auth.uid() = user_id);
 
--- 9. Event time and contact fields
+-- 9. Event payment tracking
+ALTER TABLE events
+  ADD COLUMN IF NOT EXISTS payment_data JSONB;
+
+-- 10. Event time and contact fields
 ALTER TABLE events
   ADD COLUMN IF NOT EXISTS start_time TIME,
   ADD COLUMN IF NOT EXISTS end_time TIME,

@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { PricingData } from "@/types";
+import type { PricingData, PaymentData } from "@/types";
 
 export async function createEventAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -92,6 +92,23 @@ export async function updateEventStatusAction(eventId: string, status: string) {
   const { error } = await supabase
     .from("events")
     .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", eventId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath(`/events/${eventId}`);
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function updateEventPaymentAction(eventId: string, paymentData: PaymentData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase
+    .from("events")
+    .update({ payment_data: paymentData, updated_at: new Date().toISOString() })
     .eq("id", eventId)
     .eq("user_id", user.id);
 

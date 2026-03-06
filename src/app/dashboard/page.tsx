@@ -4,7 +4,7 @@ import Link from "next/link";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, PaymentData } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 
 async function getDashboardData(userId: string) {
@@ -38,6 +38,24 @@ async function getDashboardData(userId: string) {
     return { month: format(d, "MMM"), revenue, profit: revenue - cost, events: mEvents.length };
   });
 
+  // Outstanding payments
+  const eventsWithBalances = events
+    .filter(e => {
+      const pricing = e.pricing_data as PricingData | null;
+      const payment = e.payment_data as PaymentData | null;
+      if (!pricing || e.status === "canceled" || e.status === "completed") return false;
+      const totalPaid = payment?.totalPaid ?? 0;
+      return pricing.suggestedPrice - totalPaid > 0;
+    })
+    .slice(0, 5);
+
+  const totalOutstanding = events.reduce((s, e) => {
+    const pricing = e.pricing_data as PricingData | null;
+    const payment = e.payment_data as PaymentData | null;
+    if (!pricing || e.status === "canceled") return s;
+    return s + (pricing.suggestedPrice - (payment?.totalPaid ?? 0));
+  }, 0);
+
   return {
     totalEventsThisMonth: thisMonthEvents.length,
     totalRevenueThisMonth: monthRevenue,
@@ -46,6 +64,8 @@ async function getDashboardData(userId: string) {
     upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 5),
     recentEvents: events.slice(0, 8),
     monthlyData,
+    eventsWithBalances,
+    totalOutstanding,
   };
 }
 
@@ -137,6 +157,40 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Outstanding Payments */}
+      {stats.eventsWithBalances.length > 0 && (
+        <div className="card p-4 md:p-5 mb-6 md:mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Outstanding Payments</h2>
+            <span className="text-sm font-semibold text-yellow-400">{formatCurrency(stats.totalOutstanding)}</span>
+          </div>
+          <div className="space-y-2">
+            {stats.eventsWithBalances.map(e => {
+              const pricing = e.pricing_data as PricingData;
+              const payment = e.payment_data as PaymentData | null;
+              const paid = payment?.totalPaid ?? 0;
+              const balance = pricing.suggestedPrice - paid;
+              const pctPaid = (paid / pricing.suggestedPrice) * 100;
+              return (
+                <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#1c1814] transition-colors border border-[#2e271f]">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{e.name}</div>
+                    <div className="text-[10px] text-[#6b5a4a]">{e.client_name} · {format(new Date(e.event_date), "MMM d")}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-sm font-medium text-yellow-400">{formatCurrency(balance)}</div>
+                    <div className="text-[10px] text-[#6b5a4a]">{formatCurrency(paid)} of {formatCurrency(pricing.suggestedPrice)} paid</div>
+                  </div>
+                  <div className="w-12 h-1.5 rounded-full bg-[#2e271f] flex-shrink-0 overflow-hidden">
+                    <div className="h-full rounded-full bg-green-400" style={{ width: `${Math.min(pctPaid, 100)}%` }} />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Recent Events - Mobile scrollable */}
       <div className="card p-4 md:p-5">

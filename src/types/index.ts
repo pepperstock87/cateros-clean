@@ -25,6 +25,7 @@ export type Event = {
   notes: string | null;
   status: "draft" | "proposed" | "confirmed" | "completed" | "canceled";
   pricing_data: PricingData | null;
+  payment_data: PaymentData | null;
   created_at: string;
   updated_at: string;
 };
@@ -131,6 +132,20 @@ export type Proposal = {
   created_at: string;
   updated_at: string;
   event?: Event; // joined data
+};
+
+export type PaymentRecord = {
+  id: string;
+  amount: number;
+  method: "cash" | "check" | "card" | "venmo" | "zelle" | "wire" | "other";
+  date: string;
+  note: string;
+};
+
+export type PaymentData = {
+  depositRequired: number;
+  payments: PaymentRecord[];
+  totalPaid: number;
 };
 
 export type StaffMember = {
