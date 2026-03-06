@@ -5,8 +5,10 @@ import { calculatePricing, DEFAULT_PRICING } from "@/lib/pricing";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
 import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
-import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users } from "lucide-react";
+import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { RecipePickerModal } from "./RecipePickerModal";
+import type { Recipe } from "@/types";
 
 interface Props { eventId: string; guestCount: number; initialPricing?: PricingData | null; }
 
@@ -39,6 +41,18 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [taxPercent, setTaxPercent] = useState(initialPricing?.taxPercent ?? 8.5);
   const [targetMargin, setTargetMargin] = useState(initialPricing?.targetMarginPercent ?? 28);
   const [saving, setSaving] = useState(false);
+  const [recipePickerOpen, setRecipePickerOpen] = useState(false);
+
+  const handleImportRecipes = (recipes: Recipe[]) => {
+    const newItems = recipes.map(r => ({
+      id: generateId(),
+      name: r.name,
+      costPerPerson: r.cost_per_serving,
+      quantity: guestCount,
+    }));
+    setMenuItems(p => [...p, ...newItems]);
+    toast.success(`Imported ${recipes.length} recipe${recipes.length !== 1 ? "s" : ""}`);
+  };
 
   const pricing = calculatePricing({ guestCount, menuItems, staffing, rentals, barPackage, adminPercent, taxPercent, targetMarginPercent: targetMargin });
   const marginColor = pricing.projectedMargin >= 25 ? "text-green-400" : pricing.projectedMargin >= 15 ? "text-yellow-400" : "text-red-400";
@@ -72,7 +86,19 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
         {/* Inputs */}
         <div className="lg:col-span-2 space-y-5">
           {/* Menu */}
-          <Section title="Menu Items" onAdd={() => setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount }])} addLabel="Add item">
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-sm">Menu Items</h3>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setRecipePickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                  <BookOpen className="w-3.5 h-3.5" />Import from Recipes
+                </button>
+                <button type="button" onClick={() => setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount }])} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                  <Plus className="w-3.5 h-3.5" />Add item
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
             {menuItems.length === 0 ? <p className="text-xs text-[#6b5a4a] py-2">No menu items yet</p> : menuItems.map(item => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                 <input className="input col-span-5 text-sm" placeholder="Item name" value={item.name} onChange={e => setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m))} />
@@ -93,7 +119,8 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <span>Food cost total</span><span className="font-medium text-[#f5ede0]">{formatCurrency(pricing.foodCostTotal)}</span>
               </div>
             )}
-          </Section>
+            </div>
+          </div>
 
           {/* Staffing */}
           <Section title="Staffing" onAdd={() => setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }])} addLabel="Add staff">
@@ -235,6 +262,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           </button>
         </div>
       </div>
+      <RecipePickerModal open={recipePickerOpen} onClose={() => setRecipePickerOpen(false)} onSelect={handleImportRecipes} />
     </div>
   );
 }
