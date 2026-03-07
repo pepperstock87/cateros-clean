@@ -29,6 +29,7 @@ import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
 import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
 import { PaymentScheduleManager } from "@/components/events/PaymentScheduleManager";
+import { EventInviteManager } from "@/components/events/EventInviteManager";
 import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData, PaymentData } from "@/types";
 
@@ -380,6 +381,7 @@ export default async function EventDetailPage({ params }: Props) {
               <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
               <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
               <EventVendors eventId={e.id} isAdmin={true} />
+              <EventInviteManager eventId={e.id} />
             </div>
           ),
 

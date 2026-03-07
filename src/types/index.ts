@@ -353,6 +353,47 @@ export type VenueProfile = {
   organization?: Organization;
 };
 
+export type EventInvite = {
+  id: string;
+  event_id: string;
+  organization_id: string | null;
+  created_by: string;
+  invite_token: string;
+  relationship_type: VendorRelationshipType;
+  role_label: string | null;
+  invited_email: string | null;
+  invited_name: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'revoked';
+  accepted_at: string | null;
+  accepted_by: string | null;
+  expires_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type VendorCategory = 'caterer' | 'venue' | 'florist' | 'photographer' | 'planner' | 'rental_company' | 'band_dj' | 'other';
+
+export type VendorProfile = {
+  id: string;
+  organization_id: string;
+  business_name: string;
+  category: VendorCategory;
+  description: string | null;
+  city: string | null;
+  state: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  website: string | null;
+  photos: string[];
+  specialties: string[];
+  service_area: string | null;
+  created_at: string;
+  updated_at: string;
+  organization?: Organization;
+};
+
 export type ContractAcceptance = {
   id: string;
   proposal_id: string;
@@ -363,4 +404,31 @@ export type ContractAcceptance = {
   user_agent: string | null;
   terms_snapshot: string | null;
   accepted_at: string;
+};
+
+// Organization subscription types (Phase 10 - Feature Gating)
+export type PlanType = 'starter' | 'pro' | 'enterprise';
+
+export type OrganizationSubscription = {
+  id: string;
+  organization_id: string;
+  plan_type: PlanType;
+  status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'expired';
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FeatureFlag = {
+  id: string;
+  feature_key: string;
+  feature_name: string;
+  description: string | null;
+  plans: PlanType[];
+  is_active: boolean;
+  created_at: string;
 };

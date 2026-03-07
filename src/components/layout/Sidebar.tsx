@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -22,6 +22,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/staff", icon: Users, label: "Staff" },
   { href: "/rentals", icon: Package, label: "Rentals" },
   { href: "/venues", icon: MapPin, label: "Venues" },
+  { href: "/vendor-profile", icon: Store, label: "Vendor Profile" },
   { href: "/branding", icon: Palette, label: "Branding" },
   { href: "/proposals", icon: FileText, label: "Proposals" },
   { href: "/spending", icon: Receipt, label: "Spending" },
