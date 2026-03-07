@@ -329,6 +329,30 @@ export type EventOrganization = {
   organization?: Organization; // joined data
 };
 
+export type VenueProfile = {
+  id: string;
+  organization_id: string;
+  venue_name: string;
+  description: string | null;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  capacity_seated: number | null;
+  capacity_standing: number | null;
+  website: string | null;
+  indoor_outdoor: 'indoor' | 'outdoor' | 'both' | null;
+  indoor_outdoor_notes: string | null;
+  parking_notes: string | null;
+  access_notes: string | null;
+  amenities: string[];
+  photos: string[];
+  created_at: string;
+  updated_at: string;
+  organization?: Organization;
+};
+
 export type ContractAcceptance = {
   id: string;
   proposal_id: string;
