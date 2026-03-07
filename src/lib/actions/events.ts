@@ -113,6 +113,46 @@ export async function updateEventPaymentAction(eventId: string, paymentData: Pay
   return { success: true };
 }
 
+export async function duplicateEventAction(eventId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: original } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!original) return { error: "Event not found" };
+
+  const { data: newEvent, error } = await supabase
+    .from("events")
+    .insert({
+      user_id: user.id,
+      name: `${original.name} (Copy)`,
+      client_name: original.client_name,
+      client_email: original.client_email,
+      client_phone: original.client_phone,
+      event_date: original.event_date,
+      start_time: original.start_time,
+      end_time: original.end_time,
+      guest_count: original.guest_count,
+      venue: original.venue,
+      notes: original.notes,
+      status: "draft",
+      pricing_data: original.pricing_data,
+      payment_data: null, // Don't copy payment data
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath("/events");
+  return { success: true, eventId: newEvent.id };
+}
+
 export async function deleteEventAction(eventId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

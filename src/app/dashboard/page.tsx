@@ -2,9 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
-import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
-import type { Event, PricingData, PaymentData } from "@/types";
+import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns";
+import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight, AlertTriangle } from "lucide-react";
+import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 
@@ -57,6 +57,35 @@ async function getDashboardData(userId: string) {
     return s + (pricing.suggestedPrice - (payment?.totalPaid ?? 0));
   }, 0);
 
+  // Action Items: Proposals with revision requests
+  const { data: revisionProposals } = await supabase
+    .from("proposals")
+    .select("id, title, event_id, events(name)")
+    .eq("user_id", userId)
+    .eq("status", "sent")
+    .not("client_messages", "eq", "[]");
+
+  const proposalsNeedingRevision = (revisionProposals ?? []).filter((p: any) => {
+    const messages = (p.client_messages ?? []) as ClientMessage[];
+    return messages.some(m => m.action === "revision_requested");
+  });
+
+  // Action Items: Draft events within 7 days
+  const sevenDaysOut = addDays(now, 7).toISOString();
+  const draftEventsNeedingAttention = events.filter(
+    e => e.status === "draft" && e.event_date > now.toISOString() && e.event_date <= sevenDaysOut
+  );
+
+  // Action Items: Overdue deposits (confirmed, within 14 days, deposit not met)
+  const fourteenDaysOut = addDays(now, 14).toISOString();
+  const overdueDeposits = events.filter(e => {
+    if (e.status !== "confirmed") return false;
+    if (e.event_date > fourteenDaysOut || e.event_date < now.toISOString()) return false;
+    const payment = e.payment_data as PaymentData | null;
+    if (!payment || !payment.depositRequired) return false;
+    return (payment.totalPaid ?? 0) < payment.depositRequired;
+  });
+
   return {
     totalEventsThisMonth: thisMonthEvents.length,
     totalRevenueThisMonth: monthRevenue,
@@ -67,6 +96,9 @@ async function getDashboardData(userId: string) {
     monthlyData,
     eventsWithBalances,
     totalOutstanding,
+    proposalsNeedingRevision,
+    draftEventsNeedingAttention,
+    overdueDeposits,
   };
 }
 
@@ -126,6 +158,53 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Action Items & Notifications */}
+      {(stats.proposalsNeedingRevision.length > 0 || stats.draftEventsNeedingAttention.length > 0 || stats.overdueDeposits.length > 0) && (
+        <div className="card border-amber-500/30 bg-amber-950/10 p-4 md:p-5 mb-6 md:mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <h2 className="font-medium text-xs md:text-sm text-amber-400 uppercase tracking-wider">Action Items & Notifications</h2>
+          </div>
+          <div className="space-y-2">
+            {stats.proposalsNeedingRevision.map((p: any) => (
+              <Link key={p.id} href={`/proposals/${p.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
+                <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{p.title}</div>
+                  <div className="text-[10px] md:text-xs text-amber-400/70">Revision requested{p.events?.name ? ` — ${p.events.name}` : ""}</div>
+                </div>
+                <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Revision</span>
+              </Link>
+            ))}
+            {stats.draftEventsNeedingAttention.map((e: Event) => (
+              <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
+                <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{e.name}</div>
+                  <div className="text-[10px] md:text-xs text-amber-400/70">Still in draft — event on {format(new Date(e.event_date), "MMM d")}</div>
+                </div>
+                <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Draft</span>
+              </Link>
+            ))}
+            {stats.overdueDeposits.map((e: Event) => {
+              const payment = e.payment_data as PaymentData;
+              return (
+                <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
+                  <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{e.name}</div>
+                    <div className="text-[10px] md:text-xs text-amber-400/70">
+                      Deposit overdue — {formatCurrency(payment.totalPaid)} of {formatCurrency(payment.depositRequired)} received
+                    </div>
+                  </div>
+                  <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Deposit</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Chart & Upcoming Events - Stack on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">

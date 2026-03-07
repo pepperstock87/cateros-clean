@@ -85,3 +85,19 @@ export async function uploadLogo(formData: FormData) {
   revalidatePath("/settings");
   return { success: true, logo_url: data.publicUrl };
 }
+
+export async function updateProfileAction(data: { full_name?: string; company_name?: string }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ ...data })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

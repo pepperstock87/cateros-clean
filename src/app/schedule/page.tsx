@@ -3,25 +3,42 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Lock, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Lock, X, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { Event, UserEntitlements } from "@/types";
+
+interface StaffAssignment {
+  id: string;
+  staff_member_id: string;
+  event_id: string;
+  role: string;
+  start_time: string | null;
+  end_time: string | null;
+  confirmed: boolean;
+  staff_members: { name: string } | null;
+}
 
 export default function SchedulePage() {
   const [entitlements, setEntitlements] = useState<UserEntitlements | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [assignments, setAssignments] = useState<StaffAssignment[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    
+
     Promise.all([
       fetch("/api/entitlements").then(r => r.json()),
-      supabase.from("events").select("*").order("event_date")
-    ]).then(([ent, { data }]) => {
+      supabase.from("events").select("*").order("event_date"),
+      supabase
+        .from("event_staff_assignments")
+        .select("id, staff_member_id, event_id, role, start_time, end_time, confirmed, staff_members(name)")
+        .order("created_at"),
+    ]).then(([ent, { data: eventsData }, { data: assignmentsData }]) => {
       setEntitlements(ent);
-      setEvents(data || []);
+      setEvents(eventsData || []);
+      setAssignments((assignmentsData as unknown as StaffAssignment[]) || []);
     });
   }, []);
 
@@ -57,7 +74,42 @@ export default function SchedulePage() {
     return events.filter(e => isSameDay(new Date(e.event_date), day));
   };
 
+  const assignmentsForEvent = (eventId: string): StaffAssignment[] => {
+    return assignments.filter(a => a.event_id === eventId);
+  };
+
+  const conflictsForDay = (day: Date): { staffName: string; staffMemberId: string }[] => {
+    const dayEvents = eventsForDay(day);
+    if (dayEvents.length < 2) return [];
+
+    const dayEventIds = new Set(dayEvents.map(e => e.id));
+    const dayAssignments = assignments.filter(a => dayEventIds.has(a.event_id));
+
+    // Group by staff_member_id
+    const staffEventMap = new Map<string, { name: string; eventIds: Set<string> }>();
+    for (const a of dayAssignments) {
+      const existing = staffEventMap.get(a.staff_member_id);
+      if (existing) {
+        existing.eventIds.add(a.event_id);
+      } else {
+        staffEventMap.set(a.staff_member_id, {
+          name: a.staff_members?.name || "Unknown",
+          eventIds: new Set([a.event_id]),
+        });
+      }
+    }
+
+    const conflicts: { staffName: string; staffMemberId: string }[] = [];
+    for (const [staffMemberId, entry] of staffEventMap) {
+      if (entry.eventIds.size > 1) {
+        conflicts.push({ staffName: entry.name, staffMemberId });
+      }
+    }
+    return conflicts;
+  };
+
   const selectedDayEvents = selectedDay ? eventsForDay(selectedDay) : [];
+  const selectedDayConflicts = selectedDay ? conflictsForDay(selectedDay) : [];
 
   const STATUS_COLORS: Record<string, string> = {
     draft: "bg-gray-600 text-gray-200",
@@ -119,6 +171,7 @@ export default function SchedulePage() {
             if (!day) return <div key={`empty-${idx}`} className="aspect-square" />;
 
             const dayEvents = eventsForDay(day);
+            const dayConflicts = conflictsForDay(day);
             const isToday = isSameDay(day, new Date());
             const isSelected = selectedDay && isSameDay(day, selectedDay);
 
@@ -133,18 +186,33 @@ export default function SchedulePage() {
                   ${isSelected ? "bg-brand-900 border-brand-400" : "hover:bg-[#1c1814]"}
                 `}
               >
-                <div className={`text-xs md:text-sm font-medium mb-1 ${isToday ? "text-brand-300" : ""}`}>
-                  {format(day, "d")}
+                <div className="flex items-center justify-between">
+                  <div className={`text-xs md:text-sm font-medium mb-1 ${isToday ? "text-brand-300" : ""}`}>
+                    {format(day, "d")}
+                  </div>
+                  {dayConflicts.length > 0 && (
+                    <div className="w-2 h-2 rounded-full bg-orange-400 mb-1" title="Scheduling conflict" />
+                  )}
                 </div>
                 <div className="space-y-0.5">
-                  {dayEvents.slice(0, 2).map(event => (
-                    <div
-                      key={event.id}
-                      className={`text-[10px] px-1 py-0.5 rounded truncate ${STATUS_COLORS[event.status]}`}
-                    >
-                      {event.name}
-                    </div>
-                  ))}
+                  {dayEvents.slice(0, 2).map(event => {
+                    const eventAssignments = assignmentsForEvent(event.id);
+                    return (
+                      <div key={event.id}>
+                        <div
+                          className={`text-[10px] px-1 py-0.5 rounded truncate ${STATUS_COLORS[event.status]}`}
+                        >
+                          {event.name}
+                        </div>
+                        {eventAssignments.length > 0 && (
+                          <div className="flex items-center gap-0.5 px-1 text-[10px] text-[#6b5a4a]">
+                            <Users className="w-2.5 h-2.5" />
+                            <span>{eventAssignments.length}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                   {dayEvents.length > 2 && (
                     <div className="text-[10px] text-[#6b5a4a]">+{dayEvents.length - 2} more</div>
                   )}
@@ -168,34 +236,98 @@ export default function SchedulePage() {
               </button>
             </div>
 
+            {selectedDayConflicts.length > 0 && (
+              <div className="mb-4 p-3 rounded-lg bg-orange-400/10 border border-orange-400/30">
+                <div className="flex items-center gap-2 text-orange-400 text-sm font-medium mb-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  Scheduling conflict
+                </div>
+                {selectedDayConflicts.map(c => (
+                  <p key={c.staffMemberId} className="text-xs text-orange-400/80 ml-6">
+                    {c.staffName} is assigned to multiple events on this day
+                  </p>
+                ))}
+              </div>
+            )}
+
             <div className="space-y-3">
               {selectedDayEvents.length === 0 ? (
                 <p className="text-sm text-[#6b5a4a] text-center py-8">No events on this day</p>
               ) : (
-                selectedDayEvents.map(event => (
-                  <Link
-                    key={event.id}
-                    href={`/events/${event.id}`}
-                    className="block card p-4 hover:bg-[#1c1814] transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate">{event.name}</h4>
-                        <p className="text-sm text-[#9c8876]">{event.client_name}</p>
-                        {(event.start_time || event.end_time) && (
-                          <p className="text-xs text-[#6b5a4a] mt-1">
-                            {event.start_time && format(new Date(`2000-01-01T${event.start_time}`), "h:mm a")}
-                            {event.start_time && event.end_time && " - "}
-                            {event.end_time && format(new Date(`2000-01-01T${event.end_time}`), "h:mm a")}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded ${STATUS_COLORS[event.status]}`}>
-                        {event.status}
-                      </span>
+                selectedDayEvents.map(event => {
+                  const eventAssignments = assignmentsForEvent(event.id);
+                  return (
+                    <div key={event.id} className="card p-4">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="block hover:bg-[#1c1814] transition-colors -m-4 p-4 rounded-lg"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold truncate">{event.name}</h4>
+                            <p className="text-sm text-[#9c8876]">{event.client_name}</p>
+                            {(event.start_time || event.end_time) && (
+                              <p className="text-xs text-[#6b5a4a] mt-1">
+                                {event.start_time && format(new Date(`2000-01-01T${event.start_time}`), "h:mm a")}
+                                {event.start_time && event.end_time && " - "}
+                                {event.end_time && format(new Date(`2000-01-01T${event.end_time}`), "h:mm a")}
+                              </p>
+                            )}
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded ${STATUS_COLORS[event.status]}`}>
+                            {event.status}
+                          </span>
+                        </div>
+                      </Link>
+
+                      {eventAssignments.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-[#2e271f]">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Users className="w-3.5 h-3.5 text-[#6b5a4a]" />
+                            <span className="text-xs text-[#6b5a4a] font-medium">
+                              Staff ({eventAssignments.length})
+                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {eventAssignments.map(a => {
+                              const isConflict = selectedDayConflicts.some(
+                                c => c.staffMemberId === a.staff_member_id
+                              );
+                              return (
+                                <div key={a.id} className="flex items-center gap-2">
+                                  <div
+                                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                      a.confirmed ? "bg-green-400" : "bg-gray-500"
+                                    }`}
+                                    title={a.confirmed ? "Confirmed" : "Not confirmed"}
+                                  />
+                                  <span className="text-[10px] text-[#6b5a4a] truncate">
+                                    {a.staff_members?.name || "Unknown"}
+                                  </span>
+                                  {a.role && (
+                                    <span className="text-[10px] text-[#6b5a4a]/60">
+                                      ({a.role})
+                                    </span>
+                                  )}
+                                  {(a.start_time || a.end_time) && (
+                                    <span className="text-[10px] text-[#6b5a4a]/60 ml-auto flex-shrink-0">
+                                      {a.start_time && format(new Date(`2000-01-01T${a.start_time}`), "h:mm a")}
+                                      {a.start_time && a.end_time && " - "}
+                                      {a.end_time && format(new Date(`2000-01-01T${a.end_time}`), "h:mm a")}
+                                    </span>
+                                  )}
+                                  {isConflict && (
+                                    <AlertTriangle className="w-3 h-3 text-orange-400 flex-shrink-0" />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </Link>
-                ))
+                  );
+                })
               )}
             </div>
 

@@ -2,19 +2,57 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { User, CreditCard, Building2, Mail } from "lucide-react";
+import { updateProfileAction } from "@/lib/actions/settings";
+import { User, CreditCard, Building2, Mail, Pencil } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
 
+  const [editingName, setEditingName] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [companyValue, setCompanyValue] = useState("");
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("*").single().then(({ data }) => setProfile(data));
+    supabase.from("profiles").select("*").single().then(({ data }) => {
+      setProfile(data);
+      setNameValue(data?.full_name || "");
+      setCompanyValue(data?.company_name || "");
+    });
   }, []);
 
   const isActive = profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
   const planName = profile?.plan_tier === "pro" ? "Pro" : "Basic";
+
+  async function handleSaveName() {
+    setSaving(true);
+    const result = await updateProfileAction({ full_name: nameValue });
+    setSaving(false);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Name updated successfully");
+      setProfile((prev: any) => ({ ...prev, full_name: nameValue }));
+      setEditingName(false);
+    }
+  }
+
+  async function handleSaveCompany() {
+    setSaving(true);
+    const result = await updateProfileAction({ company_name: companyValue });
+    setSaving(false);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Company name updated successfully");
+      setProfile((prev: any) => ({ ...prev, company_name: companyValue }));
+      setEditingCompany(false);
+    }
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
@@ -32,15 +70,49 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#9c8876] mb-1">Full Name</label>
-            <div className="text-sm">{profile?.full_name || "—"}</div>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={saving}
+                  className="text-xs px-3 py-1.5 rounded-md bg-brand-500 hover:bg-brand-600 text-white font-medium disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameValue(profile?.full_name || "");
+                  }}
+                  className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{profile?.full_name || "—"}</span>
+                <button
+                  onClick={() => setEditingName(true)}
+                  className="text-[#9c8876] hover:text-brand-400 transition-colors"
+                  title="Edit name"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-[#9c8876] mb-1">Email</label>
             <div className="text-sm">{profile?.email || "—"}</div>
           </div>
-          <p className="text-xs text-[#6b5a4a] pt-2 border-t border-[#2e271f]">
-            To update your account information, please contact support
-          </p>
         </div>
       </div>
 
@@ -53,11 +125,45 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#9c8876] mb-1">Company Name</label>
-            <div className="text-sm">{profile?.company_name || "—"}</div>
+            {editingCompany ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={companyValue}
+                  onChange={(e) => setCompanyValue(e.target.value)}
+                  className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveCompany}
+                  disabled={saving}
+                  className="text-xs px-3 py-1.5 rounded-md bg-brand-500 hover:bg-brand-600 text-white font-medium disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingCompany(false);
+                    setCompanyValue(profile?.company_name || "");
+                  }}
+                  className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{profile?.company_name || "—"}</span>
+                <button
+                  onClick={() => setEditingCompany(true)}
+                  className="text-[#9c8876] hover:text-brand-400 transition-colors"
+                  title="Edit company name"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
-          <p className="text-xs text-[#6b5a4a] pt-2 border-t border-[#2e271f]">
-            To update your company name, please contact support
-          </p>
         </div>
       </div>
 
@@ -102,8 +208,8 @@ export default function SettingsPage() {
         <p className="text-sm text-[#9c8876] mb-4">
           Need help? Have questions? We're here to help.
         </p>
-        <a 
-          href="mailto:support@cateros.com" 
+        <a
+          href="mailto:support@cateros.com"
           className="btn-secondary inline-flex items-center gap-2"
         >
           <Mail className="w-4 h-4" />

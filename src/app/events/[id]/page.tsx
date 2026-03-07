@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2, ExternalLink } from "lucide-react";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
+import { DuplicateEventButton } from "@/components/events/DuplicateEventButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { EventLifecycle } from "@/components/events/EventLifecycle";
@@ -94,6 +95,7 @@ export default async function EventDetailPage({ params }: Props) {
           <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
             <Edit className="w-4 h-4" />Edit
           </Link>
+          <DuplicateEventButton eventId={e.id} />
           <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />
           <DeleteEventButton eventId={e.id} eventName={e.name} />
         </div>

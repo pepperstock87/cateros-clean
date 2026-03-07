@@ -166,3 +166,19 @@ CREATE INDEX IF NOT EXISTS idx_staff_assignments_staff ON event_staff_assignment
 -- 14. Profile welcome flag
 ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT FALSE;
+
+-- 15. Recurring costs table
+CREATE TABLE IF NOT EXISTS recurring_costs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  frequency VARCHAR(20) DEFAULT 'monthly',
+  category VARCHAR(100),
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE recurring_costs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own recurring costs" ON recurring_costs
+  FOR ALL USING (auth.uid() = user_id);
