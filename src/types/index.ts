@@ -310,6 +310,25 @@ export type Payment = {
   updated_at: string;
 };
 
+export type VendorRelationshipType = 'caterer' | 'venue' | 'planner' | 'rental_vendor' | 'florist' | 'entertainment_vendor' | 'other_vendor';
+
+export type EventOrganization = {
+  id: string;
+  event_id: string;
+  organization_id: string;
+  relationship_type: VendorRelationshipType;
+  is_primary: boolean;
+  role_label: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  notes: string | null;
+  status: 'active' | 'invited' | 'declined' | 'removed';
+  created_at: string;
+  updated_at: string;
+  organization?: Organization; // joined data
+};
+
 export type ContractAcceptance = {
   id: string;
   proposal_id: string;

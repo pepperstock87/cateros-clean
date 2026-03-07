@@ -22,6 +22,7 @@ import { EventAlerts } from "@/components/events/EventAlerts";
 import { formatCurrency } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
+import { EventVendors } from "@/components/events/EventVendors";
 import { MarginWarning } from "@/components/events/MarginWarning";
 import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
@@ -371,6 +372,14 @@ export default async function EventDetailPage({ params }: Props) {
                 eventStartTime={e.start_time}
                 eventEndTime={e.end_time}
               />
+            </div>
+          ),
+
+          vendors: (
+            <div>
+              <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
+              <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
+              <EventVendors eventId={e.id} isAdmin={true} />
             </div>
           ),
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type ReactNode } from "react";
 
-type TabKey = "overview" | "pricing" | "payments" | "staff" | "activity";
+type TabKey = "overview" | "pricing" | "payments" | "staff" | "vendors" | "activity";
 
 type Props = {
   children: {
@@ -10,6 +10,7 @@ type Props = {
     pricing: ReactNode;
     payments: ReactNode;
     staff: ReactNode;
+    vendors: ReactNode;
     activity: ReactNode;
   };
 };
@@ -19,6 +20,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "pricing", label: "Pricing" },
   { key: "payments", label: "Payments" },
   { key: "staff", label: "Staff" },
+  { key: "vendors", label: "Vendors" },
   { key: "activity", label: "Activity" },
 ];
 
