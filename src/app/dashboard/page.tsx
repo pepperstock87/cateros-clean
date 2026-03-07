@@ -2,14 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight, AlertTriangle } from "lucide-react";
+import { format, startOfMonth, endOfMonth, subMonths, addDays, isThisWeek } from "date-fns";
+import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
 import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { RevenueGoal } from "@/components/dashboard/RevenueGoal";
 import { RevenueForecasting } from "@/components/dashboard/RevenueForecasting";
 import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
+import { ActionAlerts, type AlertItem } from "@/components/dashboard/ActionAlerts";
+import { UpcomingEventsTimeline } from "@/components/dashboard/UpcomingEventsTimeline";
 
 async function getDashboardData(userId: string) {
   const supabase = await createClient();
@@ -106,6 +108,58 @@ async function getDashboardData(userId: string) {
     return (payment.totalPaid ?? 0) < payment.depositRequired;
   });
 
+  // Action Items: Events within 7 days with no staff assigned
+  const { data: staffAssignments } = await supabase
+    .from("staff_assignments")
+    .select("event_id")
+    .eq("user_id", userId);
+  const eventIdsWithStaff = new Set((staffAssignments ?? []).map((sa: any) => sa.event_id));
+  const eventsWithoutStaff = events.filter(e =>
+    e.event_date > now.toISOString() && e.event_date <= sevenDaysOut &&
+    (e.status === "confirmed" || e.status === "proposed") &&
+    !eventIdsWithStaff.has(e.id)
+  );
+
+  // Action Items: Events within 3 days with no pricing
+  const threeDaysOut = addDays(now, 3).toISOString();
+  const eventsWithoutPricing = events.filter(e =>
+    e.event_date > now.toISOString() && e.event_date <= threeDaysOut &&
+    e.status !== "canceled" && e.status !== "completed" &&
+    !(e.pricing_data as PricingData | null)?.suggestedPrice
+  );
+
+  // Action Items: Stale proposals (sent > 5 days ago, no response)
+  const fiveDaysAgo = addDays(now, -5).toISOString();
+  const { data: staleProposalData } = await supabase
+    .from("proposals")
+    .select("id, title, event_id, created_at, events(name)")
+    .eq("user_id", userId)
+    .eq("status", "sent")
+    .lt("created_at", fiveDaysAgo);
+  const staleProposals = (staleProposalData ?? []).filter((p: any) => {
+    const messages = (p.client_messages ?? []) as ClientMessage[];
+    return !messages.some(m => m.action === "accepted" || m.action === "declined" || m.action === "revision_requested");
+  });
+
+  // Count events this week for informational alert
+  const eventsThisWeekCount = events.filter(e =>
+    e.status !== "canceled" && isThisWeek(new Date(e.event_date), { weekStartsOn: 1 })
+  ).length;
+
+  // Events needing attention: upcoming events with incomplete checklists
+  const upcomingActive = events.filter(
+    e => e.event_date > now.toISOString() && e.status !== "canceled" && e.status !== "completed"
+  );
+  const eventsNeedingChecklist = upcomingActive.filter(e => {
+    const p = e.pricing_data as PricingData | null;
+    const pay = e.payment_data as PaymentData | null;
+    const detailsComplete = !!(e.name && e.event_date && e.guest_count && e.venue);
+    const contactComplete = !!(e.client_name && (e.client_email || e.client_phone));
+    const pricingComplete = !!(p && p.menuItems && p.menuItems.length > 0);
+    const depositComplete = !pay?.depositRequired || (pay.totalPaid ?? 0) >= pay.depositRequired;
+    return !(detailsComplete && contactComplete && pricingComplete && depositComplete);
+  }).length;
+
   return {
     totalEventsThisMonth: thisMonthEvents.length,
     totalRevenueThisMonth: monthRevenue,
@@ -117,7 +171,7 @@ async function getDashboardData(userId: string) {
     lastMonthMargin,
     proposedPipeline: { total: proposedTotal, count: proposedEvents.length },
     confirmedPipeline: { total: confirmedTotal, count: confirmedEvents.length },
-    upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 5),
+    upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 10),
     recentEvents: events.slice(0, 8),
     monthlyData,
     eventsWithBalances,
@@ -126,6 +180,11 @@ async function getDashboardData(userId: string) {
     proposalsNeedingRevision,
     draftEventsNeedingAttention,
     overdueDeposits,
+    eventsNeedingChecklist,
+    eventsWithoutStaff,
+    eventsWithoutPricing,
+    staleProposals,
+    eventsThisWeekCount,
   };
 }
 
@@ -143,6 +202,102 @@ export default async function DashboardPage() {
   const stats = await getDashboardData(user.id);
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
+
+  // Build smart alerts
+  const alerts: AlertItem[] = [];
+
+  // Urgent: Events within 3 days with no pricing
+  for (const e of stats.eventsWithoutPricing) {
+    alerts.push({
+      id: `pricing-${e.id}`,
+      type: "urgent",
+      title: `Pricing missing for ${e.name}`,
+      description: `Event on ${format(new Date(e.event_date), "MMM d")} has no pricing set`,
+      link: `/events/${e.id}`,
+      eventName: e.name,
+    });
+  }
+
+  // Warning: Events within 7 days with no staff
+  for (const e of stats.eventsWithoutStaff) {
+    alerts.push({
+      id: `staff-${e.id}`,
+      type: "warning",
+      title: `Staff not assigned for ${e.name}`,
+      description: `Event on ${format(new Date(e.event_date), "MMM d")} has no staff assigned`,
+      link: `/events/${e.id}`,
+      eventName: e.name,
+    });
+  }
+
+  // Warning: Overdue deposits
+  for (const e of stats.overdueDeposits) {
+    const payment = e.payment_data as PaymentData;
+    alerts.push({
+      id: `deposit-${e.id}`,
+      type: "warning",
+      title: `Deposit unpaid for ${e.name}`,
+      description: `${formatCurrency(payment.totalPaid)} of ${formatCurrency(payment.depositRequired)} received`,
+      link: `/events/${e.id}`,
+      eventName: e.name,
+    });
+  }
+
+  // Warning: Draft events needing attention
+  for (const e of stats.draftEventsNeedingAttention) {
+    alerts.push({
+      id: `draft-${e.id}`,
+      type: "warning",
+      title: `${e.name} still in draft`,
+      description: `Event on ${format(new Date(e.event_date), "MMM d")} — confirm or update`,
+      link: `/events/${e.id}`,
+      eventName: e.name,
+    });
+  }
+
+  // Warning: Proposals needing revision
+  for (const p of stats.proposalsNeedingRevision) {
+    alerts.push({
+      id: `revision-${p.id}`,
+      type: "warning",
+      title: `Revision requested: ${(p as any).title}`,
+      description: (p as any).events?.name ? `For ${(p as any).events.name}` : "Client requested changes",
+      link: `/proposals/${p.id}`,
+    });
+  }
+
+  // Warning: Stale proposals
+  for (const p of stats.staleProposals) {
+    alerts.push({
+      id: `stale-${(p as any).id}`,
+      type: "warning",
+      title: `Follow up on ${(p as any).title}`,
+      description: (p as any).events?.name ? `Sent to ${(p as any).events.name} — no response yet` : "No client response after 5+ days",
+      link: `/proposals/${(p as any).id}`,
+    });
+  }
+
+  // Info: Events this week summary
+  if (stats.eventsThisWeekCount > 0) {
+    alerts.push({
+      id: "week-summary",
+      type: "info",
+      title: `${stats.eventsThisWeekCount} event${stats.eventsThisWeekCount === 1 ? "" : "s"} this week`,
+      description: "Stay on top of your upcoming schedule",
+      link: "/events",
+    });
+  }
+
+  // Prepare timeline events data
+  const timelineEvents = stats.upcomingEvents.map(e => ({
+    id: e.id,
+    name: e.name,
+    client_name: e.client_name,
+    event_date: e.event_date,
+    start_time: e.start_time,
+    status: e.status,
+    guest_count: e.guest_count,
+  }));
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -267,86 +422,23 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Action Items & Notifications */}
-      {(stats.proposalsNeedingRevision.length > 0 || stats.draftEventsNeedingAttention.length > 0 || stats.overdueDeposits.length > 0) && (
-        <div className="card border-amber-500/30 bg-amber-950/10 p-4 md:p-5 mb-6 md:mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <h2 className="font-medium text-xs md:text-sm text-amber-400 uppercase tracking-wider">Action Items & Notifications</h2>
-          </div>
-          <div className="space-y-2">
-            {stats.proposalsNeedingRevision.map((p: any) => (
-              <Link key={p.id} href={`/proposals/${p.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
-                <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.title}</div>
-                  <div className="text-[10px] md:text-xs text-amber-400/70">Revision requested{p.events?.name ? ` — ${p.events.name}` : ""}</div>
-                </div>
-                <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Revision</span>
-              </Link>
-            ))}
-            {stats.draftEventsNeedingAttention.map((e: Event) => (
-              <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
-                <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{e.name}</div>
-                  <div className="text-[10px] md:text-xs text-amber-400/70">Still in draft — event on {format(new Date(e.event_date), "MMM d")}</div>
-                </div>
-                <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Draft</span>
-              </Link>
-            ))}
-            {stats.overdueDeposits.map((e: Event) => {
-              const payment = e.payment_data as PaymentData;
-              return (
-                <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-950/20 transition-colors border border-amber-500/20">
-                  <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{e.name}</div>
-                    <div className="text-[10px] md:text-xs text-amber-400/70">
-                      Deposit overdue — {formatCurrency(payment.totalPaid)} of {formatCurrency(payment.depositRequired)} received
-                    </div>
-                  </div>
-                  <span className="text-[10px] md:text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Deposit</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Action Alerts */}
+      <div className="mb-6 md:mb-8">
+        <ActionAlerts alerts={alerts} />
+      </div>
 
-      {/* Chart & Upcoming Events - Stack on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-        <div className="lg:col-span-2 card p-4 md:p-5">
-          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
-            <span className="hidden sm:inline">Revenue vs Profit — 6 months</span>
-            <span className="sm:hidden">6 Month Overview</span>
-          </h2>
-          <DashboardChart data={stats.monthlyData} />
-        </div>
+      {/* Upcoming Events Timeline */}
+      <div className="card p-4 md:p-5 mb-6 md:mb-8">
+        <UpcomingEventsTimeline events={timelineEvents} />
+      </div>
 
-        <div className="card p-4 md:p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Upcoming</h2>
-            <Link href="/events" className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
-              All<ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          {stats.upcomingEvents.length === 0 ? (
-            <p className="text-xs md:text-sm text-[#6b5a4a] text-center py-6">No upcoming events</p>
-          ) : (
-            <div className="space-y-3">
-              {stats.upcomingEvents.map(e => (
-                <Link key={e.id} href={`/events/${e.id}`} className="block p-3 rounded-lg hover:bg-[#1c1814] transition-colors border border-[#2e271f]">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="font-medium text-xs md:text-sm truncate">{e.name}</span>
-                    <span className={`${STATUS_CLASSES[e.status]} text-[10px] md:text-xs whitespace-nowrap`}>{e.status}</span>
-                  </div>
-                  <div className="text-[10px] md:text-xs text-[#6b5a4a]">{format(new Date(e.event_date), "MMM d")} • {e.guest_count} guests</div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Revenue Chart */}
+      <div className="card p-4 md:p-5 mb-6 md:mb-8">
+        <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
+          <span className="hidden sm:inline">Revenue vs Profit — 6 months</span>
+          <span className="sm:hidden">6 Month Overview</span>
+        </h2>
+        <DashboardChart data={stats.monthlyData} />
       </div>
 
       {/* Revenue Forecast */}

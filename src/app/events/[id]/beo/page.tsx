@@ -3,7 +3,8 @@ import { redirect, notFound } from "next/navigation";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
-import type { Event, PricingData, Recipe } from "@/types";
+import { BEOPageClient } from "@/components/events/BEOPageClient";
+import type { Event, PricingData, Recipe, StaffAssignment } from "@/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -50,6 +51,21 @@ export default async function BEOPage({ params }: Props) {
   const allRecipes: Recipe[] = (recipesRes.data as any) ?? [];
   const companyName: string | null = (brandingRes.data as any)?.company_name ?? null;
 
+  // Build staff assignments with nested staff_member for export buttons
+  const staffAssignments: StaffAssignment[] = assignments.map((a: any) => ({
+    id: a.id,
+    event_id: id,
+    staff_member_id: "",
+    user_id: user.id,
+    role: a.role,
+    start_time: a.start_time,
+    end_time: a.end_time,
+    confirmed: a.confirmed,
+    notes: a.notes,
+    created_at: "",
+    staff_member: a.staff_members ? { id: "", user_id: user.id, name: a.staff_members.name, role: a.staff_members.role, hourly_rate: 0, phone: a.staff_members.phone, email: null, notes: null, created_at: "" } : undefined,
+  }));
+
   // Match menu items to recipes to build shopping list
   type ShoppingItem = { name: string; quantity: number; unit: string; totalNeeded: number };
   const shoppingMap = new Map<string, ShoppingItem>();
@@ -93,6 +109,12 @@ export default async function BEOPage({ params }: Props) {
 
       <div className="p-4 md:p-8 max-w-4xl mx-auto print:p-0 print:max-w-none print:bg-white print:text-black">
         <BEOActions event={e} />
+        <BEOPageClient
+          event={e}
+          staffAssignments={staffAssignments}
+          recipes={allRecipes}
+          companyName={companyName ?? "My Catering Co"}
+        >
 
         {/* BEO Content - light theme for print readability */}
         <div className="bg-white rounded-xl shadow-sm border border-[#2e271f] print:shadow-none print:border-none print:rounded-none print:bg-white">
@@ -102,7 +124,7 @@ export default async function BEOPage({ params }: Props) {
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{companyName}</p>
             )}
             <h1 className="text-2xl font-bold tracking-tight">PRODUCTION SHEET</h1>
-            <p className="text-gray-400 text-sm mt-1">Internal Use Only · Generated {format(new Date(), "MMMM d, yyyy")}</p>
+            <p className="text-gray-400 text-sm mt-1"><span data-beo-internal>Internal Use Only · </span>Generated {format(new Date(), "MMMM d, yyyy")}</p>
           </div>
 
           {/* Event Details */}
@@ -174,8 +196,8 @@ export default async function BEOPage({ params }: Props) {
                       <tr className="border-b border-gray-300 text-gray-600">
                         <th className="text-left py-2 font-semibold">Item</th>
                         <th className="text-right py-2 font-semibold">Qty</th>
-                        <th className="text-right py-2 font-semibold">Cost/Person</th>
-                        <th className="text-right py-2 font-semibold">Subtotal</th>
+                        <th className="text-right py-2 font-semibold" data-beo-internal>Cost/Person</th>
+                        <th className="text-right py-2 font-semibold" data-beo-internal>Subtotal</th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-700">
@@ -183,12 +205,12 @@ export default async function BEOPage({ params }: Props) {
                         <tr key={item.id} className="border-b border-gray-100">
                           <td className="py-2">{item.name}</td>
                           <td className="text-right py-2">{item.quantity}</td>
-                          <td className="text-right py-2">{formatCurrency(item.costPerPerson)}</td>
-                          <td className="text-right py-2">{formatCurrency(item.costPerPerson * item.quantity)}</td>
+                          <td className="text-right py-2" data-beo-internal>{formatCurrency(item.costPerPerson)}</td>
+                          <td className="text-right py-2" data-beo-internal>{formatCurrency(item.costPerPerson * item.quantity)}</td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot>
+                    <tfoot data-beo-internal>
                       <tr className="font-semibold text-gray-900">
                         <td className="py-2" colSpan={3}>Total</td>
                         <td className="text-right py-2">{formatCurrency(p.foodCostTotal)}</td>
@@ -236,8 +258,8 @@ export default async function BEOPage({ params }: Props) {
                         <th className="text-left py-2 font-semibold">Role</th>
                         <th className="text-right py-2 font-semibold">Headcount</th>
                         <th className="text-right py-2 font-semibold">Hours</th>
-                        <th className="text-right py-2 font-semibold">Rate</th>
-                        <th className="text-right py-2 font-semibold">Total</th>
+                        <th className="text-right py-2 font-semibold" data-beo-internal>Rate</th>
+                        <th className="text-right py-2 font-semibold" data-beo-internal>Total</th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-700">
@@ -246,12 +268,12 @@ export default async function BEOPage({ params }: Props) {
                           <td className="py-2">{s.role}</td>
                           <td className="text-right py-2">{s.headcount}</td>
                           <td className="text-right py-2">{s.hours}</td>
-                          <td className="text-right py-2">{formatCurrency(s.hourlyRate)}/hr</td>
-                          <td className="text-right py-2">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</td>
+                          <td className="text-right py-2" data-beo-internal>{formatCurrency(s.hourlyRate)}/hr</td>
+                          <td className="text-right py-2" data-beo-internal>{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot>
+                    <tfoot data-beo-internal>
                       <tr className="font-semibold text-gray-900">
                         <td className="py-2" colSpan={4}>Total</td>
                         <td className="text-right py-2">{formatCurrency(p.staffingTotal)}</td>
@@ -314,7 +336,7 @@ export default async function BEOPage({ params }: Props) {
               )}
 
               {/* Cost Summary */}
-              <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
+              <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid" data-beo-internal>
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Cost Summary (Internal)</h3>
                 <table className="w-full text-sm">
                   <tbody className="text-gray-700">
@@ -376,7 +398,7 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Notes */}
           {e.notes && (
-            <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
+            <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid" data-beo-internal>
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Notes</h3>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{e.notes}</p>
             </div>
@@ -384,9 +406,10 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Footer */}
           <div className="px-8 py-4 text-xs text-gray-400 text-center">
-            Production Sheet &middot; Internal Use Only &middot; Generated {format(new Date(), "MMMM d, yyyy")}
+            Production Sheet &middot; <span data-beo-internal>Internal Use Only &middot; </span>Generated {format(new Date(), "MMMM d, yyyy")}
           </div>
         </div>
+        </BEOPageClient>
       </div>
     </>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { calculatePricing, DEFAULT_PRICING } from "@/lib/pricing";
+import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
 import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
@@ -43,7 +44,20 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [taxPercent, setTaxPercent] = useState(initialPricing?.taxPercent ?? 8.5);
   const [targetMargin, setTargetMargin] = useState(initialPricing?.targetMarginPercent ?? 28);
   const [saving, setSaving] = useState(false);
+  const [usingDefaults, setUsingDefaults] = useState(false);
   const [recipePickerOpen, setRecipePickerOpen] = useState(false);
+
+  // Load company defaults when no existing pricing data
+  useEffect(() => {
+    if (initialPricing) return;
+    getBusinessSettings().then((settings) => {
+      if (!settings) return;
+      if (settings.default_admin_fee != null) setAdminPercent(Number(settings.default_admin_fee));
+      if (settings.default_tax_rate != null) setTaxPercent(Number(settings.default_tax_rate));
+      if (settings.default_target_margin != null) setTargetMargin(Number(settings.default_target_margin));
+      setUsingDefaults(true);
+    });
+  }, [initialPricing]);
 
   const handleImportRecipes = (recipes: Recipe[]) => {
     const newItems = recipes.map(r => ({
@@ -262,7 +276,14 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
         {/* Summary panel */}
         <div className="space-y-5">
           <div className="card p-5 space-y-4">
-            <h3 className="font-medium text-sm">Fee & Tax Settings</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-sm">Fee & Tax Settings</h3>
+              {usingDefaults && (
+                <span className="text-[10px] font-medium text-brand-400 bg-brand-950 border border-brand-800/30 px-2 py-0.5 rounded-full">
+                  Using company defaults
+                </span>
+              )}
+            </div>
             {[
               { label: "Admin / Service Fee %", value: adminPercent, setter: setAdminPercent },
               { label: "Tax %", value: taxPercent, setter: setTaxPercent },

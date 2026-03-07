@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/utils";
+import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -69,7 +70,7 @@ export function EventsTable({ events }: { events: Event[] }) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#2e271f]">
-                  {["Event", "Client", "Date", "Guests", "Revenue", "Margin", "Payment", "Status", ""].map((h) => (
+                  {["Event", "Client", "Date", "Guests", "Revenue", "Margin", "Payment", "Status", "Readiness", ""].map((h) => (
                     <th
                       key={h}
                       className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3"
@@ -109,6 +110,24 @@ export function EventsTable({ events }: { events: Event[] }) {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={STATUS_CLASSES[event.status] ?? "badge-draft"}>{event.status}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {(() => {
+                          const daysUntil = Math.ceil((new Date(event.event_date).getTime() - Date.now()) / 86400000);
+                          const depositPaid = (() => {
+                            if (!pay || !pay.depositRequired) return true;
+                            return (pay.totalPaid ?? 0) >= pay.depositRequired;
+                          })();
+                          return (
+                            <EventReadinessFlags
+                              daysUntil={daysUntil}
+                              hasStaff={false}
+                              hasPricing={!!p}
+                              hasProposal={false}
+                              depositPaid={depositPaid}
+                            />
+                          );
+                        })()}
                       </td>
                       <td className="px-5 py-3.5">
                         <Link

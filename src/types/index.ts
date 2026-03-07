@@ -116,6 +116,17 @@ export type BusinessSettings = {
   proposal_terms: string | null;
   proposal_template: "simple" | "modern";
   brand_color: string | null;
+  default_admin_fee: number | null;
+  default_tax_rate: number | null;
+  default_target_margin: number | null;
+  default_deposit_percent: number | null;
+  payment_terms: string | null;
+  cancellation_policy: string | null;
+  tax_id: string | null;
+  service_charge_percent: number | null;
+  notification_email: boolean;
+  notification_proposals: boolean;
+  notification_payments: boolean;
   created_at: string;
   updated_at: string;
 };

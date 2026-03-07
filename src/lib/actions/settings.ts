@@ -86,6 +86,39 @@ export async function uploadLogo(formData: FormData) {
   return { success: true, logo_url: data.publicUrl };
 }
 
+export async function updateBusinessDefaults(data: {
+  default_admin_fee?: number;
+  default_tax_rate?: number;
+  default_target_margin?: number;
+  default_deposit_percent?: number;
+  service_charge_percent?: number;
+  payment_terms?: string;
+  cancellation_policy?: string;
+  tax_id?: string;
+  notification_email?: boolean;
+  notification_proposals?: boolean;
+  notification_payments?: boolean;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const settings = {
+    user_id: user.id,
+    ...data,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("business_settings")
+    .upsert(settings, { onConflict: "user_id" });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  return { success: true };
+}
+
 export async function updateProfileAction(data: { full_name?: string; company_name?: string }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, Receipt, DollarSign, Edit, ExternalLink } from "lucide-react";
+import { InlineEventEditor } from "@/components/events/InlineEventEditor";
 import { CalendarExport } from "@/components/events/CalendarExport";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { DuplicateEventButton } from "@/components/events/DuplicateEventButton";
@@ -16,9 +16,15 @@ import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { StaffAssignments } from "@/components/events/StaffAssignments";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { PrintButton } from "@/components/events/PrintButton";
+import { EventChecklist } from "@/components/events/EventChecklist";
+import { EventAlerts } from "@/components/events/EventAlerts";
 import { formatCurrency } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
+import { MarginWarning } from "@/components/events/MarginWarning";
+import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
+import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
+import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 type ActivityItem = {
@@ -30,15 +36,6 @@ type ActivityItem = {
 };
 
 type Props = { params: Promise<{ id: string }> };
-
-function formatTime(time: string | null): string {
-  if (!time) return "";
-  const [h, m] = time.split(":");
-  const hour = parseInt(h);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const display = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-  return `${display}:${m} ${ampm}`;
-}
 
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
@@ -133,6 +130,17 @@ export default async function EventDetailPage({ params }: Props) {
 
   activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Checklist & alert props
+  const hasProposal = proposals.length > 0;
+  const hasStaff = assignments.length > 0;
+  const depositPaid = (() => {
+    if (!paymentData || !paymentData.depositRequired) return true; // no deposit required counts as paid
+    return (paymentData.totalPaid ?? 0) >= paymentData.depositRequired;
+  })();
+  const daysUntilEvent = Math.ceil(
+    (new Date(e.event_date).getTime() - Date.now()) / 86400000
+  );
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       {/* Header */}
@@ -143,6 +151,15 @@ export default async function EventDetailPage({ params }: Props) {
           </Link>
           <h1 className="font-display text-2xl font-semibold truncate">{e.name}</h1>
           <p className="text-sm text-[#9c8876] mt-1">{e.client_name}</p>
+          <div className="mt-2">
+            <EventReadinessFlags
+              daysUntil={daysUntilEvent}
+              hasStaff={hasStaff}
+              hasPricing={!!pricing}
+              hasProposal={hasProposal}
+              depositPaid={depositPaid}
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           <EventStatusSelect eventId={e.id} currentStatus={e.status} />
@@ -167,72 +184,44 @@ export default async function EventDetailPage({ params }: Props) {
         <EventLifecycle status={e.status} />
       </div>
 
+      {/* Event Alerts */}
+      <EventAlerts event={e} daysUntilEvent={daysUntilEvent} hasStaff={hasStaff} depositPaid={depositPaid} />
+
       {/* Tabbed Content */}
       <EventDetailTabs>
         {{
           overview: (
             <div>
-              {/* Event info cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="card p-4">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="stat-label">Date</span>
-                  </div>
-                  <div className="text-sm font-medium">{format(new Date(e.event_date), "EEE, MMM d, yyyy")}</div>
-                  {(e.start_time || e.end_time) && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-[#9c8876]">
-                      <Clock className="w-3 h-3" />
-                      {e.start_time && formatTime(e.start_time)}
-                      {e.start_time && e.end_time && " – "}
-                      {e.end_time && formatTime(e.end_time)}
-                    </div>
-                  )}
-                </div>
-                <div className="card p-4">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="stat-label">Guests</span>
-                  </div>
-                  <div className="text-sm font-medium">{e.guest_count}</div>
-                  {pricing && (
-                    <div className="text-xs text-[#9c8876] mt-1">{formatCurrency(pricing.suggestedPrice / pricing.guestCount)}/person</div>
-                  )}
-                </div>
-                <div className="card p-4">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="stat-label">Venue</span>
-                  </div>
-                  <div className="text-sm font-medium truncate">{e.venue || "—"}</div>
-                </div>
-                <div className="card p-4">
+              {/* Inline-editable event fields */}
+              <div className="mb-6">
+                <InlineEventEditor
+                  event={{
+                    id: e.id,
+                    name: e.name,
+                    event_date: e.event_date,
+                    start_time: e.start_time,
+                    end_time: e.end_time,
+                    guest_count: e.guest_count,
+                    venue: e.venue,
+                    client_name: e.client_name,
+                    client_email: e.client_email,
+                    client_phone: e.client_phone,
+                    notes: e.notes,
+                  }}
+                />
+              </div>
+
+              {/* Revenue summary card */}
+              {pricing && (
+                <div className="card p-4 mb-6">
                   <div className="flex items-center gap-1.5 mb-1">
                     <DollarSign className="w-3.5 h-3.5 text-[#9c8876]" />
                     <span className="stat-label">Revenue</span>
                   </div>
-                  <div className="text-sm font-medium text-brand-300">{pricing ? formatCurrency(pricing.suggestedPrice) : "—"}</div>
-                  {pricing && (
-                    <div className={`text-xs mt-1 ${pricing.projectedMargin >= 25 ? "text-green-400" : pricing.projectedMargin >= 15 ? "text-yellow-400" : "text-red-400"}`}>
-                      {pricing.projectedMargin.toFixed(1)}% margin
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Contact info row */}
-              {(e.client_email || e.client_phone) && (
-                <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-[#9c8876]">
-                  {e.client_email && (
-                    <a href={`mailto:${e.client_email}`} className="flex items-center gap-1.5 hover:text-[#f5ede0] transition-colors">
-                      <Mail className="w-3.5 h-3.5" />{e.client_email}
-                    </a>
-                  )}
-                  {e.client_phone && (
-                    <a href={`tel:${e.client_phone}`} className="flex items-center gap-1.5 hover:text-[#f5ede0] transition-colors">
-                      <Phone className="w-3.5 h-3.5" />{e.client_phone}
-                    </a>
-                  )}
+                  <div className="text-sm font-medium text-brand-300">{formatCurrency(pricing.suggestedPrice)}</div>
+                  <div className={`text-xs mt-1 ${pricing.projectedMargin >= 25 ? "text-green-400" : pricing.projectedMargin >= 15 ? "text-yellow-400" : "text-red-400"}`}>
+                    {pricing.projectedMargin.toFixed(1)}% margin &middot; {formatCurrency(pricing.suggestedPrice / pricing.guestCount)}/person
+                  </div>
                 </div>
               )}
 
@@ -291,13 +280,8 @@ export default async function EventDetailPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Notes */}
-              {e.notes && (
-                <div className="card p-4">
-                  <h2 className="font-medium text-sm mb-2 text-[#9c8876]">Notes</h2>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{e.notes}</p>
-                </div>
-              )}
+              {/* Readiness Checklist */}
+              <EventChecklist event={e} hasProposal={hasProposal} hasStaff={hasStaff} depositPaid={depositPaid} />
             </div>
           ),
 
@@ -322,17 +306,28 @@ export default async function EventDetailPage({ params }: Props) {
               </div>
 
               <PricingEngine eventId={e.id} guestCount={e.guest_count} initialPricing={e.pricing_data as PricingData | null} />
+
+              {pricing && (
+                <MarginWarning
+                  margin={pricing.projectedMargin}
+                  totalCost={pricing.totalCost}
+                  totalPrice={pricing.suggestedPrice}
+                />
+              )}
             </div>
           ),
 
           payments: (
             <div>
               {pricing ? (
-                <PaymentTracker
-                  eventId={e.id}
-                  suggestedPrice={pricing.suggestedPrice}
-                  initialPayment={e.payment_data as PaymentData | null}
-                />
+                <>
+                  <PaymentTracker
+                    eventId={e.id}
+                    suggestedPrice={pricing.suggestedPrice}
+                    initialPayment={e.payment_data as PaymentData | null}
+                  />
+                  <SuggestedDeposit totalPrice={pricing.suggestedPrice} />
+                </>
               ) : (
                 <div className="card p-8 text-center">
                   <DollarSign className="w-8 h-8 text-[#9c8876] mx-auto mb-3" />
@@ -345,6 +340,10 @@ export default async function EventDetailPage({ params }: Props) {
 
           staff: (
             <div>
+              <StaffingSuggestion
+                guestCount={e.guest_count}
+                currentStaffCount={assignments.length}
+              />
               <StaffAssignments
                 eventId={e.id}
                 assignments={assignments as any}
