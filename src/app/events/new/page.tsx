@@ -5,13 +5,14 @@ import { NewEventForm } from "./NewEventForm";
 export default async function NewEventPage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string }>;
+  searchParams: Promise<{ template?: string; defaultTemplate?: string }>;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { template: templateId } = await searchParams;
+  const { template: templateId, defaultTemplate } = await searchParams;
+  const defaultTemplateIndex = defaultTemplate != null ? parseInt(defaultTemplate, 10) : null;
 
   const { data: templates } = await supabase
     .from("event_templates")
@@ -35,6 +36,7 @@ export default async function NewEventPage({
     <NewEventForm
       templates={templates ?? []}
       prefilledTemplate={prefilledTemplate}
+      defaultTemplateIndex={defaultTemplateIndex}
     />
   );
 }

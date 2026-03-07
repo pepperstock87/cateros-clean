@@ -33,9 +33,9 @@ body {
   .card { @apply bg-[#1c1814] border border-[#2e271f] rounded-xl; }
   .card-hover { @apply hover:border-brand-600 transition-colors duration-200; }
   .btn-primary { @apply bg-brand-500 hover:bg-brand-400 text-white font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-secondary { @apply bg-[#251f19] hover:bg-[#2e271f] text-[#f5ede0] border border-[#2e271f] hover:border-[#3d3028] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
-  .btn-ghost { @apply hover:bg-[#251f19] text-[#9c8876] hover:text-[#f5ede0] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
-  .btn-danger { @apply bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm; }
+  .btn-secondary { @apply bg-[#251f19] hover:bg-[#2e271f] text-[#f5ede0] border border-[#2e271f] hover:border-[#3d3028] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-ghost { @apply hover:bg-[#251f19] text-[#9c8876] hover:text-[#f5ede0] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-danger { @apply bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
   .input { @apply w-full bg-[#1c1814] border border-[#2e271f] text-[#f5ede0] placeholder-[#6b5a4a] rounded-lg px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none transition-colors; }
   .label { @apply block text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-1.5; }
   .stat-card { @apply card p-5 flex flex-col gap-1; }

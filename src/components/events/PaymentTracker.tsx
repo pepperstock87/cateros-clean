@@ -162,7 +162,7 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="submit" className="btn-primary text-sm py-1.5 px-3">Record Payment</button>
+            <button type="submit" disabled={saving} className="btn-primary text-sm py-1.5 px-3">Record Payment</button>
             <button type="button" onClick={() => setShowAdd(false)} className="btn-secondary text-sm py-1.5 px-3">Cancel</button>
           </div>
         </form>

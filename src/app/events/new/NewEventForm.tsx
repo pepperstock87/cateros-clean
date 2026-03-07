@@ -3,27 +3,41 @@
 import { createEventAction } from "@/lib/actions/events";
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, Loader2, LayoutTemplate, Users, Sparkles } from "lucide-react";
+import { DEFAULT_TEMPLATES, type DefaultTemplate } from "@/lib/defaultTemplates";
 
 type Template = { id: string; name: string; guest_count: number | null };
 
 export function NewEventForm({
   templates,
   prefilledTemplate,
+  defaultTemplateIndex,
 }: {
   templates: Template[];
   prefilledTemplate?: Template | null;
+  defaultTemplateIndex?: number | null;
 }) {
+  const initialDefault =
+    defaultTemplateIndex != null && defaultTemplateIndex >= 0 && defaultTemplateIndex < DEFAULT_TEMPLATES.length
+      ? DEFAULT_TEMPLATES[defaultTemplateIndex]
+      : null;
+
   const [state, action, pending] = useActionState(createEventAction, undefined);
   const [selectedTemplate, setSelectedTemplate] = useState(prefilledTemplate?.id ?? "");
   const [guestCount, setGuestCount] = useState(
-    prefilledTemplate?.guest_count ? String(prefilledTemplate.guest_count) : ""
+    prefilledTemplate?.guest_count
+      ? String(prefilledTemplate.guest_count)
+      : initialDefault
+        ? String(initialDefault.template_data.guest_count)
+        : ""
   );
+  const [activeDefault, setActiveDefault] = useState<DefaultTemplate | null>(initialDefault);
   const today = new Date().toISOString().split("T")[0];
 
   function handleTemplateChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const templateId = e.target.value;
     setSelectedTemplate(templateId);
+    setActiveDefault(null);
     if (templateId) {
       const template = templates.find(t => t.id === templateId);
       if (template?.guest_count) {
@@ -31,6 +45,18 @@ export function NewEventForm({
       }
     }
   }
+
+  function handleDefaultTemplateClick(dt: DefaultTemplate) {
+    setActiveDefault(dt);
+    setSelectedTemplate("");
+    setGuestCount(String(dt.template_data.guest_count));
+  }
+
+  function clearDefaultTemplate() {
+    setActiveDefault(null);
+  }
+
+  const hasSavedTemplates = templates.length > 0;
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -47,14 +73,73 @@ export function NewEventForm({
         </div>
       )}
 
+      {activeDefault && !prefilledTemplate && (
+        <div className="flex items-center justify-between bg-brand-950 border border-brand-800/60 text-brand-300 text-sm px-4 py-3 rounded-lg mb-6">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-brand-400 flex-shrink-0" />
+            Using starter template: <span className="font-medium text-[#f5ede0]">{activeDefault.name}</span>
+          </div>
+          <button type="button" onClick={clearDefaultTemplate} className="text-[#9c8876] hover:text-[#f5ede0] text-xs transition-colors">
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Quick Start Templates */}
+      {!prefilledTemplate && (
+        <div className="mb-8">
+          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-3">
+            {hasSavedTemplates ? "Suggested Templates" : "Quick Start Templates"}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {DEFAULT_TEMPLATES.map((dt, idx) => {
+              const isActive = activeDefault?.name === dt.name;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleDefaultTemplateClick(dt)}
+                  className={`text-left p-4 rounded-lg border transition-all ${
+                    isActive
+                      ? "bg-brand-950 border-brand-600 ring-1 ring-brand-600"
+                      : "bg-[#1a1714] border-[#2e271f] hover:border-[#9c8876]/50"
+                  }`}
+                >
+                  <h3 className={`text-sm font-medium mb-1 ${isActive ? "text-brand-400" : "text-[#f5ede0]"}`}>
+                    {dt.name}
+                  </h3>
+                  <p className="text-xs text-[#9c8876] leading-snug mb-2">{dt.description}</p>
+                  <span className="inline-flex items-center gap-1 text-xs text-[#6b5a4a]">
+                    <Users className="w-3 h-3" />
+                    {dt.template_data.guest_count} guests
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {state?.error && (
-        <div className="bg-red-900/30 border border-red-900/50 text-red-400 text-sm px-3 py-2.5 rounded-lg mb-6">{state.error}</div>
+        <div className="bg-red-900/30 border border-red-900/50 text-red-400 text-sm px-3 py-2.5 rounded-lg mb-6">
+          <p>{state.error}</p>
+          <p className="mt-1 text-red-400/70 text-xs">Please fix the issue above and try again.</p>
+        </div>
       )}
 
       <form action={action} className="space-y-6">
+        {/* Pass default template pricing data as hidden field */}
+        {activeDefault && (
+          <input
+            type="hidden"
+            name="default_pricing_data"
+            value={JSON.stringify(activeDefault.template_data.pricing_data)}
+          />
+        )}
+
         {templates.length > 0 && (
           <div className="card p-6">
-            <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Start from Template</h2>
+            <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Start from Saved Template</h2>
             <select
               value={selectedTemplate}
               onChange={handleTemplateChange}

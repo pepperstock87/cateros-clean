@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { createNotification } from "@/lib/notifications";
+import type { ActivityType } from "@/lib/activity";
 
 export async function POST(req: Request) {
   const { share_token, action, message } = await req.json();
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
   // Find proposal by share token
   const { data: proposal, error: findError } = await supabase
     .from("proposals")
-    .select("id, status, event_id, user_id, client_messages")
+    .select("id, title, status, event_id, user_id, client_messages")
     .eq("share_token", share_token)
     .single();
 
@@ -61,11 +62,56 @@ export async function POST(req: Request) {
 
   // Auto-update linked event status for accept/decline
   if (proposal.event_id && action !== "revision_requested") {
+    // Fetch event name for notification messages
+    const { data: eventData } = await supabase
+      .from("events")
+      .select("name")
+      .eq("id", proposal.event_id)
+      .single();
+
+    const eventName = eventData?.name || "Untitled Event";
     const eventStatus = action === "accepted" ? "confirmed" : "canceled";
+
     await supabase
       .from("events")
       .update({ status: eventStatus, updated_at: new Date().toISOString() })
       .eq("id", proposal.event_id);
+
+    // Notify user about the auto-conversion
+    if (proposal.user_id) {
+      const autoMessage =
+        action === "accepted"
+          ? `Event '${eventName}' has been automatically confirmed after proposal approval`
+          : `Client declined proposal for '${eventName}'`;
+
+      await createNotification({
+        userId: proposal.user_id,
+        type: action === "accepted" ? "proposal_accepted" : "proposal_declined",
+        title: action === "accepted" ? "Event Auto-Confirmed" : "Event Canceled",
+        message: autoMessage,
+        linkUrl: `/events/${proposal.event_id}`,
+      });
+    }
+
+    // Log activity on the event
+    const activityType: ActivityType = "status_change";
+    const activityDesc =
+      action === "accepted"
+        ? `Event auto-confirmed after client accepted proposal "${proposal.title}"`
+        : `Event canceled after client declined proposal "${proposal.title}"`;
+
+    await supabase.from("event_activity").insert({
+      event_id: proposal.event_id,
+      user_id: proposal.user_id,
+      type: activityType,
+      description: activityDesc,
+      metadata: {
+        proposal_id: proposal.id,
+        proposal_title: proposal.title,
+        client_action: action,
+        auto_converted: true,
+      },
+    });
   }
 
   // Send notification to the caterer

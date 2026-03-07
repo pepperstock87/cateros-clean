@@ -32,10 +32,10 @@ export default function LandingPage() {
           The all-in-one platform for restaurant catering operations. Calculate true costs, manage staff scheduling, and generate professional proposals that win business.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
-          <Link href="/signup" className="btn-primary px-8 py-3 text-base">Start 14-day free trial →</Link>
+          <Link href="/signup" className="btn-primary px-8 py-3 text-base">Start your free trial →</Link>
           <Link href="#pricing" className="btn-secondary px-8 py-3 text-base">See pricing</Link>
         </div>
-        <p className="text-xs text-[#6b5a4a] mt-4">No credit card required · Cancel anytime</p>
+        <p className="text-xs text-[#6b5a4a] mt-4">(No credit card required) · Cancel anytime</p>
       </div>
 
       {/* Features */}
@@ -43,14 +43,14 @@ export default function LandingPage() {
         <h2 className="text-center font-display text-3xl font-semibold mb-12">Everything you need in one platform</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: TrendingUp, title: "Smart Pricing Engine", desc: "Calculate food, labor, rentals, and overhead in real-time" },
-            { icon: FileText, title: "Professional Proposals", desc: "Generate branded PDFs that close more deals" },
-            { icon: Calendar, title: "Staff Scheduling", desc: "Manage catering staff and track payroll costs" },
-            { icon: BookOpen, title: "Recipe Cost Library", desc: "Auto-calculate per-person food costs from your menu" },
-            { icon: BarChart2, title: "Profit Analytics", desc: "See which events make money and which don't" },
-            { icon: Users, title: "Team Collaboration", desc: "Multi-user access with role-based permissions" },
-            { icon: Zap, title: "Fast & Easy", desc: "Price an event in under 5 minutes" },
-            { icon: ChefHat, title: "Built for Restaurants", desc: "Designed specifically for restaurant catering operations" },
+            { icon: TrendingUp, title: "Smart Pricing Engine", desc: "Never undercharge again — see true costs for food, labor, rentals, and overhead in real time" },
+            { icon: FileText, title: "Professional Proposals", desc: "Win more business with polished, branded PDFs your clients can accept online in one click" },
+            { icon: Calendar, title: "Staff Scheduling", desc: "Know exactly who's working each event and what it costs — no more spreadsheet guesswork" },
+            { icon: BookOpen, title: "Recipe Cost Library", desc: "Build your menu once and instantly know per-person costs for any guest count" },
+            { icon: BarChart2, title: "Profit Analytics", desc: "Spot your most profitable events at a glance and double down on what works" },
+            { icon: Users, title: "Team Collaboration", desc: "Give your team the access they need with roles that keep everything organized" },
+            { icon: Zap, title: "Fast & Easy", desc: "Go from inquiry to proposal in under five minutes — even on your busiest days" },
+            { icon: ChefHat, title: "Built for Restaurants", desc: "Purpose-built for how restaurant catering actually works, not generic project management" },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="card p-5">
               <div className="w-9 h-9 rounded-lg bg-brand-950 border border-brand-800 flex items-center justify-center mb-3">
@@ -103,10 +103,10 @@ export default function LandingPage() {
       <div className="bg-[#1a1714] border-y border-[#2e271f] py-12 mb-24">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { value: "500+", label: "Events priced" },
-            { value: "$2M+", label: "Catering revenue managed" },
-            { value: "98%", label: "Client satisfaction" },
-            { value: "< 5 min", label: "To price an event" },
+            { value: "5+ hours", label: "Saved per week on event planning" },
+            { value: "30%", label: "Better margins with smart pricing" },
+            { value: "Zero", label: "Missed details with readiness checklists" },
+            { value: "< 2 min", label: "To generate professional proposals" },
           ].map(({ value, label }) => (
             <div key={label}>
               <div className="font-display text-2xl md:text-3xl font-bold text-brand-400 mb-1">{value}</div>
@@ -124,21 +124,21 @@ export default function LandingPage() {
           {[
             {
               quote:
-                "Cateros cut our event pricing time from 2 hours to 5 minutes. We\u2019ve increased our margins by 15% since switching.",
+                "We were losing money on weekend weddings and didn\u2019t even know it. Cateros showed us our labor costs were way off \u2014 we fixed our pricing and added 15% to our margins within a month.",
               name: "Sarah M.",
               role: "Executive Chef",
               company: "The Grand Bistro",
             },
             {
               quote:
-                "Finally, a tool that understands restaurant catering. The proposal system alone has won us 3 new corporate accounts.",
+                "Our old process was a mess \u2014 Excel for recipes, Word for proposals, texts for staffing. Now everything lives in one place. We landed three new corporate accounts last quarter, and the branded proposals definitely helped.",
               name: "Marcus R.",
               role: "Catering Director",
               company: "Riverside Kitchen",
             },
             {
               quote:
-                "I used to undercharge on every event. Now I see my true costs and price confidently. Game changer.",
+                "I used to spend Sunday nights building quotes at my kitchen table. Now I price an event during a phone call and send the proposal before we hang up. My clients think I have a whole team behind me.",
               name: "Lisa T.",
               role: "Owner",
               company: "Fresh Fork Catering",
@@ -175,7 +175,8 @@ export default function LandingPage() {
               <span className="text-[#9c8876]">/month</span>
             </div>
             <p className="text-sm text-[#9c8876] mb-6">Perfect for testing the platform</p>
-            <Link href="/signup" className="btn-secondary w-full block text-center mb-6">Get started</Link>
+            <Link href="/signup" className="btn-secondary w-full block text-center mb-2">Get started free</Link>
+            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -207,7 +208,8 @@ export default function LandingPage() {
               <span className="text-[#9c8876]">/month</span>
             </div>
             <p className="text-sm text-[#9c8876] mb-6">For small restaurants & caterers</p>
-            <Link href="/signup" className="btn-primary w-full block text-center mb-6">Start 14-day trial</Link>
+            <Link href="/signup" className="btn-primary w-full block text-center mb-2">Start 14-day trial →</Link>
+            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -244,7 +246,8 @@ export default function LandingPage() {
               <span className="text-[#9c8876]">/month</span>
             </div>
             <p className="text-sm text-[#9c8876] mb-6">For growing operations</p>
-            <Link href="/signup" className="btn-secondary w-full block text-center mb-6">Start 14-day trial</Link>
+            <Link href="/signup" className="btn-secondary w-full block text-center mb-2">Start 14-day trial →</Link>
+            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -284,7 +287,8 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center px-6">
           <h2 className="font-display text-3xl font-semibold mb-4">Ready to stop underpricing your catering?</h2>
           <p className="text-[#9c8876] mb-8">Join restaurants across the country using Cateros to price events profitably.</p>
-          <Link href="/signup" className="btn-primary px-8 py-3 text-base inline-block">Start your 14-day free trial →</Link>
+          <Link href="/signup" className="btn-primary px-8 py-3 text-base inline-block">Start your free trial →</Link>
+          <p className="text-xs text-[#6b5a4a] mt-4">(No credit card required)</p>
         </div>
       </div>
     </div>

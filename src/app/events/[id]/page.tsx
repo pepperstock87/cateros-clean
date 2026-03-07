@@ -25,6 +25,7 @@ import { MarginWarning } from "@/components/events/MarginWarning";
 import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
+import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 type ActivityItem = {
@@ -52,7 +53,7 @@ export default async function EventDetailPage({ params }: Props) {
   const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes] = await Promise.all([
     supabase
       .from("proposals")
-      .select("id, title, status, share_token, created_at")
+      .select("id, title, status, share_token, created_at, updated_at")
       .eq("event_id", id)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
@@ -79,6 +80,7 @@ export default async function EventDetailPage({ params }: Props) {
   ]);
 
   const proposals = proposalsRes.data ?? [];
+  const acceptedProposal = proposals.find((p: any) => p.status === "accepted");
   const receipts = receiptsRes.data ?? [];
   const assignments = assignmentsRes.data ?? [];
   const allStaff = staffRes.data ?? [];
@@ -163,6 +165,12 @@ export default async function EventDetailPage({ params }: Props) {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           <EventStatusSelect eventId={e.id} currentStatus={e.status} />
+          {e.status === "confirmed" && acceptedProposal && (
+            <AutoConfirmBadge
+              proposalTitle={acceptedProposal.title}
+              confirmedAt={acceptedProposal.updated_at}
+            />
+          )}
           {e.pricing_data && <GenerateProposalButton event={e} />}
           <Link href={`/events/${e.id}/beo`} className="btn-secondary flex items-center gap-2">
             <ClipboardList className="w-4 h-4" />Production Sheet

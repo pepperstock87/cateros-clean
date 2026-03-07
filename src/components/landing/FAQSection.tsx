@@ -5,24 +5,34 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    question: "How does the 14-day trial work?",
+    question: "Can I try it before paying?",
     answer:
-      "You get full access to all features. No credit card required to start. Cancel anytime.",
+      "Absolutely. Every paid plan starts with a 14-day free trial with full access to all features. No credit card required — just sign up and start exploring.",
   },
   {
-    question: "Can I import my existing recipes?",
+    question: "Is my data secure?",
     answer:
-      "Yes! Add recipes manually or let our AI assistant help you build your cost library.",
+      "Yes. Cateros is built on Supabase with enterprise-grade Postgres infrastructure. All data is encrypted in transit and at rest, and we never share your information with third parties.",
+  },
+  {
+    question: "Can I cancel anytime?",
+    answer:
+      "Yes, you can cancel your subscription at any time from your billing settings. There are no long-term contracts or cancellation fees. Your data stays available through the end of your billing period.",
+  },
+  {
+    question: "Does it work on mobile?",
+    answer:
+      "Yes. Cateros is fully responsive and works on phones, tablets, and desktops. Check event details, review proposals, or update schedules from wherever you are.",
+  },
+  {
+    question: "Can I import my existing data?",
+    answer:
+      "You can add recipes manually or use our AI assistant to quickly build your cost library. We're also happy to help with bulk imports during onboarding on Pro plans.",
   },
   {
     question: "How do proposals work?",
     answer:
-      "Generate branded PDF proposals from any event. Share via a unique link where clients can accept, decline, or request revisions.",
-  },
-  {
-    question: "What if I need help?",
-    answer:
-      "Basic plans include email support. Pro plans include priority support and personalized onboarding.",
+      "Once you price an event, you can generate a professional, branded PDF proposal with one click. Share it via a unique link where your client can review, accept, or request changes — no back-and-forth emails needed.",
   },
 ];
 

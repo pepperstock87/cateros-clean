@@ -49,7 +49,8 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
       <div className="card p-8 text-center border-green-900/50">
         <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
         <h3 className="font-display text-xl font-semibold mb-1">Proposal Accepted</h3>
-        <p className="text-sm text-[#9c8876]">Thank you! Your caterer has been notified and will be in touch to finalize the details.</p>
+        <p className="text-sm text-[#f5ede0] mb-2">Thank you! Your event has been confirmed.</p>
+        <p className="text-sm text-[#9c8876]">The catering team will be in touch shortly to finalize all the details. We look forward to making your event special.</p>
       </div>
     );
   }
@@ -59,7 +60,8 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
       <div className="card p-8 text-center">
         <XCircle className="w-12 h-12 text-[#9c8876] mx-auto mb-3" />
         <h3 className="font-display text-xl font-semibold mb-1">Proposal Declined</h3>
-        <p className="text-sm text-[#9c8876]">Your caterer has been notified. Feel free to reach out if you change your mind.</p>
+        <p className="text-sm text-[#f5ede0] mb-2">Thank you for your response.</p>
+        <p className="text-sm text-[#9c8876]">The catering team has been notified. If you change your mind or would like to discuss adjustments, please don&apos;t hesitate to reach out.</p>
       </div>
     );
   }

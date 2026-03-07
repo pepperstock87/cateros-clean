@@ -6,7 +6,9 @@ import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
 import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
-import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package } from "lucide-react";
+import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed } from "lucide-react";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 import { toast } from "sonner";
 import { RecipePickerModal } from "./RecipePickerModal";
 import { StaffPickerModal } from "./StaffPickerModal";
@@ -46,6 +48,11 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [saving, setSaving] = useState(false);
   const [usingDefaults, setUsingDefaults] = useState(false);
   const [recipePickerOpen, setRecipePickerOpen] = useState(false);
+  const { isDirty, markDirty, markClean } = useUnsavedChanges();
+
+  const addMenuItem = () => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount }]); markDirty(); };
+  const addStaffItem = () => { setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }]); markDirty(); };
+  const addRentalItem = () => { setRentals(p => [...p, { id: generateId(), item: "", unitCost: 0, quantity: 1 }]); markDirty(); };
 
   // Load company defaults when no existing pricing data
   useEffect(() => {
@@ -67,6 +74,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
       quantity: guestCount,
     }));
     setMenuItems(p => [...p, ...newItems]);
+    markDirty();
     toast.success(`Imported ${recipes.length} recipe${recipes.length !== 1 ? "s" : ""}`);
   };
 
@@ -81,6 +89,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
       headcount: 1,
     }));
     setStaffing(p => [...p, ...newStaff]);
+    markDirty();
     toast.success(`Imported ${staff.length} staff member${staff.length !== 1 ? "s" : ""}`);
   };
 
@@ -94,6 +103,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
       quantity: 1,
     }));
     setRentals(p => [...p, ...newRentals]);
+    markDirty();
     toast.success(`Imported ${items.length} rental item${items.length !== 1 ? "s" : ""}`);
   };
 
@@ -105,11 +115,12 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
     const result = await updateEventPricingAction(eventId, pricing);
     setSaving(false);
     if (result?.error) toast.error(result.error);
-    else toast.success("Pricing saved");
-  }, [eventId, pricing]);
+    else { toast.success("Pricing saved"); markClean(); }
+  }, [eventId, pricing, markClean]);
 
   return (
     <div className="space-y-6">
+      <UnsavedBanner show={isDirty} />
       {/* Summary */}
       <div className="card p-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -136,23 +147,30 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <button type="button" onClick={() => setRecipePickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <BookOpen className="w-3.5 h-3.5" />Import from Recipes
                 </button>
-                <button type="button" onClick={() => setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount }])} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                <button type="button" onClick={addMenuItem} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Plus className="w-3.5 h-3.5" />Add item
                 </button>
               </div>
             </div>
             <div className="space-y-2">
-            {menuItems.length === 0 ? <p className="text-xs text-[#6b5a4a] py-2">No menu items yet</p> : menuItems.map(item => (
+            {menuItems.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
+                <UtensilsCrossed className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#9c8876] mb-1">No menu items yet</p>
+                <p className="text-xs text-[#6b5a4a] mb-3">Add dishes, courses, or menu components to build your pricing</p>
+                <button onClick={addMenuItem} className="btn-primary text-xs px-3 py-1.5">+ Add Menu Item</button>
+              </div>
+            ) : menuItems.map(item => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                <input className="input col-span-5 text-sm" placeholder="Item name" value={item.name} onChange={e => setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m))} />
+                <input className="input col-span-5 text-sm" placeholder="Item name" value={item.name} onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }} />
                 <div className="col-span-3 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
                   <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
-                    onChange={e => setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m))} />
+                    onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
                 </div>
                 <input className="input col-span-3 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
-                  onChange={e => setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m))} />
-                <button type="button" onClick={() => setMenuItems(p => p.filter(m => m.id !== item.id))} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                  onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
+                <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -173,14 +191,19 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <button type="button" onClick={() => setStaffPickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Users className="w-3.5 h-3.5" />Import from Staff
                 </button>
-                <button type="button" onClick={() => setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }])} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                <button type="button" onClick={addStaffItem} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Plus className="w-3.5 h-3.5" />Add staff
                 </button>
               </div>
             </div>
             <div className="space-y-2">
             {staffing.length === 0 ? (
-              <p className="text-xs text-[#6b5a4a] py-2">No staffing added</p>
+              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
+                <Users className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#9c8876] mb-1">No staffing added</p>
+                <p className="text-xs text-[#6b5a4a] mb-3">Add your service team — servers, chefs, bartenders</p>
+                <button onClick={addStaffItem} className="btn-primary text-xs px-3 py-1.5">+ Add Staff</button>
+              </div>
             ) : (
               <div>
                 <div className="grid grid-cols-12 gap-2 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider mb-2 px-0.5">
@@ -192,14 +215,14 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 </div>
                 {staffing.map(s => (
                   <div key={s.id} className="grid grid-cols-12 gap-2 items-center mb-2">
-                    <input className="input col-span-4 text-sm" placeholder="Role (e.g. Server)" value={s.role} onChange={e => setStaffing(p => p.map(st => st.id === s.id ? { ...st, role: e.target.value } : st))} />
+                    <input className="input col-span-4 text-sm" placeholder="Role (e.g. Server)" value={s.role} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, role: e.target.value } : st)); markDirty(); }} />
                     <div className="col-span-2 relative">
-                      <input className="input text-sm" type="number" placeholder="$/hr" min={0} value={s.hourlyRate || ""} onChange={e => setStaffing(p => p.map(st => st.id === s.id ? { ...st, hourlyRate: parseFloat(e.target.value) || 0 } : st))} />
+                      <input className="input text-sm" type="number" placeholder="$/hr" min={0} value={s.hourlyRate || ""} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, hourlyRate: parseFloat(e.target.value) || 0 } : st)); markDirty(); }} />
                     </div>
-                    <input className="input col-span-2 text-sm" type="number" placeholder="Hrs" min={0} value={s.hours || ""} onChange={e => setStaffing(p => p.map(st => st.id === s.id ? { ...st, hours: parseFloat(e.target.value) || 0 } : st))} />
-                    <input className="input col-span-2 text-sm" type="number" placeholder="# staff" min={1} value={s.headcount || ""} onChange={e => setStaffing(p => p.map(st => st.id === s.id ? { ...st, headcount: parseInt(e.target.value) || 1 } : st))} />
+                    <input className="input col-span-2 text-sm" type="number" placeholder="Hrs" min={0} value={s.hours || ""} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, hours: parseFloat(e.target.value) || 0 } : st)); markDirty(); }} />
+                    <input className="input col-span-2 text-sm" type="number" placeholder="# staff" min={1} value={s.headcount || ""} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, headcount: parseInt(e.target.value) || 1 } : st)); markDirty(); }} />
                     <div className="col-span-1 text-xs text-[#9c8876] text-center">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</div>
-                    <button type="button" onClick={() => setStaffing(p => p.filter(st => st.id !== s.id))} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                    <button type="button" onClick={() => { setStaffing(p => p.filter(st => st.id !== s.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -221,21 +244,28 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <button type="button" onClick={() => setRentalPickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Package className="w-3.5 h-3.5" />Import from Rentals
                 </button>
-                <button type="button" onClick={() => setRentals(p => [...p, { id: generateId(), item: "", unitCost: 0, quantity: 1 }])} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                <button type="button" onClick={addRentalItem} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Plus className="w-3.5 h-3.5" />Add rental
                 </button>
               </div>
             </div>
             <div className="space-y-2">
-            {rentals.length === 0 ? <p className="text-xs text-[#6b5a4a] py-2">No rentals added</p> : rentals.map(r => (
+            {rentals.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
+                <Package className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#9c8876] mb-1">No rentals added</p>
+                <p className="text-xs text-[#6b5a4a] mb-3">Add tables, chairs, linens, and equipment</p>
+                <button onClick={addRentalItem} className="btn-primary text-xs px-3 py-1.5">+ Add Rental</button>
+              </div>
+            ) : rentals.map(r => (
               <div key={r.id} className="grid grid-cols-12 gap-2 items-center">
-                <input className="input col-span-6 text-sm" placeholder="Item (e.g. 60in round tables)" value={r.item} onChange={e => setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, item: e.target.value } : rt))} />
+                <input className="input col-span-6 text-sm" placeholder="Item (e.g. 60in round tables)" value={r.item} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, item: e.target.value } : rt)); markDirty(); }} />
                 <div className="col-span-3 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
-                  <input className="input pl-6 text-sm" type="number" placeholder="0.00" min={0} value={r.unitCost || ""} onChange={e => setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, unitCost: parseFloat(e.target.value) || 0 } : rt))} />
+                  <input className="input pl-6 text-sm" type="number" placeholder="0.00" min={0} value={r.unitCost || ""} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, unitCost: parseFloat(e.target.value) || 0 } : rt)); markDirty(); }} />
                 </div>
-                <input className="input col-span-2 text-sm" type="number" placeholder="Qty" min={1} value={r.quantity || ""} onChange={e => setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, quantity: parseInt(e.target.value) || 1 } : rt))} />
-                <button type="button" onClick={() => setRentals(p => p.filter(rt => rt.id !== r.id))} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                <input className="input col-span-2 text-sm" type="number" placeholder="Qty" min={1} value={r.quantity || ""} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, quantity: parseInt(e.target.value) || 1 } : rt)); markDirty(); }} />
+                <button type="button" onClick={() => { setRentals(p => p.filter(rt => rt.id !== r.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -252,9 +282,9 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           <div className="card p-5">
             <h3 className="font-medium text-sm mb-3">Bar Package</h3>
             <div className="flex flex-wrap gap-2 mb-3">
-              <button type="button" onClick={() => setBarPackage(null)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${!barPackage ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>None</button>
+              <button type="button" onClick={() => { setBarPackage(null); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${!barPackage ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>None</button>
               {BAR_OPTIONS.map(opt => (
-                <button type="button" key={opt.type} onClick={() => setBarPackage({ ...opt })} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${barPackage?.type === opt.type ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>
+                <button type="button" key={opt.type} onClick={() => { setBarPackage({ ...opt }); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${barPackage?.type === opt.type ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>
                   {opt.label}{opt.costPerPerson > 0 ? ` ($${opt.costPerPerson}/pp)` : ""}
                 </button>
               ))}
@@ -265,7 +295,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <div className="relative w-28">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
                   <input className="input pl-6 text-sm" type="number" min={0} placeholder="0.00" value={barPackage.costPerPerson || ""}
-                    onChange={e => setBarPackage(p => p ? { ...p, costPerPerson: parseFloat(e.target.value) || 0 } : null)} />
+                    onChange={e => { setBarPackage(p => p ? { ...p, costPerPerson: parseFloat(e.target.value) || 0 } : null); markDirty(); }} />
                 </div>
               </div>
             )}
@@ -292,7 +322,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
               <div key={label}>
                 <label className="label">{label}</label>
                 <div className="relative">
-                  <input className="input pr-7" type="number" min={0} max={100} step={0.5} value={value} onChange={e => setter(parseFloat(e.target.value) || 0)} />
+                  <input className="input pr-7" type="number" min={0} max={100} step={0.5} value={value} onChange={e => { setter(parseFloat(e.target.value) || 0); markDirty(); }} />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
                 </div>
               </div>
