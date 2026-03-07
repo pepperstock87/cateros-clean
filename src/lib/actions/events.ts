@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { PricingData, PaymentData } from "@/types";
+import { logActivity } from "@/lib/activity";
 
 export async function createEventAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -30,6 +31,11 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
     .single();
 
   if (error) return { error: error.message };
+
+  await logActivity(data.id, user.id, "event_created", `Event "${data.name}" created`, {
+    client: data.client_name,
+    guest_count: data.guest_count,
+  });
 
   // If a template was selected, apply its pricing_data to the new event
   const templateId = formData.get("template_id") as string;
@@ -75,6 +81,13 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  await logActivity(eventId, user.id, "event_updated", "Event details updated", {
+    name: formData.get("name") as string,
+    guest_count: Number(formData.get("guest_count")),
+    venue: formData.get("venue") as string || null,
+  });
+
   revalidatePath(`/events/${eventId}`);
   redirect(`/events/${eventId}`);
 }
@@ -91,6 +104,9 @@ export async function updateEventPricingAction(eventId: string, pricingData: Pri
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  await logActivity(eventId, user.id, "pricing_update", "Pricing updated");
+
   revalidatePath(`/events/${eventId}`);
   return { success: true };
 }
@@ -107,6 +123,11 @@ export async function updateEventStatusAction(eventId: string, status: string) {
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  await logActivity(eventId, user.id, "status_change", `Status changed to "${status}"`, {
+    new_status: status,
+  });
+
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/events");
   revalidatePath("/dashboard");
@@ -126,6 +147,9 @@ export async function updateEventPaymentAction(eventId: string, paymentData: Pay
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  await logActivity(eventId, user.id, "payment_added", "Payment information updated");
+
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/dashboard");
   return { success: true };

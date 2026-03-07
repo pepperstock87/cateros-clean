@@ -17,8 +17,15 @@ import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { formatCurrency } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
-import type { ActivityItem } from "@/components/events/EventActivityLog";
 import type { Event, PricingData, PaymentData } from "@/types";
+
+type ActivityItem = {
+  id: string;
+  type: string;
+  title: string;
+  detail?: string;
+  date: string;
+};
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -346,19 +353,9 @@ export default async function EventDetailPage({ params }: Props) {
 
           activity: (
             <div>
-              {activities.length > 0 ? (
-                <>
-                  <h2 className="font-display text-lg font-semibold mb-1">Activity Log</h2>
-                  <p className="text-sm text-[#9c8876] mb-4">Timeline of events and changes</p>
-                  <EventActivityLog activities={activities} />
-                </>
-              ) : (
-                <div className="card p-8 text-center">
-                  <Clock className="w-8 h-8 text-[#9c8876] mx-auto mb-3" />
-                  <h3 className="font-medium text-sm mb-1">No activity yet</h3>
-                  <p className="text-sm text-[#9c8876]">Activity will appear here as you work on this event.</p>
-                </div>
-              )}
+              <h2 className="font-display text-lg font-semibold mb-1">Activity Log</h2>
+              <p className="text-sm text-[#9c8876] mb-4">Timeline of events and changes</p>
+              <EventActivityLog eventId={e.id} />
             </div>
           ),
         }}

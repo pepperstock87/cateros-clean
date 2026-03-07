@@ -42,6 +42,44 @@ export default function SchedulePage() {
     });
   }, []);
 
+  // Compute all conflicts across the entire month for the summary banner
+  const allMonthConflicts = (() => {
+    if (!events.length || !assignments.length) return [];
+    const monthStart_ = startOfMonth(currentDate);
+    const monthEnd_ = endOfMonth(currentDate);
+    const days = eachDayOfInterval({ start: monthStart_, end: monthEnd_ });
+    const results: { date: Date; staffName: string; eventNames: string[] }[] = [];
+
+    for (const day of days) {
+      const dayEvents = events.filter(e => isSameDay(new Date(e.event_date), day));
+      if (dayEvents.length < 2) continue;
+
+      const dayEventIds = new Set(dayEvents.map(e => e.id));
+      const dayAssignments = assignments.filter(a => dayEventIds.has(a.event_id));
+
+      const staffMap = new Map<string, { name: string; eventNames: string[] }>();
+      for (const a of dayAssignments) {
+        const existing = staffMap.get(a.staff_member_id);
+        const eventName = dayEvents.find(e => e.id === a.event_id)?.name || "Unknown";
+        if (existing) {
+          if (!existing.eventNames.includes(eventName)) existing.eventNames.push(eventName);
+        } else {
+          staffMap.set(a.staff_member_id, {
+            name: a.staff_members?.name || "Unknown",
+            eventNames: [eventName],
+          });
+        }
+      }
+
+      for (const [, entry] of staffMap) {
+        if (entry.eventNames.length > 1) {
+          results.push({ date: day, staffName: entry.name, eventNames: entry.eventNames });
+        }
+      }
+    }
+    return results;
+  })();
+
   const isPro = entitlements?.isPro || false;
 
   if (!isPro && entitlements) {
@@ -132,6 +170,28 @@ export default function SchedulePage() {
         </Link>
       </div>
 
+      {allMonthConflicts.length > 0 && (
+        <div className="card p-4 mb-4 border-orange-400/30 bg-orange-400/5">
+          <div className="flex items-center gap-2 text-orange-400 text-sm font-medium mb-2">
+            <AlertTriangle className="w-4 h-4" />
+            {allMonthConflicts.length} Scheduling Conflict{allMonthConflicts.length !== 1 ? "s" : ""} in {format(currentDate, "MMMM")}
+          </div>
+          <div className="space-y-1">
+            {allMonthConflicts.slice(0, 5).map((c, i) => (
+              <p key={i} className="text-xs text-orange-400/80 ml-6">
+                <span className="font-medium">{c.staffName}</span> is double-booked on{" "}
+                {format(c.date, "MMM d")} ({c.eventNames.join(" & ")})
+              </p>
+            ))}
+            {allMonthConflicts.length > 5 && (
+              <p className="text-xs text-orange-400/60 ml-6">
+                +{allMonthConflicts.length - 5} more conflict{allMonthConflicts.length - 5 !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="card p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-xl font-semibold">
@@ -191,7 +251,9 @@ export default function SchedulePage() {
                     {format(day, "d")}
                   </div>
                   {dayConflicts.length > 0 && (
-                    <div className="w-2 h-2 rounded-full bg-orange-400 mb-1" title="Scheduling conflict" />
+                    <div className="flex items-center gap-0.5 mb-1" title={`${dayConflicts.length} conflict${dayConflicts.length !== 1 ? "s" : ""}: ${dayConflicts.map(c => c.staffName).join(", ")}`}>
+                      <AlertTriangle className="w-3 h-3 text-orange-400" />
+                    </div>
                   )}
                 </div>
                 <div className="space-y-0.5">

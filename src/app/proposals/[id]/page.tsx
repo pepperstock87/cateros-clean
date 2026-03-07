@@ -7,6 +7,7 @@ import { formatCurrency, formatPercent } from "@/lib/utils";
 import type { Proposal, Event, PricingData, ClientMessage } from "@/types";
 import { ProposalActions } from "./ProposalActions";
 import { ReplyToClient } from "./ReplyToClient";
+import { ProposalComments } from "@/components/proposals/ProposalComments";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -145,6 +146,9 @@ export default async function ProposalDetailPage({ params }: Props) {
           {proposal.status === "sent" && (
             <ReplyToClient proposalId={proposal.id} />
           )}
+
+          {/* Comments thread */}
+          <ProposalComments proposalId={proposal.id} />
 
           {/* Pricing breakdown */}
           {pricing && (

@@ -3,14 +3,22 @@
 import { createEventAction } from "@/lib/actions/events";
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, LayoutTemplate } from "lucide-react";
 
 type Template = { id: string; name: string; guest_count: number | null };
 
-export function NewEventForm({ templates }: { templates: Template[] }) {
+export function NewEventForm({
+  templates,
+  prefilledTemplate,
+}: {
+  templates: Template[];
+  prefilledTemplate?: Template | null;
+}) {
   const [state, action, pending] = useActionState(createEventAction, undefined);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [guestCount, setGuestCount] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState(prefilledTemplate?.id ?? "");
+  const [guestCount, setGuestCount] = useState(
+    prefilledTemplate?.guest_count ? String(prefilledTemplate.guest_count) : ""
+  );
   const today = new Date().toISOString().split("T")[0];
 
   function handleTemplateChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -31,6 +39,13 @@ export function NewEventForm({ templates }: { templates: Template[] }) {
       </Link>
       <h1 className="font-display text-2xl font-semibold mb-2">New Event</h1>
       <p className="text-sm text-[#9c8876] mb-8">Fill in event details. Add full pricing on the next screen.</p>
+
+      {prefilledTemplate && (
+        <div className="flex items-center gap-2.5 bg-brand-950 border border-brand-800/60 text-brand-300 text-sm px-4 py-3 rounded-lg mb-6">
+          <LayoutTemplate className="w-4 h-4 text-brand-400 flex-shrink-0" />
+          Creating from template: <span className="font-medium text-[#f5ede0]">{prefilledTemplate.name}</span>
+        </div>
+      )}
 
       {state?.error && (
         <div className="bg-red-900/30 border border-red-900/50 text-red-400 text-sm px-3 py-2.5 rounded-lg mb-6">{state.error}</div>

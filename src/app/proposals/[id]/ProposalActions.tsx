@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Proposal, Event, BusinessSettings, UserEntitlements } from "@/types";
 import { Send, CheckCircle, XCircle, FileText, Trash2, RotateCcw, Loader2, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { ProposalFollowUp } from "@/components/proposals/ProposalFollowUp";
 
 const statusConfig: Record<Proposal["status"], { label: string; className: string }> = {
   draft: { label: "Draft", className: "badge-draft" },
@@ -16,7 +17,7 @@ const statusConfig: Record<Proposal["status"], { label: string; className: strin
   declined: { label: "Declined", className: "badge-canceled" },
 };
 
-export function ProposalActions({ proposal, event }: { proposal: Proposal; event: Event | null }) {
+export function ProposalActions({ proposal, event }: { proposal: Proposal; event: Event | null; clientEmail?: string | null }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -79,7 +80,17 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
 
   const status = statusConfig[proposal.status];
 
+  const followUpData = {
+    id: proposal.id,
+    status: proposal.status,
+    created_at: proposal.created_at,
+    responded_at: (proposal as Proposal & { responded_at?: string | null }).responded_at ?? null,
+    client_email: event?.client_email ?? null,
+    share_token: proposal.share_token,
+  };
+
   return (
+    <div className="space-y-4">
     <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
       <span className={`badge ${status.className}`}>{status.label}</span>
 
@@ -162,6 +173,12 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       >
         <Trash2 className="w-4 h-4" />
       </button>
+    </div>
+
+      {/* Follow-up status — show when proposal has been sent */}
+      {(proposal.status === "sent" || proposal.status === "accepted" || proposal.status === "declined") && (
+        <ProposalFollowUp proposal={followUpData} />
+      )}
     </div>
   );
 }

@@ -5,17 +5,19 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 
-const NAV = [
+const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: boolean }[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/events", icon: CalendarDays, label: "Events" },
+  { href: "/templates", icon: LayoutTemplate, label: "Templates" },
   { href: "/clients", icon: Contact, label: "Clients" },
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
+  { href: "/recipes/analytics", icon: BarChart3, label: "Recipe Analytics", sub: true },
   { href: "/staff", icon: Users, label: "Staff" },
   { href: "/rentals", icon: Package, label: "Rentals" },
   { href: "/branding", icon: Palette, label: "Branding" },
@@ -108,19 +110,20 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ href, icon: Icon, label }) => {
-            const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          {NAV.map(({ href, icon: Icon, label, sub }) => {
+            const active = sub ? pathname === href : pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
             return (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                  "flex items-center gap-2.5 rounded-lg font-medium transition-all duration-150",
+                  sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
                   active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#1c1814]"
                 )}
               >
-                <Icon className={cn("w-4 h-4 flex-shrink-0", active ? "text-brand-400" : "")} />
+                <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
                 {label}
                 {badges[href] && (
                   <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">

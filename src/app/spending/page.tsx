@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 import { startOfWeek, endOfWeek } from "date-fns";
 import { SpendingClient } from "./SpendingClient";
 import { RecurringCosts } from "@/components/spending/RecurringCosts";
+import { CostAnalytics } from "@/components/spending/CostAnalytics";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 
 export type Receipt = {
@@ -132,6 +133,12 @@ export default async function SpendingPage() {
 
       {/* Client Component for Tabs + Upload + Tables */}
       <SpendingClient receipts={allReceipts} invoices={allInvoices} events={activeEvents} />
+
+      {/* Spending Analytics */}
+      <div className="mt-6 md:mt-8">
+        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">Spending Analytics</h2>
+        <CostAnalytics receipts={allReceipts} invoices={allInvoices} />
+      </div>
     </div>
   );
 }

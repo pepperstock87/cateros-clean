@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { Mail, Phone, CalendarDays, DollarSign, Search, Users, Download } from "lucide-react";
+import { Mail, Phone, CalendarDays, DollarSign, Search, Users, Download, ChevronRight } from "lucide-react";
 import { downloadCSV } from "@/lib/csv";
 import type { ClientData } from "./page";
 
@@ -67,9 +67,13 @@ export function ClientList({ clients }: { clients: ClientData[] }) {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 {/* Left: Name and contact */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[#f5ede0] text-lg truncate">
+                  <Link
+                    href={`/clients/${encodeURIComponent(client.name)}`}
+                    className="inline-flex items-center gap-1.5 font-semibold text-[#f5ede0] text-lg truncate hover:text-brand-300 transition-colors group/name"
+                  >
                     {client.name}
-                  </h3>
+                    <ChevronRight className="w-4 h-4 text-[#6b5a4a] group-hover/name:text-brand-300 transition-colors shrink-0" />
+                  </Link>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-[#9c8876]">
                     {client.email && (
                       <a

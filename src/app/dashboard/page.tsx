@@ -8,6 +8,7 @@ import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { RevenueGoal } from "@/components/dashboard/RevenueGoal";
+import { RevenueForecasting } from "@/components/dashboard/RevenueForecasting";
 import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 
 async function getDashboardData(userId: string) {
@@ -121,6 +122,7 @@ async function getDashboardData(userId: string) {
     monthlyData,
     eventsWithBalances,
     totalOutstanding,
+    allEvents: events,
     proposalsNeedingRevision,
     draftEventsNeedingAttention,
     overdueDeposits,
@@ -345,6 +347,18 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Revenue Forecast */}
+      <div className="mb-6 md:mb-8">
+        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">Revenue Forecast</h2>
+        <RevenueForecasting
+          events={stats.allEvents.map((e: Event) => ({
+            date: e.event_date,
+            status: e.status,
+            pricing_data: e.pricing_data,
+          }))}
+        />
       </div>
 
       {/* Outstanding Payments */}
