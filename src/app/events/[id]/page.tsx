@@ -26,6 +26,7 @@ import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
 import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
+import { PaymentScheduleManager } from "@/components/events/PaymentScheduleManager";
 import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData, PaymentData } from "@/types";
 
@@ -323,11 +324,20 @@ export default async function EventDetailPage({ params }: Props) {
             <div>
               {pricing ? (
                 <>
-                  <PaymentTracker
+                  <PaymentScheduleManager
                     eventId={e.id}
-                    suggestedPrice={pricing.suggestedPrice}
-                    initialPayment={e.payment_data as PaymentData | null}
+                    proposalId={proposals[0]?.id}
+                    totalPrice={pricing.suggestedPrice}
+                    organizationId={org?.orgId ?? null}
                   />
+                  <div className="mt-6 pt-6 border-t border-[#2e271f]">
+                    <h3 className="text-xs font-medium text-[#6b5a4a] uppercase tracking-wider mb-3">Legacy Payment Tracking</h3>
+                    <PaymentTracker
+                      eventId={e.id}
+                      suggestedPrice={pricing.suggestedPrice}
+                      initialPayment={e.payment_data as PaymentData | null}
+                    />
+                  </div>
                   <SuggestedDeposit totalPrice={pricing.suggestedPrice} />
                 </>
               ) : (

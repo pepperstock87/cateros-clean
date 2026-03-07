@@ -1,16 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { CalendarDays, Users, MapPin, Clock, DollarSign, CheckCircle, FileText } from "lucide-react";
+import { CalendarDays, Users, MapPin, Clock, DollarSign, CheckCircle, FileText, XCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import type { Event, PricingData, PaymentData } from "@/types";
+import type { Event, PricingData, PaymentData, PaymentScheduleItem, Payment } from "@/types";
 import { ClientResponse } from "../ClientResponse";
+import { ClientPayButton } from "@/components/payments/ClientPayButton";
 import Link from "next/link";
 
-type Props = { params: Promise<{ token: string }> };
+type Props = {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ payment?: string }>;
+};
 
-export default async function ClientPortalPage({ params }: Props) {
+export default async function ClientPortalPage({ params, searchParams }: Props) {
   const { token } = await params;
+  const { payment: paymentStatus } = await searchParams;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,11 +47,56 @@ export default async function ClientPortalPage({ params }: Props) {
   const payment = event?.payment_data as PaymentData | null;
   const companyName = settings?.business_name || profile?.company_name || "Catering Company";
 
-  const totalPaid = payment?.totalPaid ?? 0;
-  const totalDue = pricing?.suggestedPrice ?? 0;
+  // Fetch payment schedules and payments from the new tables
+  const [schedulesRes, paymentsRes] = await Promise.all([
+    supabase
+      .from("payment_schedules")
+      .select("*")
+      .eq("event_id", proposal.event_id)
+      .order("sort_order"),
+    supabase
+      .from("payments")
+      .select("*")
+      .eq("event_id", proposal.event_id)
+      .eq("status", "paid")
+      .order("paid_at", { ascending: false }),
+  ]);
+
+  const schedules = (schedulesRes.data ?? []) as PaymentScheduleItem[];
+  const paidPayments = (paymentsRes.data ?? []) as Payment[];
+  const hasNewPaymentSystem = schedules.length > 0;
+
+  // Calculate totals from new system if available, otherwise fall back to old
+  const scheduledTotal = hasNewPaymentSystem
+    ? schedules.reduce((sum, s) => sum + Number(s.amount), 0)
+    : 0;
+  const newSystemTotalPaid = hasNewPaymentSystem
+    ? paidPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+    : 0;
+
+  // Old system fallback values
+  const totalPaid = hasNewPaymentSystem ? newSystemTotalPaid : (payment?.totalPaid ?? 0);
+  const totalDue = hasNewPaymentSystem ? scheduledTotal : (pricing?.suggestedPrice ?? 0);
   const balanceDue = totalDue - totalPaid;
   const depositRequired = payment?.depositRequired ?? Math.round(totalDue * 0.5 * 100) / 100;
   const depositPaid = totalPaid >= depositRequired;
+
+  function getScheduleStatusBadge(status: string) {
+    switch (status) {
+      case "paid":
+        return { label: "Paid", className: "bg-green-900/40 text-green-400 border-green-800/50" };
+      case "due":
+        return { label: "Due", className: "bg-yellow-900/40 text-yellow-400 border-yellow-800/50" };
+      case "failed":
+        return { label: "Failed", className: "bg-red-900/40 text-red-400 border-red-800/50" };
+      case "waived":
+        return { label: "Waived", className: "bg-zinc-800/40 text-zinc-400 border-zinc-700/50" };
+      case "refunded":
+        return { label: "Refunded", className: "bg-purple-900/40 text-purple-400 border-purple-800/50" };
+      default:
+        return { label: "Pending", className: "bg-[#2e271f] text-[#9c8876] border-[#3d3428]" };
+    }
+  }
 
   function formatTime(time: string | null): string {
     if (!time) return "";
@@ -86,6 +136,24 @@ export default async function ClientPortalPage({ params }: Props) {
       </div>
 
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        {/* Payment status banners */}
+        {paymentStatus === "success" && (
+          <div className="card p-4 border-green-900/50 bg-green-950/20">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-green-400">Payment received! Thank you.</span>
+            </div>
+          </div>
+        )}
+        {paymentStatus === "canceled" && (
+          <div className="card p-4 border-yellow-900/50 bg-yellow-950/20">
+            <div className="flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-yellow-400">Payment was canceled. You can try again below.</span>
+            </div>
+          </div>
+        )}
+
         {/* Event header */}
         {event && (
           <div>
@@ -156,6 +224,8 @@ export default async function ClientPortalPage({ params }: Props) {
               <DollarSign className="w-4 h-4 text-[#9c8876]" />
               Payment Status
             </h3>
+
+            {/* Summary cards */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-[#251f19] rounded-lg p-3 text-center">
                 <div className="text-xs text-[#9c8876] mb-1">Total</div>
@@ -173,19 +243,9 @@ export default async function ClientPortalPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Deposit status */}
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-[#2e271f]">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${depositPaid ? "bg-green-400" : "bg-yellow-400"}`} />
-              <div className="flex-1">
-                <div className="text-xs text-[#9c8876]">
-                  Deposit of {formatCurrency(depositRequired)} {depositPaid ? "received" : "required"}
-                </div>
-              </div>
-            </div>
-
             {/* Payment progress */}
             {totalDue > 0 && (
-              <div className="mt-3 flex items-center gap-3">
+              <div className="mb-4 flex items-center gap-3">
                 <div className="flex-1 h-2 rounded-full bg-[#2e271f] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-green-500 transition-all"
@@ -196,18 +256,96 @@ export default async function ClientPortalPage({ params }: Props) {
               </div>
             )}
 
-            {payment?.payments && payment.payments.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-[#2e271f]">
-                <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Payment History</div>
-                <div className="space-y-1.5">
-                  {payment.payments.map((p) => (
-                    <div key={p.id} className="flex justify-between text-xs text-[#9c8876]">
-                      <span>{p.date} · {p.method}{p.note ? ` · ${p.note}` : ""}</span>
-                      <span className="text-green-400">{formatCurrency(p.amount)}</span>
-                    </div>
-                  ))}
+            {/* New payment schedule system */}
+            {hasNewPaymentSystem ? (
+              <>
+                <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">Payment Schedule</div>
+                <div className="space-y-2 mb-4">
+                  {schedules.map((schedule) => {
+                    const badge = getScheduleStatusBadge(schedule.status);
+                    const isPayable = schedule.status === "pending" || schedule.status === "due";
+                    return (
+                      <div
+                        key={schedule.id}
+                        className="flex items-center justify-between p-3 rounded-lg border border-[#2e271f] bg-[#1a1613]"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-sm font-medium truncate">{schedule.installment_name}</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border ${badge.className}`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-[#9c8876]">
+                            <span className="font-medium">{formatCurrency(schedule.amount)}</span>
+                            {schedule.due_date && (
+                              <>
+                                <span>·</span>
+                                <span>Due {format(new Date(schedule.due_date), "MMM d, yyyy")}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {isPayable && (
+                          <div className="ml-3 flex-shrink-0">
+                            <ClientPayButton
+                              shareToken={token}
+                              paymentScheduleId={schedule.id}
+                              amount={schedule.amount}
+                              installmentName={schedule.installment_name}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+
+                {/* Payment history from new system */}
+                {paidPayments.length > 0 && (
+                  <div className="pt-3 border-t border-[#2e271f]">
+                    <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Payment History</div>
+                    <div className="space-y-1.5">
+                      {paidPayments.map((p) => (
+                        <div key={p.id} className="flex justify-between text-xs text-[#9c8876]">
+                          <span>
+                            {p.paid_at ? format(new Date(p.paid_at), "MMM d, yyyy") : "—"}
+                            {p.payment_method_type ? ` · ${p.payment_method_type}` : ""}
+                          </span>
+                          <span className="text-green-400">{formatCurrency(p.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Old system fallback: deposit status */}
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-[#2e271f]">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${depositPaid ? "bg-green-400" : "bg-yellow-400"}`} />
+                  <div className="flex-1">
+                    <div className="text-xs text-[#9c8876]">
+                      Deposit of {formatCurrency(depositRequired)} {depositPaid ? "received" : "required"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Old system fallback: payment history */}
+                {payment?.payments && payment.payments.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-[#2e271f]">
+                    <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Payment History</div>
+                    <div className="space-y-1.5">
+                      {payment.payments.map((p) => (
+                        <div key={p.id} className="flex justify-between text-xs text-[#9c8876]">
+                          <span>{p.date} · {p.method}{p.note ? ` · ${p.note}` : ""}</span>
+                          <span className="text-green-400">{formatCurrency(p.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

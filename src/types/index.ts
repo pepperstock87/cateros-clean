@@ -256,3 +256,42 @@ export type OrgContext = {
   orgId: string;
   role: OrgMemberRole;
 };
+
+// Payment Schedule types
+export type PaymentScheduleStatus = 'pending' | 'due' | 'paid' | 'failed' | 'waived' | 'refunded';
+
+export type PaymentScheduleItem = {
+  id: string;
+  organization_id: string | null;
+  event_id: string;
+  proposal_id: string | null;
+  installment_name: string;
+  amount: number;
+  percentage: number | null;
+  due_date: string | null;
+  status: PaymentScheduleStatus;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PaymentStatus = 'pending' | 'processing' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
+
+export type Payment = {
+  id: string;
+  organization_id: string | null;
+  event_id: string;
+  proposal_id: string | null;
+  payment_schedule_id: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_checkout_session_id: string | null;
+  amount: number;
+  currency: string;
+  payment_method_type: string | null;
+  status: PaymentStatus;
+  paid_at: string | null;
+  failure_reason: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
