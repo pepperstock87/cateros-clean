@@ -58,12 +58,12 @@ export default async function StaffPage() {
             {staff.filter(s => upcomingByStaff.has(s.id)).map(s => {
               const upcoming = upcomingByStaff.get(s.id)!;
               return (
-                <div key={s.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+                <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
                   <div>
                     <span className="text-sm font-medium">{s.name}</span>
                     <span className="text-xs text-[#6b5a4a] ml-2">{s.role}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {upcoming.slice(0, 2).map((a: any) => (
                       <Link
                         key={a.id}

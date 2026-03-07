@@ -6,6 +6,7 @@ import { SpendingClient } from "./SpendingClient";
 import { RecurringCosts } from "@/components/spending/RecurringCosts";
 import { CostAnalytics } from "@/components/spending/CostAnalytics";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
+import { SpendingExport } from "@/components/spending/SpendingExport";
 
 export type Receipt = {
   id: string;
@@ -103,7 +104,10 @@ export default async function SpendingPage() {
           <h1 className="font-display text-xl md:text-2xl font-semibold">Spending</h1>
           <p className="text-xs md:text-sm text-[#9c8876] mt-1">Track receipts and distributor invoices</p>
         </div>
-        <InlineSuggestion prompt="Analyze my recent spending. Break down my costs by category and tell me where I might be overspending." label="Explain my costs" />
+        <div className="flex items-center gap-3">
+          {allReceipts.length > 0 && <SpendingExport receipts={allReceipts} />}
+          <InlineSuggestion prompt="Analyze my recent spending. Break down my costs by category and tell me where I might be overspending." label="Explain my costs" />
+        </div>
       </div>
 
       {/* Weekly Summary Stats */}

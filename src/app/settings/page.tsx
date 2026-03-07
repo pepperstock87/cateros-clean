@@ -6,6 +6,8 @@ import { updateProfileAction } from "@/lib/actions/settings";
 import { User, CreditCard, Building2, Mail, Pencil } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
@@ -15,6 +17,7 @@ export default function SettingsPage() {
   const [nameValue, setNameValue] = useState("");
   const [companyValue, setCompanyValue] = useState("");
   const [saving, setSaving] = useState(false);
+  const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
   useEffect(() => {
     const supabase = createClient();
@@ -38,6 +41,7 @@ export default function SettingsPage() {
       toast.success("Name updated successfully");
       setProfile((prev: any) => ({ ...prev, full_name: nameValue }));
       setEditingName(false);
+      markClean();
     }
   }
 
@@ -51,6 +55,7 @@ export default function SettingsPage() {
       toast.success("Company name updated successfully");
       setProfile((prev: any) => ({ ...prev, company_name: companyValue }));
       setEditingCompany(false);
+      markClean();
     }
   }
 
@@ -60,6 +65,8 @@ export default function SettingsPage() {
         <h1 className="font-display text-xl md:text-2xl font-semibold">Settings</h1>
         <p className="text-xs md:text-sm text-[#9c8876] mt-1">Manage your account and subscription</p>
       </div>
+
+      <UnsavedBanner show={isDirty} />
 
       {/* Account Information */}
       <div className="card p-4 md:p-6 mb-6">
@@ -75,7 +82,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
+                  onChange={(e) => { setNameValue(e.target.value); markDirty(); }}
                   className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
                   autoFocus
                 />
@@ -90,6 +97,7 @@ export default function SettingsPage() {
                   onClick={() => {
                     setEditingName(false);
                     setNameValue(profile?.full_name || "");
+                    markClean();
                   }}
                   className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
                 >
@@ -130,7 +138,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={companyValue}
-                  onChange={(e) => setCompanyValue(e.target.value)}
+                  onChange={(e) => { setCompanyValue(e.target.value); markDirty(); }}
                   className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
                   autoFocus
                 />
@@ -145,6 +153,7 @@ export default function SettingsPage() {
                   onClick={() => {
                     setEditingCompany(false);
                     setCompanyValue(profile?.company_name || "");
+                    markClean();
                   }}
                   className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
                 >

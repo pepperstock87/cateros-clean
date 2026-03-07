@@ -6,12 +6,15 @@ import { updateBusinessSettings, uploadLogo } from "@/lib/actions/settings";
 import { Upload, Lock, Save } from "lucide-react";
 import type { BusinessSettings, UserEntitlements } from "@/types";
 import Link from "next/link";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 
 export default function BrandingPage() {
   const [entitlements, setEntitlements] = useState<UserEntitlements | null>(null);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
   useEffect(() => {
     const supabase = createClient();
@@ -52,6 +55,7 @@ export default function BrandingPage() {
     if (result?.error) {
       alert(result.error);
     } else {
+      markClean();
       alert("Branding settings saved!");
     }
     setSaving(false);
@@ -83,8 +87,10 @@ export default function BrandingPage() {
         </div>
       )}
 
+      <UnsavedBanner show={isDirty} />
+
       <div className="card p-4 md:p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} onChange={markDirty} className="space-y-6">
           {/* Logo Upload */}
           <div>
             <label className="block text-sm font-medium mb-2">Logo</label>

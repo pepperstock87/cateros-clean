@@ -8,6 +8,8 @@ import type { Proposal, Event, PricingData, ClientMessage } from "@/types";
 import { ProposalActions } from "./ProposalActions";
 import { ReplyToClient } from "./ReplyToClient";
 import { ProposalComments } from "@/components/proposals/ProposalComments";
+import { RevisionHistory } from "@/components/proposals/RevisionHistory";
+import { CreateRevisionButton } from "@/components/proposals/CreateRevisionButton";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -31,6 +33,22 @@ export default async function ProposalDetailPage({ params }: Props) {
   const event = proposal.event;
   const pricing = event?.pricing_data as PricingData | null;
 
+  // Fetch all revisions for this event (siblings in the revision chain)
+  const { data: revisionRows } = await supabase
+    .from("proposals")
+    .select("id, revision_number, revision_notes, status, created_at")
+    .eq("event_id", proposal.event_id)
+    .eq("user_id", user.id)
+    .order("revision_number", { ascending: true });
+
+  const revisions = (revisionRows ?? []).map((r) => ({
+    id: r.id as string,
+    revision_number: r.revision_number as number,
+    revision_notes: r.revision_notes as string | null,
+    status: r.status as string,
+    created_at: r.created_at as string,
+  }));
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <Link href="/proposals" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-6 transition-colors">
@@ -40,7 +58,14 @@ export default async function ProposalDetailPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between mb-8 gap-4">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-semibold">{proposal.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl font-semibold">{proposal.title}</h1>
+            {proposal.revision_number > 1 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-brand-900/40 text-brand-300 border border-brand-800/40 font-medium">
+                v{proposal.revision_number}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-[#9c8876] mt-1">
             Created {format(new Date(proposal.created_at), "MMMM d, yyyy")}
             {proposal.updated_at !== proposal.created_at && (
@@ -48,7 +73,10 @@ export default async function ProposalDetailPage({ params }: Props) {
             )}
           </p>
         </div>
-        <ProposalActions proposal={proposal} event={event} />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <CreateRevisionButton proposalId={proposal.id} eventId={proposal.event_id} />
+          <ProposalActions proposal={proposal} event={event} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -250,6 +278,8 @@ export default async function ProposalDetailPage({ params }: Props) {
               </div>
             </div>
           )}
+
+          <RevisionHistory proposalId={proposal.id} revisions={revisions} />
 
           <div className="card p-5">
             <h3 className="font-medium text-sm mb-3">Timeline</h3>

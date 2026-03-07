@@ -140,6 +140,8 @@ export type Proposal = {
   share_token: string | null;
   client_messages: ClientMessage[];
   revision_number: number;
+  revision_notes: string | null;
+  parent_proposal_id: string | null;
   created_at: string;
   updated_at: string;
   event?: Event; // joined data

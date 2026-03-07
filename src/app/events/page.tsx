@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, CalendarDays } from "lucide-react";
 import { EventsTable } from "@/components/events/EventsTable";
+import { EventsExport } from "@/components/events/EventsExport";
 import type { Event } from "@/types";
 
 export default async function EventsListPage() {
@@ -10,17 +11,24 @@ export default async function EventsListPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data } = await supabase.from("events").select("*").eq("user_id", user.id).order("event_date", { ascending: false });
-  const events: Event[] = data ?? [];
+  const [eventsRes, profileRes] = await Promise.all([
+    supabase.from("events").select("*").eq("user_id", user.id).order("event_date", { ascending: false }),
+    supabase.from("profiles").select("company_name").eq("id", user.id).single(),
+  ]);
+  const events: Event[] = eventsRes.data ?? [];
+  const companyName = profileRes.data?.company_name ?? "My Company";
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-2xl font-semibold">Events</h1>
           <p className="text-sm text-[#9c8876] mt-1">{events.length} total events</p>
         </div>
-        <Link href="/events/new" className="btn-primary flex items-center gap-2"><Plus className="w-4 h-4" />New event</Link>
+        <div className="flex items-center gap-3">
+          {events.length > 0 && <EventsExport events={events} companyName={companyName} />}
+          <Link href="/events/new" className="btn-primary flex items-center gap-2"><Plus className="w-4 h-4" />New event</Link>
+        </div>
       </div>
 
       {events.length === 0 ? (

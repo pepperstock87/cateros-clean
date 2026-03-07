@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { FileText } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { ProposalsExport } from "@/components/proposals/ProposalsExport";
 import type { Proposal, PricingData } from "@/types";
 
 type ProposalWithEvent = Proposal & {
@@ -59,6 +60,7 @@ export default async function ProposalsPage() {
           <h1 className="font-display text-xl md:text-2xl font-semibold">Proposals</h1>
           <p className="text-sm text-[#9c8876] mt-1">Client-facing proposals generated from your events.</p>
         </div>
+        {proposals.length > 0 && <ProposalsExport proposals={proposals} />}
       </div>
 
       {/* Stats */}
@@ -109,19 +111,46 @@ export default async function ProposalsPage() {
           <Link href="/events" className="btn-primary inline-flex">View events</Link>
         </div>
       ) : (
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto -mx-4 md:mx-0">
-            <div className="inline-block min-w-full align-middle px-4 md:px-0">
+        <>
+          {/* Mobile card view */}
+          <div className="md:hidden space-y-3">
+            {proposals.map(proposal => {
+              const pricing = proposal.event?.pricing_data;
+              return (
+                <Link
+                  key={proposal.id}
+                  href={`/proposals/${proposal.id}`}
+                  className="card block p-4 hover:bg-[#1c1814] transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="font-medium text-sm truncate">{proposal.title}</span>
+                    <span className={`badge ${statusBadgeClass[proposal.status]} flex-shrink-0`}>{proposal.status}</span>
+                  </div>
+                  {proposal.event?.client_name && (
+                    <div className="text-xs text-[#9c8876] mb-1">{proposal.event.client_name}</div>
+                  )}
+                  <div className="flex items-center gap-3 text-xs text-[#6b5a4a]">
+                    {proposal.event && <span>{format(new Date(proposal.event.event_date), "MMM d, yyyy")}</span>}
+                    {pricing && <span className="text-[#9c8876]">{formatCurrency(pricing.suggestedPrice)}</span>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Desktop table view */}
+          <div className="hidden md:block card overflow-hidden">
+            <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#2e271f]">
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3">Proposal</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3 hidden sm:table-cell">Client</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3">Event Date</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3">Amount</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3">Status</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3 hidden sm:table-cell">Created</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-3 py-2.5 md:px-5 md:py-3"></th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Proposal</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Client</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Event Date</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Amount</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Status</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Created</th>
+                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,27 +158,27 @@ export default async function ProposalsPage() {
                     const pricing = proposal.event?.pricing_data;
                     return (
                       <tr key={proposal.id} className="border-b border-[#1c1814] hover:bg-[#1c1814] transition-colors">
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5 font-medium text-sm max-w-[200px]">
+                        <td className="px-5 py-3.5 font-medium text-sm max-w-[200px]">
                           <Link href={`/proposals/${proposal.id}`} className="hover:text-brand-400 transition-colors truncate block">
                             {proposal.title}
                           </Link>
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5 text-sm text-[#9c8876] hidden sm:table-cell">
+                        <td className="px-5 py-3.5 text-sm text-[#9c8876]">
                           {proposal.event?.client_name ?? "—"}
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
+                        <td className="px-5 py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
                           {proposal.event ? format(new Date(proposal.event.event_date), "MMM d, yyyy") : "—"}
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5 text-sm">
+                        <td className="px-5 py-3.5 text-sm">
                           {pricing ? formatCurrency(pricing.suggestedPrice) : <span className="text-[#6b5a4a]">—</span>}
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5">
+                        <td className="px-5 py-3.5">
                           <span className={`badge ${statusBadgeClass[proposal.status]}`}>{proposal.status}</span>
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5 text-sm text-[#9c8876] whitespace-nowrap hidden sm:table-cell">
+                        <td className="px-5 py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
                           {format(new Date(proposal.created_at), "MMM d, yyyy")}
                         </td>
-                        <td className="px-3 py-2.5 md:px-5 md:py-3.5">
+                        <td className="px-5 py-3.5">
                           <Link href={`/proposals/${proposal.id}`} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
                             Open →
                           </Link>
@@ -161,7 +190,7 @@ export default async function ProposalsPage() {
               </table>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

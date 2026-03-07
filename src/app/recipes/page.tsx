@@ -17,10 +17,10 @@ export default async function RecipesPage() {
   const categories = [...new Set(recipes.map(r => r.category).filter(Boolean))];
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Recipe Library</h1>
+          <h1 className="font-display text-xl md:text-2xl font-semibold">Recipe Library</h1>
           <p className="text-sm text-[#9c8876] mt-1">{recipes.length} recipes · Track ingredient costs & per-person pricing</p>
         </div>
         <div className="flex items-center gap-3">

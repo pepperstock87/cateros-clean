@@ -6,9 +6,10 @@ import { updateProposalStatusAction, deleteProposalAction } from "@/lib/actions/
 import { generateProposalPDF } from "@/lib/generateProposalPDF";
 import { createClient } from "@/lib/supabase/client";
 import type { Proposal, Event, BusinessSettings, UserEntitlements } from "@/types";
-import { Send, CheckCircle, XCircle, FileText, Trash2, RotateCcw, Loader2, Link2 } from "lucide-react";
+import { Send, CheckCircle, XCircle, FileText, Trash2, RotateCcw, Loader2, Link2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { ProposalFollowUp } from "@/components/proposals/ProposalFollowUp";
+import { ShareProposalModal } from "@/components/proposals/ShareProposalModal";
 
 const statusConfig: Record<Proposal["status"], { label: string; className: string }> = {
   draft: { label: "Draft", className: "badge-draft" },
@@ -21,6 +22,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   async function handleStatusChange(status: Proposal["status"]) {
     setLoading(true);
@@ -134,7 +136,17 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
         </button>
       )}
 
-      {/* Share link */}
+      {/* Share modal */}
+      {proposal.share_token && (
+        <button
+          onClick={() => setShareModalOpen(true)}
+          className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
+        >
+          <Share2 className="w-3.5 h-3.5" />Share
+        </button>
+      )}
+
+      {/* Quick copy link */}
       {proposal.share_token && (
         <button
           onClick={async () => {
@@ -178,6 +190,18 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       {/* Follow-up status — show when proposal has been sent */}
       {(proposal.status === "sent" || proposal.status === "accepted" || proposal.status === "declined") && (
         <ProposalFollowUp proposal={followUpData} />
+      )}
+
+      {/* Share modal */}
+      {proposal.share_token && (
+        <ShareProposalModal
+          shareToken={proposal.share_token}
+          proposalTitle={proposal.title}
+          clientName={event?.client_name}
+          clientEmail={event?.client_email ?? undefined}
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+        />
       )}
     </div>
   );
