@@ -2,18 +2,18 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { RentalItem } from "@/types";
 import { Package } from "lucide-react";
+import { getCurrentOrg } from "@/lib/organizations";
 import { RentalList } from "./RentalList";
 
 export default async function RentalsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase
-    .from("rental_items")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("name");
+  let rentalsQuery = supabase.from("rental_items").select("*").eq("user_id", user.id);
+  if (org?.orgId) rentalsQuery = rentalsQuery.eq("organization_id", org.orgId);
+  const { data } = await rentalsQuery.order("name");
 
   const items: RentalItem[] = data ?? [];
 

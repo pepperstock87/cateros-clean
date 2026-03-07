@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { FileText } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { ProposalsExport } from "@/components/proposals/ProposalsExport";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Proposal, PricingData } from "@/types";
 
 type ProposalWithEvent = Proposal & {
@@ -28,12 +29,11 @@ export default async function ProposalsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase
-    .from("proposals")
-    .select("*, event:events(name, client_name, event_date, guest_count, pricing_data)")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  let proposalsQuery = supabase.from("proposals").select("*, event:events(name, client_name, event_date, guest_count, pricing_data)").eq("user_id", user.id);
+  if (org?.orgId) proposalsQuery = proposalsQuery.eq("organization_id", org.orgId);
+  const { data } = await proposalsQuery.order("created_at", { ascending: false });
 
   const proposals: ProposalWithEvent[] = data ?? [];
 

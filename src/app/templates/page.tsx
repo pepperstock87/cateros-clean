@@ -5,20 +5,20 @@ import { LayoutTemplate, Users, CalendarDays, Trash2, ArrowRight, Sparkles } fro
 import { DeleteTemplateButton } from "./DeleteTemplateButton";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
+import { getCurrentOrg } from "@/lib/organizations";
 import { DEFAULT_TEMPLATES } from "@/lib/defaultTemplates";
 
 export default async function TemplatesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   const { isPro } = await getUserEntitlements();
 
-  const { data: templates } = await supabase
-    .from("event_templates")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  let templatesQuery = supabase.from("event_templates").select("*").eq("user_id", user.id);
+  if (org?.orgId) templatesQuery = templatesQuery.eq("organization_id", org.orgId);
+  const { data: templates } = await templatesQuery.order("created_at", { ascending: false });
 
   const items = templates ?? [];
 

@@ -82,24 +82,43 @@ export function Sidebar({ companyName }: { companyName?: string }) {
   useEffect(() => {
     const supabase = createClient();
 
-    Promise.all([
-      // Upcoming events (confirmed or proposed, event_date >= today)
-      supabase
+    // Fetch user profile to get current_organization_id for filtering
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("current_organization_id")
+        .eq("id", user.id)
+        .single();
+
+      const orgId = profile?.current_organization_id;
+
+      let eventsQuery = supabase
         .from("events")
         .select("id", { count: "exact", head: true })
         .in("status", ["confirmed", "proposed"])
-        .gte("event_date", new Date().toISOString().split("T")[0]),
-      // Pending proposals (status = sent)
-      supabase
+        .gte("event_date", new Date().toISOString().split("T")[0]);
+      if (orgId) eventsQuery = eventsQuery.eq("organization_id", orgId);
+
+      let proposalsQuery = supabase
         .from("proposals")
         .select("id", { count: "exact", head: true })
-        .eq("status", "sent"),
-      // Unconfirmed staff assignments
-      supabase
+        .eq("status", "sent");
+      if (orgId) proposalsQuery = proposalsQuery.eq("organization_id", orgId);
+
+      let staffQuery = supabase
         .from("event_staff_assignments")
         .select("id", { count: "exact", head: true })
-        .eq("confirmed", false),
-    ]).then(([eventsRes, proposalsRes, staffRes]) => {
+        .eq("confirmed", false);
+      if (orgId) staffQuery = staffQuery.eq("organization_id", orgId);
+
+      const [eventsRes, proposalsRes, staffRes] = await Promise.all([
+        eventsQuery,
+        proposalsQuery,
+        staffQuery,
+      ]);
+
       const newBadges: Record<string, number> = {};
       if (eventsRes.count) newBadges["/events"] = eventsRes.count;
       if (proposalsRes.count) newBadges["/proposals"] = proposalsRes.count;

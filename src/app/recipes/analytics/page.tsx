@@ -5,20 +5,20 @@ import { ArrowLeft, BarChart3 } from "lucide-react";
 import { RecipeProfitability } from "@/components/recipes/RecipeProfitability";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Recipe } from "@/types";
 
 export default async function RecipeAnalyticsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   const { isPro } = await getUserEntitlements();
 
-  const { data } = await supabase
-    .from("recipes")
-    .select("id, name, category, cost_per_serving, selling_price, servings")
-    .eq("user_id", user.id)
-    .order("name");
+  let recipesQuery = supabase.from("recipes").select("id, name, category, cost_per_serving, selling_price, servings").eq("user_id", user.id);
+  if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
+  const { data } = await recipesQuery.order("name");
 
   const recipes = (data ?? []).map((r) => ({
     id: r.id as string,

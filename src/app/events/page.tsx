@@ -5,15 +5,19 @@ import { Plus, CalendarDays } from "lucide-react";
 import { FilteredEventsView } from "@/components/events/FilteredEventsView";
 import { EventsExport } from "@/components/events/EventsExport";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Event } from "@/types";
 
 export default async function EventsListPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
+  let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
   const [eventsRes, profileRes] = await Promise.all([
-    supabase.from("events").select("*").eq("user_id", user.id).order("event_date", { ascending: false }),
+    eventsQuery.order("event_date", { ascending: false }),
     supabase.from("profiles").select("company_name").eq("id", user.id).single(),
   ]);
   const events: Event[] = eventsRes.data ?? [];

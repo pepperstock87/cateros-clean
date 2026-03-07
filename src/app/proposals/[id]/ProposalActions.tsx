@@ -42,10 +42,22 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
+
+      // Fetch org context for filtering
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("current_organization_id")
+        .eq("id", user!.id)
+        .single();
+      const orgId = userProfile?.current_organization_id;
+
+      let settingsQuery = supabase.from("business_settings").select("*").eq("user_id", user!.id);
+      if (orgId) settingsQuery = settingsQuery.eq("organization_id", orgId);
+
       const [profileRes, entitlementsRes, settingsRes] = await Promise.all([
         supabase.from("profiles").select("company_name").eq("id", user!.id).single(),
         fetch("/api/entitlements").then(r => r.json()),
-        supabase.from("business_settings").select("*").eq("user_id", user!.id).maybeSingle(),
+        settingsQuery.maybeSingle(),
       ]);
 
       const entitlements: UserEntitlements = entitlementsRes;

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { Plus, BookOpen, BarChart3 } from "lucide-react";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Recipe } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 
@@ -10,8 +11,11 @@ export default async function RecipesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase.from("recipes").select("*").eq("user_id", user.id).order("name");
+  let recipesQuery = supabase.from("recipes").select("*").eq("user_id", user.id);
+  if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
+  const { data } = await recipesQuery.order("name");
   const recipes: Recipe[] = data ?? [];
 
   const categories = [...new Set(recipes.map(r => r.category).filter(Boolean))];

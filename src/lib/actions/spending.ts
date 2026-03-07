@@ -8,12 +8,15 @@ export async function deleteReceiptAction(receiptId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteReceiptQuery = supabase
     .from("receipts")
     .delete()
     .eq("id", receiptId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteReceiptQuery = deleteReceiptQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteReceiptQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/spending");
@@ -24,12 +27,15 @@ export async function deleteInvoiceAction(invoiceId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteInvoiceQuery = supabase
     .from("distributor_invoices")
     .delete()
     .eq("id", invoiceId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteInvoiceQuery = deleteInvoiceQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteInvoiceQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/spending");
@@ -73,11 +79,14 @@ export async function updateRecurringCostAction(id: string, data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { error } = await supabase
+  const org = await getCurrentOrg();
+  let updateCostQuery = supabase
     .from("recurring_costs")
     .update(data)
     .eq("id", id)
     .eq("user_id", user.id);
+  if (org?.orgId) updateCostQuery = updateCostQuery.eq("organization_id", org.orgId);
+  const { error } = await updateCostQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/spending");
@@ -88,12 +97,15 @@ export async function deleteRecurringCostAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteCostQuery = supabase
     .from("recurring_costs")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteCostQuery = deleteCostQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteCostQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/spending");

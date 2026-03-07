@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function assignStaffAction(
   eventId: string,
@@ -45,12 +46,15 @@ export async function updateAssignmentAction(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let updateQuery = supabase
     .from("event_staff_assignments")
     .update(data)
     .eq("id", assignmentId)
     .eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+  const { error } = await updateQuery;
 
   if (error) return { error: error.message };
   return { success: true };
@@ -60,19 +64,23 @@ export async function removeAssignmentAction(assignmentId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { data: assignment } = await supabase
+  let fetchAssignQuery = supabase
     .from("event_staff_assignments")
     .select("event_id")
     .eq("id", assignmentId)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+  if (org?.orgId) fetchAssignQuery = fetchAssignQuery.eq("organization_id", org.orgId);
+  const { data: assignment } = await fetchAssignQuery.single();
 
-  const { error } = await supabase
+  let deleteQuery = supabase
     .from("event_staff_assignments")
     .delete()
     .eq("id", assignmentId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteQuery = deleteQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteQuery;
 
   if (error) return { error: error.message };
   if (assignment) revalidatePath(`/events/${assignment.event_id}`);

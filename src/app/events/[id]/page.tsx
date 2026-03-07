@@ -26,6 +26,7 @@ import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
 import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 type ActivityItem = {
@@ -43,40 +44,33 @@ export default async function EventDetailPage({ params }: Props) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data: event } = await supabase.from("events").select("*").eq("id", id).eq("user_id", user.id).single();
+  let eventQuery = supabase.from("events").select("*").eq("id", id).eq("user_id", user.id);
+  if (org?.orgId) eventQuery = eventQuery.eq("organization_id", org.orgId);
+  const { data: event } = await eventQuery.single();
   if (!event) notFound();
 
   const e = event as Event;
 
   // Fetch related data in parallel
+  let proposalsQuery = supabase.from("proposals").select("id, title, status, share_token, created_at, updated_at").eq("event_id", id).eq("user_id", user.id);
+  if (org?.orgId) proposalsQuery = proposalsQuery.eq("organization_id", org.orgId);
+  let receiptsQuery = supabase.from("receipts").select("id, vendor, total_amount, receipt_date, category").eq("event_id", id).eq("user_id", user.id);
+  if (org?.orgId) receiptsQuery = receiptsQuery.eq("organization_id", org.orgId);
+  let invoicesQuery = supabase.from("distributor_invoices").select("id, distributor, total_amount, invoice_date").eq("user_id", user.id);
+  if (org?.orgId) invoicesQuery = invoicesQuery.eq("organization_id", org.orgId);
+  let assignmentsQuery = supabase.from("event_staff_assignments").select("id, staff_member_id, role, start_time, end_time, confirmed, notes, created_at, staff_members(name, role, hourly_rate, phone)").eq("event_id", id).eq("user_id", user.id);
+  if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);
+  let staffQuery = supabase.from("staff_members").select("*").eq("user_id", user.id);
+  if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
+
   const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes] = await Promise.all([
-    supabase
-      .from("proposals")
-      .select("id, title, status, share_token, created_at, updated_at")
-      .eq("event_id", id)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("receipts")
-      .select("id, vendor, total_amount, receipt_date, category")
-      .eq("event_id", id)
-      .eq("user_id", user.id)
-      .order("receipt_date", { ascending: false }),
-    supabase
-      .from("distributor_invoices")
-      .select("id, distributor, total_amount, invoice_date")
-      .eq("user_id", user.id),
-    supabase
-      .from("event_staff_assignments")
-      .select("id, staff_member_id, role, start_time, end_time, confirmed, notes, created_at, staff_members(name, role, hourly_rate, phone)")
-      .eq("event_id", id)
-      .eq("user_id", user.id),
-    supabase
-      .from("staff_members")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("name"),
+    proposalsQuery.order("created_at", { ascending: false }),
+    receiptsQuery.order("receipt_date", { ascending: false }),
+    invoicesQuery,
+    assignmentsQuery,
+    staffQuery.order("name"),
   ]);
 
   const proposals = proposalsRes.data ?? [];

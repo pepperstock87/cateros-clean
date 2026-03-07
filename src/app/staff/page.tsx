@@ -4,24 +4,23 @@ import Link from "next/link";
 import { format } from "date-fns";
 import type { StaffMember } from "@/types";
 import { Users, CalendarDays } from "lucide-react";
+import { getCurrentOrg } from "@/lib/organizations";
 import { StaffList } from "./StaffList";
 
 export default async function StaffPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
+
+  let staffQuery = supabase.from("staff_members").select("*").eq("user_id", user.id);
+  if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
+  let assignmentsQuery = supabase.from("event_staff_assignments").select("id, staff_member_id, role, start_time, end_time, confirmed, events(id, name, event_date, status)").eq("user_id", user.id);
+  if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);
 
   const [staffRes, assignmentsRes] = await Promise.all([
-    supabase
-      .from("staff_members")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("name"),
-    supabase
-      .from("event_staff_assignments")
-      .select("id, staff_member_id, role, start_time, end_time, confirmed, events(id, name, event_date, status)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false }),
+    staffQuery.order("name"),
+    assignmentsQuery.order("created_at", { ascending: false }),
   ]);
 
   const staff: StaffMember[] = staffRes.data ?? [];

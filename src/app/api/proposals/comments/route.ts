@@ -1,5 +1,6 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/organizations";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -36,12 +37,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: proposal } = await serviceSupabase
+    const org = await getCurrentOrg();
+
+    let proposalQuery = serviceSupabase
       .from("proposals")
       .select("id")
       .eq("id", proposalId)
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
+    if (org?.orgId) proposalQuery = proposalQuery.eq("organization_id", org.orgId);
+    const { data: proposal } = await proposalQuery.single();
 
     if (!proposal) {
       return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
@@ -102,12 +106,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: proposal } = await serviceSupabase
+    const org = await getCurrentOrg();
+
+    let postProposalQuery = serviceSupabase
       .from("proposals")
       .select("id")
       .eq("id", proposal_id)
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
+    if (org?.orgId) postProposalQuery = postProposalQuery.eq("organization_id", org.orgId);
+    const { data: proposal } = await postProposalQuery.single();
 
     if (!proposal) {
       return NextResponse.json({ error: "Proposal not found" }, { status: 404 });

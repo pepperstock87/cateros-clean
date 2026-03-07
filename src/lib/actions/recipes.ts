@@ -43,11 +43,14 @@ export async function updateRecipeAction(recipeId: string, formData: FormData) {
   const servings = Number(formData.get("servings"));
   const ingredients: RecipeIngredient[] = JSON.parse(formData.get("ingredients") as string || "[]");
   const { total_cost, cost_per_serving } = calcCosts(ingredients, servings);
-  const { error } = await supabase.from("recipes").update({
+  const org = await getCurrentOrg();
+  let updateQuery = supabase.from("recipes").update({
     name: formData.get("name") as string, description: formData.get("description") as string || null,
     servings, category: formData.get("category") as string || null,
     ingredients, total_cost, cost_per_serving, updated_at: new Date().toISOString(),
   }).eq("id", recipeId).eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+  const { error } = await updateQuery;
   if (error) return { error: error.message };
   revalidatePath("/recipes");
   return { success: true };
@@ -57,7 +60,10 @@ export async function deleteRecipeAction(recipeId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
-  const { error } = await supabase.from("recipes").delete().eq("id", recipeId).eq("user_id", user.id);
+  const org = await getCurrentOrg();
+  let deleteQuery = supabase.from("recipes").delete().eq("id", recipeId).eq("user_id", user.id);
+  if (org?.orgId) deleteQuery = deleteQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteQuery;
   if (error) return { error: error.message };
   revalidatePath("/recipes");
   return { success: true };

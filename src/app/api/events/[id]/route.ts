@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/organizations";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
@@ -31,13 +32,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const org = await getCurrentOrg();
+
   // Verify ownership
-  const { data: existing } = await supabase
+  let existingQuery = supabase
     .from("events")
     .select("id")
     .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+  if (org?.orgId) existingQuery = existingQuery.eq("organization_id", org.orgId);
+  const { data: existing } = await existingQuery.single();
 
   if (!existing) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
@@ -65,11 +69,13 @@ export async function PATCH(
     updates.guest_count = Number(updates.guest_count) || 0;
   }
 
-  const { data, error } = await supabase
+  let updateQuery = supabase
     .from("events")
     .update(updates)
     .eq("id", id)
-    .eq("user_id", user.id)
+    .eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+  const { data, error } = await updateQuery
     .select("*")
     .single();
 

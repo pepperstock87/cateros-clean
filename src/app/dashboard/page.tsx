@@ -12,15 +12,17 @@ import { RevenueForecasting } from "@/components/dashboard/RevenueForecasting";
 import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { ActionAlerts, type AlertItem } from "@/components/dashboard/ActionAlerts";
 import { UpcomingEventsTimeline } from "@/components/dashboard/UpcomingEventsTimeline";
+import { getCurrentOrg } from "@/lib/organizations";
 
-async function getDashboardData(userId: string) {
+async function getDashboardData(userId: string, orgId: string | null) {
   const supabase = await createClient();
   const now = new Date();
   const monthStart = startOfMonth(now).toISOString();
   const monthEnd = endOfMonth(now).toISOString();
 
-  const { data: allEvents } = await supabase
-    .from("events").select("*").eq("user_id", userId).order("event_date", { ascending: false });
+  let eventsQuery = supabase.from("events").select("*").eq("user_id", userId);
+  if (orgId) eventsQuery = eventsQuery.eq("organization_id", orgId);
+  const { data: allEvents } = await eventsQuery.order("event_date", { ascending: false });
 
   const events: Event[] = allEvents ?? [];
   const thisMonthEvents = events.filter(e => e.event_date >= monthStart && e.event_date <= monthEnd);
@@ -80,12 +82,9 @@ async function getDashboardData(userId: string) {
   }, 0);
 
   // Action Items: Proposals with revision requests
-  const { data: revisionProposals } = await supabase
-    .from("proposals")
-    .select("id, title, event_id, events(name)")
-    .eq("user_id", userId)
-    .eq("status", "sent")
-    .not("client_messages", "eq", "[]");
+  let revisionQuery = supabase.from("proposals").select("id, title, event_id, events(name)").eq("user_id", userId).eq("status", "sent").not("client_messages", "eq", "[]");
+  if (orgId) revisionQuery = revisionQuery.eq("organization_id", orgId);
+  const { data: revisionProposals } = await revisionQuery;
 
   const proposalsNeedingRevision = (revisionProposals ?? []).filter((p: any) => {
     const messages = (p.client_messages ?? []) as ClientMessage[];
@@ -109,10 +108,9 @@ async function getDashboardData(userId: string) {
   });
 
   // Action Items: Events within 7 days with no staff assigned
-  const { data: staffAssignments } = await supabase
-    .from("staff_assignments")
-    .select("event_id")
-    .eq("user_id", userId);
+  let staffAssignQuery = supabase.from("staff_assignments").select("event_id").eq("user_id", userId);
+  if (orgId) staffAssignQuery = staffAssignQuery.eq("organization_id", orgId);
+  const { data: staffAssignments } = await staffAssignQuery;
   const eventIdsWithStaff = new Set((staffAssignments ?? []).map((sa: any) => sa.event_id));
   const eventsWithoutStaff = events.filter(e =>
     e.event_date > now.toISOString() && e.event_date <= sevenDaysOut &&
@@ -130,12 +128,9 @@ async function getDashboardData(userId: string) {
 
   // Action Items: Stale proposals (sent > 5 days ago, no response)
   const fiveDaysAgo = addDays(now, -5).toISOString();
-  const { data: staleProposalData } = await supabase
-    .from("proposals")
-    .select("id, title, event_id, created_at, events(name)")
-    .eq("user_id", userId)
-    .eq("status", "sent")
-    .lt("created_at", fiveDaysAgo);
+  let staleQuery = supabase.from("proposals").select("id, title, event_id, created_at, events(name)").eq("user_id", userId).eq("status", "sent").lt("created_at", fiveDaysAgo);
+  if (orgId) staleQuery = staleQuery.eq("organization_id", orgId);
+  const { data: staleProposalData } = await staleQuery;
   const staleProposals = (staleProposalData ?? []).filter((p: any) => {
     const messages = (p.client_messages ?? []) as ClientMessage[];
     return !messages.some(m => m.action === "accepted" || m.action === "declined" || m.action === "revision_requested");
@@ -198,8 +193,9 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const org = await getCurrentOrg();
   const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome").eq("id", user.id).single();
-  const stats = await getDashboardData(user.id);
+  const stats = await getDashboardData(user.id, org?.orgId ?? null);
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
 

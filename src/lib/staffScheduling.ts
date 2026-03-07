@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export type ConflictInfo = {
   eventId: string;
@@ -79,21 +80,25 @@ export async function getStaffAvailability(
 ): Promise<StaffAvailabilityEntry[]> {
   const supabase = await createClient();
   const normalizedDate = date.split("T")[0];
+  const org = await getCurrentOrg();
 
   // Get all staff for this user
-  const { data: staff, error: staffError } = await supabase
+  let staffQuery = supabase
     .from("staff_members")
     .select("id, name, role, hourly_rate, phone, email")
-    .eq("user_id", userId)
-    .order("name");
+    .eq("user_id", userId);
+  if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
+  const { data: staff, error: staffError } = await staffQuery.order("name");
 
   if (staffError || !staff) return [];
 
   // Get all events on this date for this user
-  const { data: events } = await supabase
+  let eventsQuery = supabase
     .from("events")
     .select("id, name, event_date")
     .eq("user_id", userId);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+  const { data: events } = await eventsQuery;
 
   const dateEvents = (events || []).filter(
     (e) => e.event_date.split("T")[0] === normalizedDate

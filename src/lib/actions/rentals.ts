@@ -31,12 +31,15 @@ export async function deleteRentalItemAction(itemId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteQuery = supabase
     .from("rental_items")
     .delete()
     .eq("id", itemId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteQuery = deleteQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/rentals");
@@ -54,11 +57,14 @@ export async function updateRentalItemAction(itemId: string, data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { error } = await supabase
+  const org = await getCurrentOrg();
+  let updateQuery = supabase
     .from("rental_items")
     .update(data)
     .eq("id", itemId)
     .eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+  const { error } = await updateQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/rentals");

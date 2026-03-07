@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { ClientList } from "./ClientList";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData } from "@/types";
 
 export type ClientData = {
@@ -19,12 +20,11 @@ export default async function ClientsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase
-    .from("events")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("event_date", { ascending: false });
+  let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+  const { data } = await eventsQuery.order("event_date", { ascending: false });
 
   const events: Event[] = data ?? [];
 

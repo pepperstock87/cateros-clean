@@ -3,29 +3,26 @@ import { redirect } from "next/navigation";
 import { format, addDays } from "date-fns";
 import { CalendarDays } from "lucide-react";
 import type { Event, PricingData, Recipe } from "@/types";
+import { getCurrentOrg } from "@/lib/organizations";
 import { ShoppingListClient } from "./ShoppingListClient";
 
 export default async function ShoppingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   const now = new Date();
   const weekEnd = addDays(now, 7);
 
+  let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id).eq("status", "confirmed").gte("event_date", now.toISOString().split("T")[0]).lte("event_date", weekEnd.toISOString().split("T")[0]);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+  let recipesQuery = supabase.from("recipes").select("*").eq("user_id", user.id);
+  if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
+
   const [eventsRes, recipesRes] = await Promise.all([
-    supabase
-      .from("events")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("status", "confirmed")
-      .gte("event_date", now.toISOString().split("T")[0])
-      .lte("event_date", weekEnd.toISOString().split("T")[0])
-      .order("event_date"),
-    supabase
-      .from("recipes")
-      .select("*")
-      .eq("user_id", user.id),
+    eventsQuery.order("event_date"),
+    recipesQuery,
   ]);
 
   const events: Event[] = eventsRes.data ?? [];

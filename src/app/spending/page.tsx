@@ -8,6 +8,7 @@ import { CostAnalytics } from "@/components/spending/CostAnalytics";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { SpendingExport } from "@/components/spending/SpendingExport";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export type Receipt = {
   id: string;
@@ -45,35 +46,28 @@ export default async function SpendingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString();
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 }).toISOString();
 
-  const { data: receipts } = await supabase
-    .from("receipts")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("date", { ascending: false });
+  let receiptsQuery = supabase.from("receipts").select("*").eq("user_id", user.id);
+  if (org?.orgId) receiptsQuery = receiptsQuery.eq("organization_id", org.orgId);
+  const { data: receipts } = await receiptsQuery.order("date", { ascending: false });
 
-  const { data: invoices } = await supabase
-    .from("distributor_invoices")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("invoice_date", { ascending: false });
+  let invoicesQuery = supabase.from("distributor_invoices").select("*").eq("user_id", user.id);
+  if (org?.orgId) invoicesQuery = invoicesQuery.eq("organization_id", org.orgId);
+  const { data: invoices } = await invoicesQuery.order("invoice_date", { ascending: false });
+
+  let eventsQuery = supabase.from("events").select("id, name").eq("user_id", user.id).in("status", ["draft", "proposed", "confirmed"]);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+  let recurringQuery = supabase.from("recurring_costs").select("*").eq("user_id", user.id);
+  if (org?.orgId) recurringQuery = recurringQuery.eq("organization_id", org.orgId);
 
   const [eventsRes, recurringRes] = await Promise.all([
-    supabase
-      .from("events")
-      .select("id, name")
-      .eq("user_id", user.id)
-      .in("status", ["draft", "proposed", "confirmed"])
-      .order("event_date", { ascending: false }),
-    supabase
-      .from("recurring_costs")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at"),
+    eventsQuery.order("event_date", { ascending: false }),
+    recurringQuery.order("created_at"),
   ]);
 
   const events = eventsRes.data;

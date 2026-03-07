@@ -32,12 +32,15 @@ export async function deleteStaffAction(staffId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteQuery = supabase
     .from("staff_members")
     .delete()
     .eq("id", staffId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteQuery = deleteQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/staff");

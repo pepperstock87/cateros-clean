@@ -11,6 +11,7 @@ import { ProposalComments } from "@/components/proposals/ProposalComments";
 import { RevisionHistory } from "@/components/proposals/RevisionHistory";
 import { CreateRevisionButton } from "@/components/proposals/CreateRevisionButton";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { getCurrentOrg } from "@/lib/organizations";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -21,13 +22,11 @@ export default async function ProposalDetailPage({ params }: Props) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase
-    .from("proposals")
-    .select("*, event:events(*)")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  let proposalQuery = supabase.from("proposals").select("*, event:events(*)").eq("id", id).eq("user_id", user.id);
+  if (org?.orgId) proposalQuery = proposalQuery.eq("organization_id", org.orgId);
+  const { data } = await proposalQuery.single();
 
   if (!data) notFound();
   const { isPro } = await getUserEntitlements();
@@ -36,12 +35,9 @@ export default async function ProposalDetailPage({ params }: Props) {
   const pricing = event?.pricing_data as PricingData | null;
 
   // Fetch all revisions for this event (siblings in the revision chain)
-  const { data: revisionRows } = await supabase
-    .from("proposals")
-    .select("id, revision_number, revision_notes, status, created_at")
-    .eq("event_id", proposal.event_id)
-    .eq("user_id", user.id)
-    .order("revision_number", { ascending: true });
+  let revisionsQuery = supabase.from("proposals").select("id, revision_number, revision_notes, status, created_at").eq("event_id", proposal.event_id).eq("user_id", user.id);
+  if (org?.orgId) revisionsQuery = revisionsQuery.eq("organization_id", org.orgId);
+  const { data: revisionRows } = await revisionsQuery.order("revision_number", { ascending: true });
 
   const revisions = (revisionRows ?? []).map((r) => ({
     id: r.id as string,

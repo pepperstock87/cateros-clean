@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/organizations";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,6 +13,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const org = await getCurrentOrg();
+
     const { proposalId, revisionNotes } = await req.json();
 
     if (!proposalId) {
@@ -22,12 +25,13 @@ export async function POST(req: Request) {
     }
 
     // Fetch the original proposal and verify ownership
-    const { data: original, error: fetchError } = await supabase
+    let originalQuery = supabase
       .from("proposals")
       .select("*")
       .eq("id", proposalId)
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
+    if (org?.orgId) originalQuery = originalQuery.eq("organization_id", org.orgId);
+    const { data: original, error: fetchError } = await originalQuery.single();
 
     if (fetchError || !original) {
       return NextResponse.json(
@@ -37,11 +41,13 @@ export async function POST(req: Request) {
     }
 
     // Find the highest revision number among siblings (same event_id)
-    const { data: siblings } = await supabase
+    let siblingsQuery = supabase
       .from("proposals")
       .select("revision_number")
       .eq("event_id", original.event_id)
-      .eq("user_id", user.id)
+      .eq("user_id", user.id);
+    if (org?.orgId) siblingsQuery = siblingsQuery.eq("organization_id", org.orgId);
+    const { data: siblings } = await siblingsQuery
       .order("revision_number", { ascending: false })
       .limit(1);
 

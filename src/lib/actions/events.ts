@@ -43,12 +43,13 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
   // If a template was selected, apply its pricing_data to the new event
   const templateId = formData.get("template_id") as string;
   if (templateId && data) {
-    const { data: template } = await supabase
+    let templateQuery = supabase
       .from("event_templates")
       .select("pricing_data")
       .eq("id", templateId)
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
+    if (org?.orgId) templateQuery = templateQuery.eq("organization_id", org.orgId);
+    const { data: template } = await templateQuery.single();
     if (template?.pricing_data) {
       await supabase
         .from("events")
@@ -64,8 +65,9 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let updateQuery = supabase
     .from("events")
     .update({
       name: formData.get("name") as string,
@@ -82,6 +84,8 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
     })
     .eq("id", eventId)
     .eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+  const { error } = await updateQuery;
 
   if (error) return { error: error.message };
 
@@ -99,12 +103,15 @@ export async function updateEventPricingAction(eventId: string, pricingData: Pri
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let pricingQuery = supabase
     .from("events")
     .update({ pricing_data: pricingData, updated_at: new Date().toISOString() })
     .eq("id", eventId)
     .eq("user_id", user.id);
+  if (org?.orgId) pricingQuery = pricingQuery.eq("organization_id", org.orgId);
+  const { error } = await pricingQuery;
 
   if (error) return { error: error.message };
 
@@ -118,12 +125,15 @@ export async function updateEventStatusAction(eventId: string, status: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let statusQuery = supabase
     .from("events")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", eventId)
     .eq("user_id", user.id);
+  if (org?.orgId) statusQuery = statusQuery.eq("organization_id", org.orgId);
+  const { error } = await statusQuery;
 
   if (error) return { error: error.message };
 
@@ -142,12 +152,15 @@ export async function updateEventPaymentAction(eventId: string, paymentData: Pay
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let paymentQuery = supabase
     .from("events")
     .update({ payment_data: paymentData, updated_at: new Date().toISOString() })
     .eq("id", eventId)
     .eq("user_id", user.id);
+  if (org?.orgId) paymentQuery = paymentQuery.eq("organization_id", org.orgId);
+  const { error } = await paymentQuery;
 
   if (error) return { error: error.message };
 
@@ -163,15 +176,17 @@ export async function duplicateEventAction(eventId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { data: original } = await supabase
+  const org = await getCurrentOrg();
+
+  let dupQuery = supabase
     .from("events")
     .select("*")
     .eq("id", eventId)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+  if (org?.orgId) dupQuery = dupQuery.eq("organization_id", org.orgId);
+  const { data: original } = await dupQuery.single();
 
   if (!original) return { error: "Event not found" };
-  const org = await getCurrentOrg();
 
   const { data: newEvent, error } = await supabase
     .from("events")
@@ -204,12 +219,15 @@ export async function deleteEventAction(eventId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let deleteQuery = supabase
     .from("events")
     .delete()
     .eq("id", eventId)
     .eq("user_id", user.id);
+  if (org?.orgId) deleteQuery = deleteQuery.eq("organization_id", org.orgId);
+  const { error } = await deleteQuery;
 
   if (error) return { error: error.message };
   revalidatePath("/events");
@@ -222,15 +240,17 @@ export async function saveAsTemplateAction(eventId: string, templateName: string
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { data: event } = await supabase
+  const org = await getCurrentOrg();
+
+  let eventQuery = supabase
     .from("events")
     .select("pricing_data, guest_count")
     .eq("id", eventId)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+  if (org?.orgId) eventQuery = eventQuery.eq("organization_id", org.orgId);
+  const { data: event } = await eventQuery.single();
 
   if (!event || !event.pricing_data) return { error: "Event has no pricing data" };
-  const org = await getCurrentOrg();
 
   const { error } = await supabase.from("event_templates").insert({
     user_id: user.id,
@@ -249,12 +269,15 @@ export async function deleteTemplateAction(templateId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let delTplQuery = supabase
     .from("event_templates")
     .delete()
     .eq("id", templateId)
     .eq("user_id", user.id);
+  if (org?.orgId) delTplQuery = delTplQuery.eq("organization_id", org.orgId);
+  const { error } = await delTplQuery;
 
   if (error) return { error: error.message };
   return { success: true };

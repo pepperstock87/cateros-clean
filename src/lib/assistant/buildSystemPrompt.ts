@@ -1,7 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function buildSystemPrompt(userId: string): Promise<string> {
   const supabase = await createClient();
+  const org = await getCurrentOrg();
+
+  let eventsQuery = supabase
+    .from("events")
+    .select("name, event_date, guest_count, status, pricing_data")
+    .eq("user_id", userId);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+
+  let recipesQuery = supabase
+    .from("recipes")
+    .select("name, cost_per_serving, category")
+    .eq("user_id", userId);
+  if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
+
+  let receiptsQuery = supabase
+    .from("receipts")
+    .select("vendor, date, amount, category")
+    .eq("user_id", userId);
+  if (org?.orgId) receiptsQuery = receiptsQuery.eq("organization_id", org.orgId);
+
+  let invoicesQuery = supabase
+    .from("distributor_invoices")
+    .select("distributor, invoice_date, total")
+    .eq("user_id", userId);
+  if (org?.orgId) invoicesQuery = invoicesQuery.eq("organization_id", org.orgId);
 
   const [profileRes, eventsRes, recipesRes, receiptsRes, invoicesRes] = await Promise.all([
     supabase
@@ -9,27 +35,15 @@ export async function buildSystemPrompt(userId: string): Promise<string> {
       .select("full_name, company_name, plan_tier")
       .eq("id", userId)
       .single(),
-    supabase
-      .from("events")
-      .select("name, event_date, guest_count, status, pricing_data")
-      .eq("user_id", userId)
+    eventsQuery
       .order("event_date", { ascending: false })
       .limit(10),
-    supabase
-      .from("recipes")
-      .select("name, cost_per_serving, category")
-      .eq("user_id", userId)
+    recipesQuery
       .limit(20),
-    supabase
-      .from("receipts")
-      .select("vendor, date, amount, category")
-      .eq("user_id", userId)
+    receiptsQuery
       .order("date", { ascending: false })
       .limit(15),
-    supabase
-      .from("distributor_invoices")
-      .select("distributor, invoice_date, total")
-      .eq("user_id", userId)
+    invoicesQuery
       .order("invoice_date", { ascending: false })
       .limit(10),
   ]);

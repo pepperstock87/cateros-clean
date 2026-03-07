@@ -24,10 +24,21 @@ export function GenerateProposalButton({ event }: { event: Event }) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Fetch org context for filtering
+    const { data: orgProfile } = await supabase
+      .from("profiles")
+      .select("current_organization_id")
+      .eq("id", user!.id)
+      .single();
+    const orgId = orgProfile?.current_organization_id;
+
+    let settingsQuery = supabase.from("business_settings").select("*").eq("user_id", user!.id);
+    if (orgId) settingsQuery = settingsQuery.eq("organization_id", orgId);
+
     const [profileRes, entitlementsRes, settingsRes] = await Promise.all([
       supabase.from("profiles").select("company_name").eq("id", user!.id).single(),
       fetch("/api/entitlements").then(r => r.json()),
-      supabase.from("business_settings").select("*").eq("user_id", user!.id).maybeSingle()
+      settingsQuery.maybeSingle()
     ]);
 
     const profile = profileRes.data;
@@ -48,17 +59,10 @@ export function GenerateProposalButton({ event }: { event: Event }) {
     // Save proposal record to database
     const shareToken = Array.from(crypto.getRandomValues(new Uint8Array(16)))
       .map(b => b.toString(16).padStart(2, "0")).join("");
-    // Get current organization for org-scoped insert
-    const { data: orgProfile } = await supabase
-      .from("profiles")
-      .select("current_organization_id")
-      .eq("id", user!.id)
-      .single();
-
     const { error: insertError } = await supabase.from("proposals").insert({
       event_id: event.id,
       user_id: user!.id,
-      organization_id: orgProfile?.current_organization_id || null,
+      organization_id: orgId || null,
       title: `${event.name} Proposal`,
       status: "draft",
       custom_message: customMessage || null,

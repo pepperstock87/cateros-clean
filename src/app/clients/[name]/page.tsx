@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { ClientNotesForm } from "./ClientNotesForm";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData } from "@/types";
 
 type Props = { params: Promise<{ name: string }> };
@@ -32,25 +33,20 @@ export default async function ClientDetailPage({ params }: Props) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   // Fetch events for this client
-  const { data } = await supabase
-    .from("events")
-    .select("*")
-    .eq("user_id", user.id)
-    .ilike("client_name", clientName)
-    .order("event_date", { ascending: false });
+  let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id).ilike("client_name", clientName);
+  if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+  const { data } = await eventsQuery.order("event_date", { ascending: false });
 
   const events: Event[] = data ?? [];
   if (events.length === 0) notFound();
 
   // Fetch client notes
-  const { data: notesRow } = await supabase
-    .from("client_notes")
-    .select("notes")
-    .eq("user_id", user.id)
-    .eq("client_name", clientName)
-    .single();
+  let notesQuery = supabase.from("client_notes").select("notes").eq("user_id", user.id).eq("client_name", clientName);
+  if (org?.orgId) notesQuery = notesQuery.eq("organization_id", org.orgId);
+  const { data: notesRow } = await notesQuery.single();
 
   const savedNotes = notesRow?.notes ?? "";
 

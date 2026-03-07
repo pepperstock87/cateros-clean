@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
 import { BEOPageClient } from "@/components/events/BEOPageClient";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData, Recipe, StaffAssignment } from "@/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -22,29 +23,28 @@ export default async function BEOPage({ params }: Props) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data: event } = await supabase.from("events").select("*").eq("id", id).eq("user_id", user.id).single();
+  let eventQuery = supabase.from("events").select("*").eq("id", id).eq("user_id", user.id);
+  if (org?.orgId) eventQuery = eventQuery.eq("organization_id", org.orgId);
+  const { data: event } = await eventQuery.single();
   if (!event) notFound();
 
   const e = event as Event;
   const p = e.pricing_data as PricingData | null;
 
   // Fetch staff assignments, recipes, and business settings in parallel
+  let assignmentsQuery = supabase.from("event_staff_assignments").select("id, role, start_time, end_time, confirmed, notes, staff_members(name, role, phone)").eq("event_id", id).eq("user_id", user.id);
+  if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);
+  let recipesQuery = supabase.from("recipes").select("id, name, servings, ingredients").eq("user_id", user.id);
+  if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
+  let brandingQuery = supabase.from("business_settings").select("company_name").eq("user_id", user.id);
+  if (org?.orgId) brandingQuery = brandingQuery.eq("organization_id", org.orgId);
+
   const [assignmentsRes, recipesRes, brandingRes] = await Promise.all([
-    supabase
-      .from("event_staff_assignments")
-      .select("id, role, start_time, end_time, confirmed, notes, staff_members(name, role, phone)")
-      .eq("event_id", id)
-      .eq("user_id", user.id),
-    supabase
-      .from("recipes")
-      .select("id, name, servings, ingredients")
-      .eq("user_id", user.id),
-    supabase
-      .from("business_settings")
-      .select("company_name")
-      .eq("user_id", user.id)
-      .maybeSingle(),
+    assignmentsQuery,
+    recipesQuery,
+    brandingQuery.maybeSingle(),
   ]);
 
   const assignments = assignmentsRes.data ?? [];

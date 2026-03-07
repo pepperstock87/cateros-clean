@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/utils";
 import { ArrowLeft, Edit, BookOpen, Package, TrendingUp, CalendarDays, PieChart } from "lucide-react";
 import { DeleteRecipeButton } from "@/components/recipes/DeleteRecipeButton";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
+import { getCurrentOrg } from "@/lib/organizations";
 import type { Recipe } from "@/types";
 
 export default async function RecipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,24 +13,19 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
-  const { data, error } = await supabase
-    .from("recipes")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  let recipeQuery = supabase.from("recipes").select("*").eq("id", id).eq("user_id", user.id);
+  if (org?.orgId) recipeQuery = recipeQuery.eq("organization_id", org.orgId);
+  const { data, error } = await recipeQuery.single();
 
   if (error || !data) notFound();
   const recipe: Recipe = data;
 
   // Fetch events that use this recipe in their pricing_data menuItems
-  const { data: allPricedEvents } = await supabase
-    .from("events")
-    .select("id, name, client_name, event_date, status, guest_count, pricing_data")
-    .eq("user_id", user.id)
-    .not("pricing_data", "is", null)
-    .order("event_date", { ascending: false });
+  let pricedEventsQuery = supabase.from("events").select("id, name, client_name, event_date, status, guest_count, pricing_data").eq("user_id", user.id).not("pricing_data", "is", null);
+  if (org?.orgId) pricedEventsQuery = pricedEventsQuery.eq("organization_id", org.orgId);
+  const { data: allPricedEvents } = await pricedEventsQuery.order("event_date", { ascending: false });
 
   const relatedEvents = (allPricedEvents ?? []).filter(e => {
     const p = e.pricing_data as any;

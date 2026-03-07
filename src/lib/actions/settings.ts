@@ -11,12 +11,14 @@ export async function getBusinessSettings(): Promise<BusinessSettings | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+  const org = await getCurrentOrg();
 
-  const { data } = await supabase
+  let settingsQuery = supabase
     .from("business_settings")
     .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+    .eq("user_id", user.id);
+  if (org?.orgId) settingsQuery = settingsQuery.eq("organization_id", org.orgId);
+  const { data } = await settingsQuery.maybeSingle();
 
   return data;
 }

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function updateProposalStatusAction(
   proposalId: string,
@@ -10,12 +11,15 @@ export async function updateProposalStatusAction(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let statusQuery = supabase
     .from("proposals")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", proposalId)
     .eq("user_id", user.id);
+  if (org?.orgId) statusQuery = statusQuery.eq("organization_id", org.orgId);
+  const { error } = await statusQuery;
 
   if (error) return { error: error.message };
 
@@ -28,11 +32,13 @@ export async function updateProposalStatusAction(
       .single();
 
     if (proposal?.event_id) {
-      await supabase
+      let confirmQuery = supabase
         .from("events")
         .update({ status: "confirmed", updated_at: new Date().toISOString() })
         .eq("id", proposal.event_id)
         .eq("user_id", user.id);
+      if (org?.orgId) confirmQuery = confirmQuery.eq("organization_id", org.orgId);
+      await confirmQuery;
       revalidatePath(`/events/${proposal.event_id}`);
     }
   }
@@ -46,11 +52,13 @@ export async function updateProposalStatusAction(
       .single();
 
     if (proposal?.event_id) {
-      await supabase
+      let proposedQuery = supabase
         .from("events")
         .update({ status: "proposed", updated_at: new Date().toISOString() })
         .eq("id", proposal.event_id)
         .eq("user_id", user.id);
+      if (org?.orgId) proposedQuery = proposedQuery.eq("organization_id", org.orgId);
+      await proposedQuery;
       revalidatePath(`/events/${proposal.event_id}`);
     }
   }
@@ -65,12 +73,15 @@ export async function replyToClientAction(proposalId: string, message: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { data: proposal } = await supabase
+  const org = await getCurrentOrg();
+
+  let fetchQuery = supabase
     .from("proposals")
     .select("client_messages")
     .eq("id", proposalId)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", user.id);
+  if (org?.orgId) fetchQuery = fetchQuery.eq("organization_id", org.orgId);
+  const { data: proposal } = await fetchQuery.single();
 
   if (!proposal) return { error: "Proposal not found" };
 
@@ -82,11 +93,13 @@ export async function replyToClientAction(proposalId: string, message: string) {
     created_at: new Date().toISOString(),
   });
 
-  const { error } = await supabase
+  let replyQuery = supabase
     .from("proposals")
     .update({ client_messages: messages, updated_at: new Date().toISOString() })
     .eq("id", proposalId)
     .eq("user_id", user.id);
+  if (org?.orgId) replyQuery = replyQuery.eq("organization_id", org.orgId);
+  const { error } = await replyQuery;
 
   if (error) return { error: error.message };
 
@@ -98,12 +111,15 @@ export async function deleteProposalAction(proposalId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  const { error } = await supabase
+  let delProposalQuery = supabase
     .from("proposals")
     .delete()
     .eq("id", proposalId)
     .eq("user_id", user.id);
+  if (org?.orgId) delProposalQuery = delProposalQuery.eq("organization_id", org.orgId);
+  const { error } = await delProposalQuery;
 
   if (error) return { error: error.message };
 
