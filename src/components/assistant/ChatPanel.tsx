@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { X, Send, Loader2, Check, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { renderMarkdown } from "@/lib/renderMarkdown";
+import { createClient } from "@/lib/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -108,17 +110,24 @@ export function ChatPanel({
   initialPrompt,
   suggestedPrompts,
   fullScreen = false,
+  conversationId,
+  initialMessages,
+  onConversationCreated,
 }: {
   open: boolean;
   onClose: () => void;
   initialPrompt?: string;
   suggestedPrompts?: string[];
   fullScreen?: boolean;
+  conversationId?: string;
+  initialMessages?: Message[];
+  onConversationCreated?: (id: string) => void;
 }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [dismissedActions, setDismissedActions] = useState<Set<number>>(new Set());
+  const [currentConversationId, setCurrentConversationId] = useState<string | undefined>(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialPromptUsed = useRef(false);
@@ -225,6 +234,38 @@ export function ChatPanel({
       });
     } finally {
       setIsStreaming(false);
+
+      // Save conversation to Supabase
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Get latest messages from state via a workaround (setMessages returns void)
+          let allMessages: Message[] = [];
+          setMessages((prev) => {
+            allMessages = prev;
+            return prev;
+          });
+
+          if (currentConversationId) {
+            await supabase.from("ai_conversations")
+              .update({ messages: allMessages, updated_at: new Date().toISOString() })
+              .eq("id", currentConversationId);
+          } else {
+            const title = allMessages[0]?.content?.slice(0, 50) || "New conversation";
+            const { data } = await supabase.from("ai_conversations")
+              .insert({ user_id: user.id, title, messages: allMessages })
+              .select("id")
+              .single();
+            if (data) {
+              setCurrentConversationId(data.id);
+              onConversationCreated?.(data.id);
+            }
+          }
+        }
+      } catch {
+        // Silently fail on persistence errors
+      }
     }
   }
 
@@ -298,7 +339,14 @@ export function ChatPanel({
                     : "bg-[#1c1814] text-[#c4b5a0] border border-[#2e271f]"
                 )}
               >
-                <div className="whitespace-pre-wrap">{displayText}</div>
+                {msg.role === "assistant" ? (
+                  <div
+                    className="prose-chat leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(displayText) }}
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap">{displayText}</div>
+                )}
                 {actionBlock && !isDismissed && (
                   <ActionCard
                     action={actionBlock}
