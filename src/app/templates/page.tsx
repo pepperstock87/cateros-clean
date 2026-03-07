@@ -3,11 +3,15 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LayoutTemplate, Users, CalendarDays, Trash2, ArrowRight } from "lucide-react";
 import { DeleteTemplateButton } from "./DeleteTemplateButton";
+import { getUserEntitlements } from "@/lib/entitlements";
+import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 
 export default async function TemplatesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { isPro } = await getUserEntitlements();
 
   const { data: templates } = await supabase
     .from("event_templates")
@@ -28,7 +32,12 @@ export default async function TemplatesPage() {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {!isPro ? (
+        <UpgradePrompt
+          message="Event templates are a Pro feature. Upgrade to save and reuse event configurations."
+          plan="pro"
+        />
+      ) : items.length === 0 ? (
         <div className="card p-16 text-center">
           <LayoutTemplate className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No templates yet</h2>

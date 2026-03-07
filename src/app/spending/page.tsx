@@ -7,6 +7,7 @@ import { RecurringCosts } from "@/components/spending/RecurringCosts";
 import { CostAnalytics } from "@/components/spending/CostAnalytics";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { SpendingExport } from "@/components/spending/SpendingExport";
+import { getUserEntitlements } from "@/lib/entitlements";
 
 export type Receipt = {
   id: string;
@@ -95,6 +96,7 @@ export default async function SpendingPage() {
 
   const totalReceiptsAllTime = allReceipts.reduce((sum, r) => sum + r.amount, 0);
   const totalInvoicesAllTime = allInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  const { isPro } = await getUserEntitlements();
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -141,7 +143,7 @@ export default async function SpendingPage() {
       {/* Spending Analytics */}
       <div className="mt-6 md:mt-8">
         <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">Spending Analytics</h2>
-        <CostAnalytics receipts={allReceipts} invoices={allInvoices} />
+        <CostAnalytics receipts={allReceipts} invoices={allInvoices} isPro={isPro} />
       </div>
     </div>
   );

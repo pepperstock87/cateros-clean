@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
 import type { Event, PricingData, Recipe } from "@/types";
@@ -30,8 +28,8 @@ export default async function BEOPage({ params }: Props) {
   const e = event as Event;
   const p = e.pricing_data as PricingData | null;
 
-  // Fetch staff assignments and recipes in parallel
-  const [assignmentsRes, recipesRes] = await Promise.all([
+  // Fetch staff assignments, recipes, and business settings in parallel
+  const [assignmentsRes, recipesRes, brandingRes] = await Promise.all([
     supabase
       .from("event_staff_assignments")
       .select("id, role, start_time, end_time, confirmed, notes, staff_members(name, role, phone)")
@@ -41,10 +39,16 @@ export default async function BEOPage({ params }: Props) {
       .from("recipes")
       .select("id, name, servings, ingredients")
       .eq("user_id", user.id),
+    supabase
+      .from("business_settings")
+      .select("company_name")
+      .eq("user_id", user.id)
+      .maybeSingle(),
   ]);
 
   const assignments = assignmentsRes.data ?? [];
   const allRecipes: Recipe[] = (recipesRes.data as any) ?? [];
+  const companyName: string | null = (brandingRes.data as any)?.company_name ?? null;
 
   // Match menu items to recipes to build shopping list
   type ShoppingItem = { name: string; quantity: number; unit: string; totalNeeded: number };
@@ -87,22 +91,22 @@ export default async function BEOPage({ params }: Props) {
         }
       `}</style>
 
-      <div className="p-4 md:p-8 max-w-4xl mx-auto">
-        <Link href={`/events/${e.id}`} className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-3 transition-colors print:hidden">
-          <ArrowLeft className="w-4 h-4" /> Back to event
-        </Link>
+      <div className="p-4 md:p-8 max-w-4xl mx-auto print:p-0 print:max-w-none print:bg-white print:text-black">
         <BEOActions event={e} />
 
         {/* BEO Content - light theme for print readability */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#2e271f] print:shadow-none print:border-none print:rounded-none">
+        <div className="bg-white rounded-xl shadow-sm border border-[#2e271f] print:shadow-none print:border-none print:rounded-none print:bg-white">
           {/* Header */}
-          <div className="bg-gray-900 text-white px-8 py-6 rounded-t-xl print:rounded-none">
+          <div className="bg-gray-900 text-white px-8 py-6 rounded-t-xl print:rounded-none print:bg-gray-900">
+            {companyName && (
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{companyName}</p>
+            )}
             <h1 className="text-2xl font-bold tracking-tight">PRODUCTION SHEET</h1>
             <p className="text-gray-400 text-sm mt-1">Internal Use Only · Generated {format(new Date(), "MMMM d, yyyy")}</p>
           </div>
 
           {/* Event Details */}
-          <div className="px-8 py-6 border-b border-gray-200">
+          <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
             <h2 className="text-xl font-bold text-gray-900 mb-4">{e.name}</h2>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-700">
               <div><span className="font-semibold text-gray-900">Client:</span> {e.client_name}</div>
@@ -128,7 +132,7 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Staff Roster */}
           {assignments.length > 0 && (
-            <div className="px-8 py-6 border-b border-gray-200">
+            <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Staff Roster</h3>
               <table className="w-full text-sm">
                 <thead>
@@ -163,7 +167,7 @@ export default async function BEOPage({ params }: Props) {
             <>
               {/* Menu */}
               {p.menuItems?.length > 0 && (
-                <div className="px-8 py-6 border-b border-gray-200">
+                <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Menu</h3>
                   <table className="w-full text-sm">
                     <thead>
@@ -196,7 +200,7 @@ export default async function BEOPage({ params }: Props) {
 
               {/* Shopping List */}
               {shoppingList.length > 0 && (
-                <div className="px-8 py-6 border-b border-gray-200">
+                <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Shopping List</h3>
                   <p className="text-xs text-gray-500 mb-3">Aggregated from recipes · Based on {e.guest_count} guests</p>
                   <table className="w-full text-sm">
@@ -224,7 +228,7 @@ export default async function BEOPage({ params }: Props) {
 
               {/* Staffing Plan (from pricing) */}
               {p.staffing?.length > 0 && (
-                <div className="px-8 py-6 border-b border-gray-200">
+                <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Staffing Plan</h3>
                   <table className="w-full text-sm">
                     <thead>
@@ -259,7 +263,7 @@ export default async function BEOPage({ params }: Props) {
 
               {/* Equipment Checklist */}
               {p.rentals?.length > 0 && (
-                <div className="px-8 py-6 border-b border-gray-200">
+                <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Equipment Checklist</h3>
                   <table className="w-full text-sm">
                     <thead>
@@ -286,7 +290,7 @@ export default async function BEOPage({ params }: Props) {
 
               {/* Bar Package */}
               {p.barPackage && (
-                <div className="px-8 py-6 border-b border-gray-200">
+                <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Bar Package</h3>
                   <table className="w-full text-sm">
                     <thead>
@@ -310,7 +314,7 @@ export default async function BEOPage({ params }: Props) {
               )}
 
               {/* Cost Summary */}
-              <div className="px-8 py-6 border-b border-gray-200">
+              <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Cost Summary (Internal)</h3>
                 <table className="w-full text-sm">
                   <tbody className="text-gray-700">
@@ -372,7 +376,7 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Notes */}
           {e.notes && (
-            <div className="px-8 py-6 border-b border-gray-200">
+            <div className="px-8 py-6 border-b border-gray-200 print:border-gray-300 print:break-inside-avoid">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Notes</h3>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{e.notes}</p>
             </div>

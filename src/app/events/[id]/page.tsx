@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Users, CalendarDays, Mail, ClipboardList, FileText, Clock, Phone, Receipt, DollarSign, Edit, Trash2, ExternalLink } from "lucide-react";
+import { CalendarExport } from "@/components/events/CalendarExport";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { DuplicateEventButton } from "@/components/events/DuplicateEventButton";
 import { SaveAsTemplateButton } from "@/components/events/SaveAsTemplateButton";
@@ -14,6 +15,7 @@ import { GenerateProposalButton } from "@/components/proposals/GenerateProposalB
 import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { StaffAssignments } from "@/components/events/StaffAssignments";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
+import { PrintButton } from "@/components/events/PrintButton";
 import { formatCurrency } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
@@ -151,6 +153,8 @@ export default async function EventDetailPage({ params }: Props) {
           <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
             <Edit className="w-4 h-4" />Edit
           </Link>
+          <CalendarExport event={{ id: e.id, name: e.name, event_date: e.event_date, start_time: e.start_time, end_time: e.end_time, venue: e.venue, client_name: e.client_name, notes: e.notes }} />
+          <PrintButton />
           <DuplicateEventButton eventId={e.id} />
           {e.pricing_data && <SaveAsTemplateButton eventId={e.id} />}
           <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />

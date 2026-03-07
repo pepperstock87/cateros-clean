@@ -4,10 +4,15 @@ import { ExportButton } from "@/components/ui/ExportButton";
 import { downloadCSV } from "@/lib/exportCSV";
 import { generateEventsSummaryPDF } from "@/lib/generateReportPDF";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import type { Event, PricingData } from "@/types";
 
-export function EventsExport({ events, companyName }: { events: Event[]; companyName: string }) {
+export function EventsExport({ events, companyName, isPro = false }: { events: Event[]; companyName: string; isPro?: boolean }) {
   const handleCSV = () => {
+    if (!isPro) {
+      toast.error("Export is a Pro feature. Upgrade to export your events.");
+      return;
+    }
     const rows = events.map((event) => {
       const p = event.pricing_data as PricingData | null;
       return {
@@ -23,6 +28,10 @@ export function EventsExport({ events, companyName }: { events: Event[]; company
   };
 
   const handlePDF = () => {
+    if (!isPro) {
+      toast.error("Export is a Pro feature. Upgrade to export your events.");
+      return;
+    }
     generateEventsSummaryPDF(events, companyName);
   };
 

@@ -3,12 +3,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import { RecipeProfitability } from "@/components/recipes/RecipeProfitability";
+import { getUserEntitlements } from "@/lib/entitlements";
+import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 import type { Recipe } from "@/types";
 
 export default async function RecipeAnalyticsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { isPro } = await getUserEntitlements();
 
   const { data } = await supabase
     .from("recipes")
@@ -48,7 +52,14 @@ export default async function RecipeAnalyticsPage() {
         </div>
       </div>
 
-      <RecipeProfitability recipes={recipes} />
+      {isPro ? (
+        <RecipeProfitability recipes={recipes} />
+      ) : (
+        <UpgradePrompt
+          message="Recipe analytics is a Pro feature. Upgrade to see profitability insights."
+          plan="pro"
+        />
+      )}
     </div>
   );
 }

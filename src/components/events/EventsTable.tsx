@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Search, Download } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { downloadCSV } from "@/lib/csv";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -15,18 +11,6 @@ const STATUS_CLASSES: Record<string, string> = {
   confirmed: "badge-confirmed",
   completed: "badge-completed",
   canceled: "badge-canceled",
-};
-
-const STATUSES = ["all", "draft", "proposed", "confirmed", "completed", "canceled"] as const;
-type StatusFilter = (typeof STATUSES)[number];
-
-const STATUS_LABELS: Record<StatusFilter, string> = {
-  all: "All",
-  draft: "Draft",
-  proposed: "Proposed",
-  confirmed: "Confirmed",
-  completed: "Completed",
-  canceled: "Canceled",
 };
 
 function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payment: PaymentData | null }) {
@@ -53,109 +37,11 @@ function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payme
 }
 
 export function EventsTable({ events }: { events: Event[] }) {
-  const searchParams = useSearchParams();
-  const clientParam = searchParams.get("client") ?? "";
-  const [activeStatus, setActiveStatus] = useState<StatusFilter>("all");
-  const [searchQuery, setSearchQuery] = useState(clientParam);
-
-  useEffect(() => {
-    if (clientParam) setSearchQuery(clientParam);
-  }, [clientParam]);
-
-  const filteredEvents = useMemo(() => {
-    let result = events;
-
-    if (activeStatus !== "all") {
-      result = result.filter((e) => e.status === activeStatus);
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      result = result.filter(
-        (e) =>
-          e.name.toLowerCase().includes(q) ||
-          e.client_name.toLowerCase().includes(q) ||
-          (e.venue && e.venue.toLowerCase().includes(q))
-      );
-    }
-
-    return result;
-  }, [events, activeStatus, searchQuery]);
-
   return (
     <>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="flex flex-wrap gap-2">
-          {STATUSES.map((status) => (
-            <button
-              key={status}
-              onClick={() => setActiveStatus(status)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                activeStatus === status
-                  ? "bg-brand-950 text-brand-400 border-brand-800"
-                  : "bg-transparent text-[#6b5a4a] border-[#2e271f] hover:text-[#9c8876]"
-              }`}
-            >
-              {STATUS_LABELS[status]}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input pl-9 w-full"
-            />
-          </div>
-          <button
-            onClick={() => {
-              const rows = filteredEvents.map((event) => {
-                const p = event.pricing_data as PricingData | null;
-                const pay = event.payment_data as PaymentData | null;
-                const paid = pay?.totalPaid ?? 0;
-                const total = p?.suggestedPrice ?? 0;
-                let paymentStatus = "Unpaid";
-                if (p && paid >= total) paymentStatus = "Paid";
-                else if (p && paid > 0) paymentStatus = "Partial";
-                return {
-                  "Event Name": event.name,
-                  Client: event.client_name,
-                  Date: format(new Date(event.event_date), "MMM d, yyyy"),
-                  Guests: event.guest_count,
-                  Revenue: p ? p.suggestedPrice : null,
-                  Margin: p ? +(p.projectedMargin * 100).toFixed(1) : null,
-                  "Payment Status": p ? paymentStatus : null,
-                  Status: event.status,
-                };
-              });
-              downloadCSV(rows, "events.csv");
-            }}
-            className="btn-secondary text-xs flex items-center gap-1.5"
-          >
-            <Download className="w-3.5 h-3.5" />
-            Download CSV
-          </button>
-        </div>
-      </div>
-
-      <p className="text-sm text-[#9c8876] mb-4">
-        {filteredEvents.length} {filteredEvents.length === 1 ? "event" : "events"} found
-      </p>
-
-      {filteredEvents.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-[#6b5a4a] text-sm">No events match your filters.</p>
-        </div>
-      ) : (
-        <>
-          {/* Mobile card view */}
-          <div className="md:hidden space-y-3">
-            {filteredEvents.map((event) => {
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {events.map((event) => {
               const p = event.pricing_data as PricingData | null;
               return (
                 <Link
@@ -194,7 +80,7 @@ export function EventsTable({ events }: { events: Event[] }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredEvents.map((event) => {
+                {events.map((event) => {
                   const p = event.pricing_data as PricingData | null;
                   const pay = event.payment_data as PaymentData | null;
                   return (
@@ -238,8 +124,6 @@ export function EventsTable({ events }: { events: Event[] }) {
               </tbody>
             </table>
           </div>
-        </>
-      )}
     </>
   );
 }

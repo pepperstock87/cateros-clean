@@ -10,6 +10,7 @@ import { ReplyToClient } from "./ReplyToClient";
 import { ProposalComments } from "@/components/proposals/ProposalComments";
 import { RevisionHistory } from "@/components/proposals/RevisionHistory";
 import { CreateRevisionButton } from "@/components/proposals/CreateRevisionButton";
+import { getUserEntitlements } from "@/lib/entitlements";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -29,6 +30,7 @@ export default async function ProposalDetailPage({ params }: Props) {
     .single();
 
   if (!data) notFound();
+  const { isPro } = await getUserEntitlements();
   const proposal = data as ProposalWithEvent;
   const event = proposal.event;
   const pricing = event?.pricing_data as PricingData | null;
@@ -74,7 +76,7 @@ export default async function ProposalDetailPage({ params }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <CreateRevisionButton proposalId={proposal.id} eventId={proposal.event_id} />
+          <CreateRevisionButton proposalId={proposal.id} eventId={proposal.event_id} isPro={isPro} />
           <ProposalActions proposal={proposal} event={event} />
         </div>
       </div>

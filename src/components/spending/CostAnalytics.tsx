@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
+import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 
 const COLORS = ["#c4956a", "#d4801f", "#a67c52", "#8b6914", "#b8860b", "#cd853f", "#deb887", "#d2691e"];
 
@@ -37,9 +38,11 @@ type Invoice = {
 export function CostAnalytics({
   receipts,
   invoices,
+  isPro = false,
 }: {
   receipts: Receipt[];
   invoices: Invoice[];
+  isPro?: boolean;
 }) {
   // Category breakdown from receipts
   const categoryData = useMemo(() => {
@@ -129,6 +132,25 @@ export function CostAnalytics({
 
   if (receipts.length === 0 && invoices.length === 0) {
     return null;
+  }
+
+  if (!isPro) {
+    return (
+      <div className="relative">
+        <div className="opacity-20 blur-sm pointer-events-none" aria-hidden="true">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className="card p-4 md:p-5 h-64" />
+            <div className="card p-4 md:p-5 h-64" />
+          </div>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <UpgradePrompt
+            message="Spending analytics is a Pro feature. Upgrade to see cost breakdowns and trends."
+            plan="pro"
+          />
+        </div>
+      </div>
+    );
   }
 
   const maxVendorAmount = topVendors.length > 0 ? topVendors[0].amount : 1;

@@ -2,8 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, CalendarDays } from "lucide-react";
-import { EventsTable } from "@/components/events/EventsTable";
+import { FilteredEventsView } from "@/components/events/FilteredEventsView";
 import { EventsExport } from "@/components/events/EventsExport";
+import { getUserEntitlements } from "@/lib/entitlements";
 import type { Event } from "@/types";
 
 export default async function EventsListPage() {
@@ -17,6 +18,7 @@ export default async function EventsListPage() {
   ]);
   const events: Event[] = eventsRes.data ?? [];
   const companyName = profileRes.data?.company_name ?? "My Company";
+  const { isPro } = await getUserEntitlements();
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -26,7 +28,7 @@ export default async function EventsListPage() {
           <p className="text-sm text-[#9c8876] mt-1">{events.length} total events</p>
         </div>
         <div className="flex items-center gap-3">
-          {events.length > 0 && <EventsExport events={events} companyName={companyName} />}
+          {events.length > 0 && <EventsExport events={events} companyName={companyName} isPro={isPro} />}
           <Link href="/events/new" className="btn-primary flex items-center gap-2"><Plus className="w-4 h-4" />New event</Link>
         </div>
       </div>
@@ -39,7 +41,7 @@ export default async function EventsListPage() {
           <Link href="/events/new" className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" />Create first event</Link>
         </div>
       ) : (
-        <EventsTable events={events} />
+        <FilteredEventsView events={events} companyName={companyName} />
       )}
     </div>
   );

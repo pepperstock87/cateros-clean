@@ -8,9 +8,11 @@ import { toast } from "sonner";
 export function CreateRevisionButton({
   proposalId,
   eventId,
+  isPro = false,
 }: {
   proposalId: string;
   eventId: string;
+  isPro?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -57,7 +59,13 @@ export function CreateRevisionButton({
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (!isPro) {
+            toast.error("Proposal revisions are a Pro feature. Upgrade to create revisions.");
+            return;
+          }
+          setOpen(true);
+        }}
         className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
       >
         <GitBranch className="w-3.5 h-3.5" />

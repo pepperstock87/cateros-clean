@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Lock, X, Users, AlertTriangle } from "lucide-react";
+import { BulkCalendarExport } from "@/components/events/BulkCalendarExport";
 import Link from "next/link";
 import type { Event, UserEntitlements } from "@/types";
 
@@ -164,10 +165,13 @@ export default function SchedulePage() {
           <h1 className="font-display text-2xl font-semibold">Schedule</h1>
           <p className="text-sm text-[#9c8876] mt-1">Calendar view of your events</p>
         </div>
-        <Link href="/events/new" className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">New Event</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <BulkCalendarExport events={events} />
+          <Link href="/events/new" className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Event</span>
+          </Link>
+        </div>
       </div>
 
       {allMonthConflicts.length > 0 && (

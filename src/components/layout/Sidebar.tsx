@@ -84,7 +84,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed md:sticky top-0 z-40 md:z-0 w-56 h-screen bg-[#0f0d0b] border-r border-[#2e271f] flex flex-col transition-transform md:translate-x-0",
+        "no-print fixed md:sticky top-0 z-40 md:z-0 w-56 h-screen bg-[#0f0d0b] border-r border-[#2e271f] flex flex-col transition-transform md:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Desktop Header */}
