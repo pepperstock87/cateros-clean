@@ -7,6 +7,8 @@ import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CommandPalette } from "@/components/layout/CommandPalette";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -99,6 +101,11 @@ export function Sidebar({ companyName }: { companyName?: string }) {
         {/* Mobile Padding for fixed header */}
         <div className="md:hidden h-14" />
 
+        {/* Search */}
+        <div className="px-3 pt-3">
+          <CommandPalette />
+        </div>
+
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(({ href, icon: Icon, label }) => {
@@ -127,6 +134,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Bottom Actions */}
         <div className="px-3 py-3 border-t border-[#2e271f] space-y-0.5">
+          <NotificationBell />
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}

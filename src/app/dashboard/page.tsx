@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns";
-import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight, AlertTriangle } from "lucide-react";
 import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { RevenueGoal } from "@/components/dashboard/RevenueGoal";
+import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 
 async function getDashboardData(userId: string) {
   const supabase = await createClient();
@@ -26,6 +27,23 @@ async function getDashboardData(userId: string) {
   const monthCost = active.reduce((s, e) => s + ((e.pricing_data as PricingData)?.totalCost ?? 0), 0);
   const monthProfit = monthRevenue - monthCost;
   const avgMargin = monthRevenue > 0 ? (monthProfit / monthRevenue) * 100 : 0;
+
+  // Last month stats for comparison
+  const lastMonth = subMonths(now, 1);
+  const lastMonthStart = startOfMonth(lastMonth).toISOString();
+  const lastMonthEnd = endOfMonth(lastMonth).toISOString();
+  const lastMonthEvents = events.filter(e => e.event_date >= lastMonthStart && e.event_date <= lastMonthEnd);
+  const lastMonthActive = lastMonthEvents.filter(e => e.status === "confirmed" || e.status === "completed");
+  const lastMonthRevenue = lastMonthActive.reduce((s, e) => s + ((e.pricing_data as PricingData)?.suggestedPrice ?? 0), 0);
+  const lastMonthCost = lastMonthActive.reduce((s, e) => s + ((e.pricing_data as PricingData)?.totalCost ?? 0), 0);
+  const lastMonthProfit = lastMonthRevenue - lastMonthCost;
+  const lastMonthMargin = lastMonthRevenue > 0 ? (lastMonthProfit / lastMonthRevenue) * 100 : 0;
+
+  // Pipeline data
+  const proposedEvents = events.filter(e => e.status === "proposed");
+  const confirmedEvents = events.filter(e => e.status === "confirmed" && e.event_date > now.toISOString());
+  const proposedTotal = proposedEvents.reduce((s, e) => s + ((e.pricing_data as PricingData)?.suggestedPrice ?? 0), 0);
+  const confirmedTotal = confirmedEvents.reduce((s, e) => s + ((e.pricing_data as PricingData)?.suggestedPrice ?? 0), 0);
 
   const monthlyData = Array.from({ length: 6 }, (_, i) => {
     const d = subMonths(now, 5 - i);
@@ -92,6 +110,12 @@ async function getDashboardData(userId: string) {
     totalRevenueThisMonth: monthRevenue,
     totalProfitThisMonth: monthProfit,
     avgMarginThisMonth: avgMargin,
+    lastMonthEvents: lastMonthEvents.length,
+    lastMonthRevenue,
+    lastMonthProfit,
+    lastMonthMargin,
+    proposedPipeline: { total: proposedTotal, count: proposedEvents.length },
+    confirmedPipeline: { total: confirmedTotal, count: confirmedEvents.length },
     upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 5),
     recentEvents: events.slice(0, 8),
     monthlyData,
@@ -113,13 +137,14 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome").eq("id", user.id).single();
   const stats = await getDashboardData(user.id);
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <WelcomeModal hasSeenWelcome={profile?.has_seen_welcome ?? false} />
       {/* Header - Mobile friendly */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
@@ -140,24 +165,57 @@ export default async function DashboardPage() {
       {/* Stats Grid - Responsive */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         {[
-          { icon: CalendarDays, label: "Events", fullLabel: "Events this month", value: stats.totalEventsThisMonth, color: "text-brand-400", raw: true },
-          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue", value: stats.totalRevenueThisMonth, color: "text-brand-400" },
-          { icon: TrendingUp, label: "Profit", fullLabel: "Profit", value: stats.totalProfitThisMonth, color: "text-green-400", green: true },
-          { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, color: "text-brand-400", pct: true },
-        ].map(({ icon: Icon, label, fullLabel, value, color, green, pct, raw }) => (
-          <div key={label} className="stat-card">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon className={`w-4 h-4 ${color}`} />
-              <span className="stat-label">
-                <span className="hidden sm:inline">{fullLabel}</span>
-                <span className="sm:hidden">{label}</span>
-              </span>
+          { icon: CalendarDays, label: "Events", fullLabel: "Events this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
+          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
+          { icon: TrendingUp, label: "Profit", fullLabel: "Profit", value: stats.totalProfitThisMonth, prev: stats.lastMonthProfit, color: "text-green-400", green: true },
+          { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
+        ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw }) => {
+          const current = value as number;
+          const previous = prev as number;
+          const delta = previous > 0
+            ? ((current - previous) / previous) * 100
+            : current > 0 ? 100 : 0;
+          const isUp = current > previous;
+          const isDown = current < previous;
+          const isEqual = current === previous || (previous === 0 && current === 0);
+
+          return (
+            <div key={label} className="stat-card">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon className={`w-4 h-4 ${color}`} />
+                <span className="stat-label">
+                  <span className="hidden sm:inline">{fullLabel}</span>
+                  <span className="sm:hidden">{label}</span>
+                </span>
+              </div>
+              <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
+                {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
+              </div>
+              <div className="flex items-center gap-1 mt-1.5">
+                {isEqual ? (
+                  <>
+                    <Minus className="w-3 h-3 text-[#6b5a4a]" />
+                    <span className="text-[10px] md:text-xs text-[#6b5a4a]">No change</span>
+                  </>
+                ) : isUp ? (
+                  <>
+                    <TrendingUp className="w-3 h-3 text-green-400" />
+                    <span className="text-[10px] md:text-xs text-green-400">
+                      {raw ? `+${current - previous}` : `+${Math.round(Math.abs(delta))}%`} vs last month
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="w-3 h-3 text-red-400" />
+                    <span className="text-[10px] md:text-xs text-red-400">
+                      {raw ? `${current - previous}` : `-${Math.round(Math.abs(delta))}%`} vs last month
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
-            <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
-              {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Revenue Goal + Next Event */}
@@ -181,6 +239,30 @@ export default async function DashboardPage() {
             </div>
           );
         })()}
+      </div>
+
+      {/* Pipeline */}
+      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="card p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="w-4 h-4 text-[#9c8876]" />
+            <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Proposed Pipeline</span>
+          </div>
+          <div className="text-lg md:text-2xl font-semibold font-display">{formatCurrency(stats.proposedPipeline.total)}</div>
+          <div className="text-[10px] md:text-xs text-[#6b5a4a] mt-1">
+            {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? "event" : "events"}
+          </div>
+        </div>
+        <div className="card p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="w-4 h-4 text-green-400" />
+            <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Confirmed Pipeline</span>
+          </div>
+          <div className="text-lg md:text-2xl font-semibold font-display text-green-400">{formatCurrency(stats.confirmedPipeline.total)}</div>
+          <div className="text-[10px] md:text-xs text-[#6b5a4a] mt-1">
+            {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? "event" : "events"}
+          </div>
+        </div>
       </div>
 
       {/* Action Items & Notifications */}

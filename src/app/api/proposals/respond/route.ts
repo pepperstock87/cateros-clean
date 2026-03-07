@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   const { share_token, action, message } = await req.json();
@@ -65,6 +66,30 @@ export async function POST(req: Request) {
       .from("events")
       .update({ status: eventStatus, updated_at: new Date().toISOString() })
       .eq("id", proposal.event_id);
+  }
+
+  // Send notification to the caterer
+  const notificationMap: Record<string, { type: "proposal_accepted" | "proposal_declined" | "revision_requested"; title: string }> = {
+    accepted: { type: "proposal_accepted", title: "Proposal Accepted" },
+    declined: { type: "proposal_declined", title: "Proposal Declined" },
+    revision_requested: { type: "revision_requested", title: "Revision Requested" },
+  };
+
+  const notif = notificationMap[action];
+  if (notif && proposal.user_id) {
+    const linkUrl = proposal.event_id
+      ? `/events/${proposal.event_id}`
+      : `/proposals`;
+
+    await createNotification({
+      userId: proposal.user_id,
+      type: notif.type,
+      title: notif.title,
+      message: message?.trim()
+        ? `Client responded: "${message.trim()}"`
+        : `A client has ${action.replace("_", " ")} your proposal.`,
+      linkUrl,
+    });
   }
 
   return NextResponse.json({ success: true, status: newStatus });

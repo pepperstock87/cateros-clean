@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowLeft, Edit, BookOpen, Package, TrendingUp } from "lucide-react";
+import { ArrowLeft, Edit, BookOpen, Package, TrendingUp, CalendarDays, PieChart } from "lucide-react";
 import { DeleteRecipeButton } from "@/components/recipes/DeleteRecipeButton";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import type { Recipe } from "@/types";
@@ -23,8 +23,39 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
   if (error || !data) notFound();
   const recipe: Recipe = data;
 
+  // Fetch events that use this recipe in their pricing_data menuItems
+  const { data: allPricedEvents } = await supabase
+    .from("events")
+    .select("id, name, client_name, event_date, status, guest_count, pricing_data")
+    .eq("user_id", user.id)
+    .not("pricing_data", "is", null)
+    .order("event_date", { ascending: false });
+
+  const relatedEvents = (allPricedEvents ?? []).filter(e => {
+    const p = e.pricing_data as any;
+    return p?.menuItems?.some((item: any) => item.name === recipe.name);
+  });
+
   // Suggested sell prices at various margins
   const margins = [25, 30, 35, 40];
+
+  // Margin analysis helpers
+  const typicalSellPrice = recipe.cost_per_serving > 0 ? recipe.cost_per_serving / (1 - 0.30) : 0;
+  const foodCostPercent = typicalSellPrice > 0 ? (recipe.cost_per_serving / typicalSellPrice) * 100 : 0;
+
+  const getFoodCostColor = (pct: number) => {
+    if (pct < 30) return { color: "text-green-400", bg: "bg-green-400", label: "Excellent" };
+    if (pct <= 40) return { color: "text-yellow-400", bg: "bg-yellow-400", label: "Acceptable" };
+    return { color: "text-red-400", bg: "bg-red-400", label: "High" };
+  };
+
+  const statusColors: Record<string, string> = {
+    draft: "bg-[#3a3228] text-[#9c8876]",
+    proposed: "bg-blue-900/30 text-blue-400",
+    confirmed: "bg-green-900/30 text-green-400",
+    completed: "bg-brand-900/30 text-brand-300",
+    canceled: "bg-red-900/30 text-red-400",
+  };
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -80,26 +111,134 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      {/* Suggested sell prices */}
-      {recipe.cost_per_serving > 0 && (
-        <div className="card p-5 mb-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <TrendingUp className="w-4 h-4 text-[#9c8876]" />
-            <h2 className="font-medium text-sm">Suggested Sell Prices</h2>
-          </div>
-          <div className="grid grid-cols-4 gap-3">
-            {margins.map(m => {
-              const sellPrice = recipe.cost_per_serving / (1 - m / 100);
-              return (
-                <div key={m} className="bg-[#251f19] rounded-lg p-3 text-center">
-                  <div className="text-sm font-semibold text-brand-300">{formatCurrency(sellPrice)}</div>
-                  <div className="text-[10px] text-[#9c8876] mt-0.5">{m}% margin</div>
+      {/* Margin Analysis & Suggested Sell Prices */}
+      {recipe.cost_per_serving > 0 && (() => {
+        const indicator = getFoodCostColor(foodCostPercent);
+        return (
+          <div className="card p-5 mb-4">
+            <div className="flex items-center gap-1.5 mb-4">
+              <PieChart className="w-4 h-4 text-[#9c8876]" />
+              <h2 className="font-medium text-sm">Margin Analysis</h2>
+            </div>
+
+            {/* Food cost indicator */}
+            <div className="bg-[#251f19] rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[#9c8876]">Food Cost % (at 30% target margin)</span>
+                <span className={`text-xs font-semibold ${indicator.color}`}>{indicator.label}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-3 bg-[#1a1510] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${indicator.bg}`}
+                    style={{ width: `${Math.min(foodCostPercent, 100)}%`, opacity: 0.7 }}
+                  />
                 </div>
-              );
-            })}
+                <span className={`text-sm font-semibold ${indicator.color} min-w-[3rem] text-right`}>
+                  {foodCostPercent.toFixed(1)}%
+                </span>
+              </div>
+              <p className="text-[10px] text-[#6b5a4a] mt-2">Industry standard food cost is 28-35%. Lower is more profitable.</p>
+            </div>
+
+            {/* Cost breakdown bars */}
+            <div className="mb-4">
+              <h3 className="text-xs text-[#9c8876] mb-2">Cost Breakdown per Serving</h3>
+              <div className="space-y-2">
+                {recipe.ingredients.length > 0 && (() => {
+                  const sortedIngs = [...recipe.ingredients].sort((a, b) => b.total_cost - a.total_cost).slice(0, 5);
+                  const maxCost = sortedIngs[0]?.total_cost || 1;
+                  return sortedIngs.map(ing => {
+                    const perServing = ing.total_cost / recipe.servings;
+                    const pctOfMax = (ing.total_cost / maxCost) * 100;
+                    return (
+                      <div key={ing.id} className="flex items-center gap-2">
+                        <span className="text-[11px] text-[#9c8876] w-24 truncate" title={ing.name}>{ing.name}</span>
+                        <div className="flex-1 h-2 bg-[#1a1510] rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-brand-500/60" style={{ width: `${pctOfMax}%` }} />
+                        </div>
+                        <span className="text-[11px] text-[#f5ede0] min-w-[3rem] text-right">{formatCurrency(perServing)}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+
+            {/* Suggested sell prices */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-3">
+                <TrendingUp className="w-4 h-4 text-[#9c8876]" />
+                <h3 className="text-xs text-[#9c8876]">Suggested Sell Prices</h3>
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                {margins.map(m => {
+                  const sellPrice = recipe.cost_per_serving / (1 - m / 100);
+                  const costPct = (recipe.cost_per_serving / sellPrice) * 100;
+                  const cIndicator = getFoodCostColor(costPct);
+                  return (
+                    <div key={m} className="bg-[#251f19] rounded-lg p-3 text-center">
+                      <div className="text-sm font-semibold text-brand-300">{formatCurrency(sellPrice)}</div>
+                      <div className="text-[10px] text-[#9c8876] mt-0.5">{m}% margin</div>
+                      <div className={`text-[9px] mt-1 ${cIndicator.color}`}>{costPct.toFixed(0)}% food cost</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+        );
+      })()}
+
+      {/* Events Using This Recipe */}
+      <div className="card p-5 mb-4">
+        <div className="flex items-center gap-1.5 mb-3">
+          <CalendarDays className="w-4 h-4 text-[#9c8876]" />
+          <h2 className="font-medium text-sm">Events Using This Recipe</h2>
+          {relatedEvents.length > 0 && (
+            <span className="text-xs text-[#9c8876] ml-1">({relatedEvents.length})</span>
+          )}
         </div>
-      )}
+        {relatedEvents.length === 0 ? (
+          <div className="text-center py-6">
+            <CalendarDays className="w-8 h-8 text-[#3a3228] mx-auto mb-2" />
+            <p className="text-sm text-[#6b5a4a]">Not used in any events yet</p>
+            <p className="text-xs text-[#4a3f34] mt-1">
+              Add this recipe as a menu item when pricing an event.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {relatedEvents.map(event => (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}`}
+                className="flex items-center justify-between bg-[#251f19] rounded-lg p-3 hover:bg-[#2e271f] transition-colors group"
+              >
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-[#f5ede0] group-hover:text-brand-300 transition-colors truncate">
+                    {event.name}
+                  </div>
+                  <div className="text-xs text-[#9c8876] mt-0.5">
+                    {event.client_name}
+                    {event.event_date && (
+                      <> &middot; {new Date(event.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  {event.guest_count > 0 && (
+                    <span className="text-[10px] text-[#9c8876]">{event.guest_count} guests</span>
+                  )}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[event.status] || "bg-[#3a3228] text-[#9c8876]"}`}>
+                    {event.status}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Ingredients */}
       {recipe.ingredients.length > 0 && (

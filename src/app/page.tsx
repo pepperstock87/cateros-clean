@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ChefHat, TrendingUp, FileText, BookOpen, BarChart2, Users, Calendar, Zap } from "lucide-react";
+import { ChefHat, TrendingUp, FileText, BookOpen, BarChart2, Users, Calendar, Zap, Quote } from "lucide-react";
+import FAQSection from "@/components/landing/FAQSection";
 
 export default function LandingPage() {
   return (
@@ -61,6 +62,104 @@ export default function LandingPage() {
           ))}
         </div>
       </div>
+
+      {/* How It Works */}
+      <div className="max-w-5xl mx-auto px-6 pb-24">
+        <h2 className="text-center font-display text-3xl font-semibold mb-4">How it works</h2>
+        <p className="text-center text-[#9c8876] mb-16">Go from recipe to revenue in three simple steps</p>
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+          {/* Connecting line (visible on md+) */}
+          <div className="hidden md:block absolute top-6 left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-px bg-[#2e271f]" />
+
+          {[
+            {
+              step: "1",
+              title: "Build Your Menu",
+              desc: "Add recipes with real ingredient costs. We calculate per-person pricing automatically.",
+            },
+            {
+              step: "2",
+              title: "Price Your Event",
+              desc: "Enter guest count and our engine handles food, labor, rentals, overhead, and profit margin.",
+            },
+            {
+              step: "3",
+              title: "Send & Close",
+              desc: "Generate professional proposals with one click. Clients accept online instantly.",
+            },
+          ].map(({ step, title, desc }) => (
+            <div key={step} className="flex flex-col items-center text-center">
+              <div className="relative z-10 w-12 h-12 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-lg mb-5">
+                {step}
+              </div>
+              <h3 className="font-display text-lg font-semibold mb-2">{title}</h3>
+              <p className="text-sm text-[#9c8876] leading-relaxed max-w-xs">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Social Proof / Stats Bar */}
+      <div className="bg-[#1a1714] border-y border-[#2e271f] py-12 mb-24">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {[
+            { value: "500+", label: "Events priced" },
+            { value: "$2M+", label: "Catering revenue managed" },
+            { value: "98%", label: "Client satisfaction" },
+            { value: "< 5 min", label: "To price an event" },
+          ].map(({ value, label }) => (
+            <div key={label}>
+              <div className="font-display text-2xl md:text-3xl font-bold text-brand-400 mb-1">{value}</div>
+              <div className="text-xs md:text-sm text-[#9c8876]">{label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Testimonials */}
+      <div className="max-w-6xl mx-auto px-6 pb-24">
+        <h2 className="text-center font-display text-3xl font-semibold mb-4">Trusted by catering professionals</h2>
+        <p className="text-center text-[#9c8876] mb-12">See what our customers have to say</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              quote:
+                "Cateros cut our event pricing time from 2 hours to 5 minutes. We\u2019ve increased our margins by 15% since switching.",
+              name: "Sarah M.",
+              role: "Executive Chef",
+              company: "The Grand Bistro",
+            },
+            {
+              quote:
+                "Finally, a tool that understands restaurant catering. The proposal system alone has won us 3 new corporate accounts.",
+              name: "Marcus R.",
+              role: "Catering Director",
+              company: "Riverside Kitchen",
+            },
+            {
+              quote:
+                "I used to undercharge on every event. Now I see my true costs and price confidently. Game changer.",
+              name: "Lisa T.",
+              role: "Owner",
+              company: "Fresh Fork Catering",
+            },
+          ].map(({ quote, name, role, company }) => (
+            <div key={name} className="card p-6 flex flex-col">
+              <Quote className="w-8 h-8 text-brand-800 mb-4 shrink-0" />
+              <p className="italic text-sm leading-relaxed mb-6 flex-1">{quote}</p>
+              <div>
+                <p className="font-medium text-sm">{name}</p>
+                <p className="text-xs text-[#9c8876]">
+                  {role}, {company}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <FAQSection />
 
       {/* Pricing */}
       <div id="pricing" className="max-w-6xl mx-auto px-6 pb-24">
