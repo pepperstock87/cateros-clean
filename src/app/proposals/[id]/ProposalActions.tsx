@@ -11,11 +11,16 @@ import { toast } from "sonner";
 import { ProposalFollowUp } from "@/components/proposals/ProposalFollowUp";
 import { ShareProposalModal } from "@/components/proposals/ShareProposalModal";
 
-const statusConfig: Record<Proposal["status"], { label: string; className: string }> = {
+const statusConfig: Record<string, { label: string; className: string }> = {
   draft: { label: "Draft", className: "badge-draft" },
   sent: { label: "Sent", className: "badge-proposed" },
-  accepted: { label: "Accepted", className: "badge-confirmed" },
+  viewed: { label: "Viewed", className: "badge-proposed" },
+  approved: { label: "Approved", className: "badge-confirmed" },
+  signed: { label: "Signed", className: "badge-confirmed" },
+  deposit_paid: { label: "Deposit Paid", className: "badge-confirmed" },
+  booked: { label: "Booked", className: "badge-confirmed" },
   declined: { label: "Declined", className: "badge-canceled" },
+  expired: { label: "Expired", className: "badge-canceled" },
 };
 
 export function ProposalActions({ proposal, event }: { proposal: Proposal; event: Event | null; clientEmail?: string | null }) {
@@ -122,11 +127,11 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       {proposal.status === "sent" && (
         <>
           <button
-            onClick={() => handleStatusChange("accepted")}
+            onClick={() => handleStatusChange("booked")}
             disabled={loading}
             className="btn-primary flex items-center gap-1.5 text-sm py-2 px-3"
           >
-            <CheckCircle className="w-3.5 h-3.5" />Accepted
+            <CheckCircle className="w-3.5 h-3.5" />Mark Booked
           </button>
           <button
             onClick={() => handleStatusChange("declined")}
@@ -138,7 +143,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
         </>
       )}
 
-      {(proposal.status === "declined" || proposal.status === "accepted") && (
+      {(proposal.status === "declined" || proposal.status === "booked") && (
         <button
           onClick={() => handleStatusChange("draft")}
           disabled={loading}
@@ -200,7 +205,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
     </div>
 
       {/* Follow-up status — show when proposal has been sent */}
-      {(proposal.status === "sent" || proposal.status === "accepted" || proposal.status === "declined") && (
+      {(proposal.status === "sent" || proposal.status === "booked" || proposal.status === "declined") && (
         <ProposalFollowUp proposal={followUpData} />
       )}
 

@@ -160,13 +160,13 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
             <h2 className="font-display text-2xl font-semibold mb-1">{event.name}</h2>
             <p className="text-sm text-[#9c8876]">
               Welcome, {event.client_name}
-              {proposal.status === "accepted" && " — Your event is confirmed!"}
+              {(proposal.status === "accepted" || proposal.status === "booked") && " — Your event is confirmed!"}
             </p>
           </div>
         )}
 
         {/* Status banner */}
-        {proposal.status === "accepted" && (
+        {(proposal.status === "accepted" || proposal.status === "booked") && (
           <div className="card p-4 border-green-900/50 bg-green-950/20">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-400" />
@@ -218,7 +218,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         )}
 
         {/* Payment status - only show for confirmed events */}
-        {pricing && proposal.status === "accepted" && (
+        {pricing && (proposal.status === "accepted" || proposal.status === "booked") && (
           <div className="card p-5">
             <h3 className="font-medium text-sm mb-4 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-[#9c8876]" />
@@ -392,8 +392,17 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         )}
 
         {/* Messages & response */}
-        {proposal.status !== "accepted" && proposal.status !== "declined" && (
-          <ClientResponse shareToken={token} currentStatus={proposal.status} clientMessages={proposal.client_messages ?? []} />
+        {proposal.status !== "booked" && proposal.status !== "declined" && proposal.status !== "expired" && (
+          <ClientResponse
+            shareToken={token}
+            currentStatus={proposal.status}
+            clientMessages={proposal.client_messages ?? []}
+            terms={proposal.terms}
+            companyName={companyName}
+            eventName={event?.name || "Event"}
+            totalAmount={pricing?.suggestedPrice ?? 0}
+            bookingConfig={(event?.booking_config as any) ?? null}
+          />
         )}
 
         {/* Footer */}

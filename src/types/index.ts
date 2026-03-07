@@ -11,6 +11,12 @@ export type UserProfile = {
   created_at: string;
 };
 
+export type BookingConfig = {
+  require_approval: boolean;
+  require_contract: boolean;
+  require_deposit: boolean;
+};
+
 export type Event = {
   id: string;
   user_id: string;
@@ -28,6 +34,7 @@ export type Event = {
   organization_id?: string | null;
   pricing_data: PricingData | null;
   payment_data: PaymentData | null;
+  booking_config: BookingConfig | null;
   created_at: string;
   updated_at: string;
 };
@@ -143,12 +150,14 @@ export type ClientMessage = {
   created_at: string;
 };
 
+export type ProposalStatus = "draft" | "sent" | "viewed" | "approved" | "signed" | "deposit_paid" | "booked" | "declined" | "expired";
+
 export type Proposal = {
   id: string;
   user_id: string;
   event_id: string;
   title: string;
-  status: "draft" | "sent" | "accepted" | "declined";
+  status: ProposalStatus;
   custom_message: string | null;
   terms: string | null;
   pdf_url: string | null;
@@ -158,6 +167,11 @@ export type Proposal = {
   organization_id?: string | null;
   revision_notes: string | null;
   parent_proposal_id: string | null;
+  contract_accepted_at: string | null;
+  contract_accepted_ip: string | null;
+  contract_accepted_name: string | null;
+  viewed_at: string | null;
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
   event?: Event; // joined data
@@ -294,4 +308,16 @@ export type Payment = {
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+};
+
+export type ContractAcceptance = {
+  id: string;
+  proposal_id: string;
+  event_id: string;
+  accepted_by_name: string;
+  accepted_by_email: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  terms_snapshot: string | null;
+  accepted_at: string;
 };

@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { CalendarDays, Users, MapPin } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, BookingConfig } from "@/types";
 import { ClientResponse } from "./ClientResponse";
+import { ViewTracker } from "./ViewTracker";
+import { BookingProgress } from "@/components/proposals/BookingProgress";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -41,9 +43,12 @@ export default async function PublicProposalPage({ params }: Props) {
   const event = proposal.event as Event | null;
   const pricing = event?.pricing_data as PricingData | null;
   const companyName = settings?.business_name || profile?.company_name || "Catering Company";
+  const bookingConfig = (event?.booking_config as BookingConfig | null) ?? null;
+  const totalAmount = pricing?.suggestedPrice ?? 0;
 
   return (
     <div className="min-h-screen bg-[#0f0d0b]">
+      <ViewTracker shareToken={token} />
       {/* Header */}
       <div className="border-b border-[#2e271f]">
         <div className="max-w-3xl mx-auto px-6 py-8">
@@ -206,8 +211,8 @@ export default async function PublicProposalPage({ params }: Props) {
           </div>
         )}
 
-        {/* Terms */}
-        {proposal.terms && (
+        {/* Terms — only show inline if status hasn't reached contract signing yet */}
+        {proposal.terms && !["approved", "signed", "deposit_paid", "booked"].includes(proposal.status) && (
           <div>
             <h3 className="text-xs font-medium text-brand-400 uppercase tracking-wider mb-3">Terms & Conditions</h3>
             <div className="card p-5">
@@ -216,8 +221,27 @@ export default async function PublicProposalPage({ params }: Props) {
           </div>
         )}
 
+        {/* Booking progress */}
+        <div className="card p-5">
+          <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-4">Booking Progress</h3>
+          <BookingProgress
+            status={proposal.status}
+            requireContract={bookingConfig?.require_contract ?? false}
+            requireDeposit={bookingConfig?.require_deposit ?? false}
+          />
+        </div>
+
         {/* Client response */}
-        <ClientResponse shareToken={token} currentStatus={proposal.status} clientMessages={proposal.client_messages ?? []} />
+        <ClientResponse
+          shareToken={token}
+          currentStatus={proposal.status}
+          clientMessages={proposal.client_messages ?? []}
+          terms={proposal.terms ?? null}
+          companyName={companyName}
+          eventName={event?.name ?? "Event"}
+          totalAmount={totalAmount}
+          bookingConfig={bookingConfig ? { require_contract: bookingConfig.require_contract, require_deposit: bookingConfig.require_deposit } : null}
+        />
 
         {/* Footer */}
         <div className="text-center text-xs text-[#6b5a4a] pt-4 pb-8">

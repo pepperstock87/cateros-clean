@@ -18,11 +18,16 @@ type ProposalWithEvent = Proposal & {
   } | null;
 };
 
-const statusBadgeClass: Record<Proposal["status"], string> = {
+const statusBadgeClass: Record<string, string> = {
   draft: "badge-draft",
   sent: "badge-proposed",
-  accepted: "badge-confirmed",
+  viewed: "badge-proposed",
+  approved: "badge-confirmed",
+  signed: "badge-confirmed",
+  deposit_paid: "badge-confirmed",
+  booked: "badge-confirmed",
   declined: "badge-canceled",
+  expired: "badge-canceled",
 };
 
 export default async function ProposalsPage() {
@@ -37,16 +42,16 @@ export default async function ProposalsPage() {
 
   const proposals: ProposalWithEvent[] = data ?? [];
 
-  const counts = {
+  const counts: Record<string, number> = {
     all: proposals.length,
     draft: proposals.filter(p => p.status === "draft").length,
-    sent: proposals.filter(p => p.status === "sent").length,
-    accepted: proposals.filter(p => p.status === "accepted").length,
-    declined: proposals.filter(p => p.status === "declined").length,
+    sent: proposals.filter(p => ["sent", "viewed"].includes(p.status)).length,
+    booked: proposals.filter(p => ["approved", "signed", "deposit_paid", "booked"].includes(p.status)).length,
+    declined: proposals.filter(p => ["declined", "expired"].includes(p.status)).length,
   };
 
-  const acceptedRevenue = proposals
-    .filter(p => p.status === "accepted" && p.event?.pricing_data)
+  const bookedRevenue = proposals
+    .filter(p => ["approved", "signed", "deposit_paid", "booked"].includes(p.status) && p.event?.pricing_data)
     .reduce((sum, p) => sum + (p.event!.pricing_data!.suggestedPrice || 0), 0);
 
   const pendingRevenue = proposals
@@ -75,8 +80,8 @@ export default async function ProposalsPage() {
             <div className="text-lg md:text-xl font-semibold font-display text-yellow-400">{counts.sent}</div>
           </div>
           <div className="card p-4">
-            <div className="stat-label mb-1">Accepted Revenue</div>
-            <div className="text-lg md:text-xl font-semibold font-display text-green-400">{formatCurrency(acceptedRevenue)}</div>
+            <div className="stat-label mb-1">Booked Revenue</div>
+            <div className="text-lg md:text-xl font-semibold font-display text-green-400">{formatCurrency(bookedRevenue)}</div>
           </div>
           <div className="card p-4">
             <div className="stat-label mb-1">Pending Revenue</div>
@@ -88,7 +93,7 @@ export default async function ProposalsPage() {
       {/* Status tabs */}
       {proposals.length > 0 && (
         <div className="flex items-center gap-1 mb-6 text-xs">
-          {(["all", "draft", "sent", "accepted", "declined"] as const).map(status => (
+          {(["all", "draft", "sent", "booked", "declined"] as const).map(status => (
             <span
               key={status}
               className={`px-3 py-1.5 rounded-lg font-medium border ${

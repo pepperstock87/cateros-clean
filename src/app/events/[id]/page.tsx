@@ -10,6 +10,7 @@ import { SaveAsTemplateButton } from "@/components/events/SaveAsTemplateButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
 import { EventLifecycle } from "@/components/events/EventLifecycle";
+import { EventFinancialSummary } from "@/components/events/EventFinancialSummary";
 import { EventProfitLoss } from "@/components/events/EventProfitLoss";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
 import { PaymentTracker } from "@/components/events/PaymentTracker";
@@ -75,7 +76,7 @@ export default async function EventDetailPage({ params }: Props) {
   ]);
 
   const proposals = proposalsRes.data ?? [];
-  const acceptedProposal = proposals.find((p: any) => p.status === "accepted");
+  const acceptedProposal = proposals.find((p: any) => p.status === "booked" || p.status === "accepted");
   const receipts = receiptsRes.data ?? [];
   const assignments = assignmentsRes.data ?? [];
   const allStaff = staffRes.data ?? [];
@@ -228,6 +229,13 @@ export default async function EventDetailPage({ params }: Props) {
                 </div>
               )}
 
+              {/* Financial Summary */}
+              <EventFinancialSummary
+                eventId={e.id}
+                proposalTotal={pricing?.suggestedPrice ?? null}
+                pricingData={pricing}
+              />
+
               {/* Linked proposals */}
               {proposals.length > 0 && (
                 <div className="mb-6">
@@ -238,7 +246,7 @@ export default async function EventDetailPage({ params }: Props) {
                         <Link href={`/proposals/${p.id}`} className="inline-flex items-center gap-2 hover:text-brand-300 transition-colors">
                           <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
                           <span>{p.title}</span>
-                          <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : p.status === "accepted" ? "badge-confirmed" : "badge-canceled"}`}>
+                          <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : ["accepted", "approved", "signed", "deposit_paid", "booked"].includes(p.status) ? "badge-confirmed" : "badge-canceled"}`}>
                             {p.status}
                           </span>
                         </Link>

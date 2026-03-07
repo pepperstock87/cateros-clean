@@ -7,6 +7,10 @@ import { createClient } from "@supabase/supabase-js";
 type NotificationType =
   | "proposal_accepted"
   | "proposal_declined"
+  | "proposal_viewed"
+  | "proposal_approved"
+  | "proposal_signed"
+  | "proposal_booked"
   | "revision_requested"
   | "payment_received";
 

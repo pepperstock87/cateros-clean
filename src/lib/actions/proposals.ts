@@ -6,7 +6,7 @@ import { getCurrentOrg } from "@/lib/organizations";
 
 export async function updateProposalStatusAction(
   proposalId: string,
-  status: "draft" | "sent" | "accepted" | "declined"
+  status: "draft" | "sent" | "viewed" | "approved" | "signed" | "deposit_paid" | "booked" | "declined" | "expired"
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,8 +23,8 @@ export async function updateProposalStatusAction(
 
   if (error) return { error: error.message };
 
-  // If proposal accepted, update linked event status to confirmed
-  if (status === "accepted") {
+  // If proposal booked, update linked event status to confirmed
+  if (status === "booked") {
     const { data: proposal } = await supabase
       .from("proposals")
       .select("event_id")
@@ -64,6 +64,28 @@ export async function updateProposalStatusAction(
   }
 
   revalidatePath("/proposals");
+  revalidatePath(`/proposals/${proposalId}`);
+  return {};
+}
+
+export async function markProposalViewedAction(proposalId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
+
+  // Only set viewed_at if not already set
+  let viewQuery = supabase
+    .from("proposals")
+    .update({ viewed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", proposalId)
+    .eq("user_id", user.id)
+    .is("viewed_at", null);
+  if (org?.orgId) viewQuery = viewQuery.eq("organization_id", org.orgId);
+  const { error } = await viewQuery;
+
+  if (error) return { error: error.message };
+
   revalidatePath(`/proposals/${proposalId}`);
   return {};
 }

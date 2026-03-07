@@ -1,23 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, MessageSquare, RotateCcw, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, MessageSquare, RotateCcw, Loader2, Clock, PartyPopper } from "lucide-react";
+import { ContractAcceptance } from "@/components/proposals/ContractAcceptance";
 
 type Props = {
   shareToken: string;
   currentStatus: string;
   clientMessages?: Array<{ from: string; message: string; action?: string; created_at: string }>;
+  terms: string | null;
+  companyName: string;
+  eventName: string;
+  totalAmount: number;
+  bookingConfig: { require_contract: boolean; require_deposit: boolean } | null;
 };
 
-export function ClientResponse({ shareToken, currentStatus, clientMessages = [] }: Props) {
+export function ClientResponse({
+  shareToken,
+  currentStatus,
+  clientMessages = [],
+  terms,
+  companyName,
+  eventName,
+  totalAmount,
+  bookingConfig,
+}: Props) {
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [revisionSent, setRevisionSent] = useState(false);
 
-  async function handleResponse(action: "accepted" | "declined" | "revision_requested") {
-    if (action === "accepted" && !confirm("Accept this proposal and confirm the event?")) return;
+  const requireContract = bookingConfig?.require_contract ?? false;
+  const requireDeposit = bookingConfig?.require_deposit ?? false;
+
+  async function handleResponse(action: "approved" | "declined" | "revision_requested") {
+    if (action === "approved" && !confirm("Approve this proposal and proceed with booking?")) return;
     if (action === "declined" && !confirm("Decline this proposal?")) return;
 
     setLoading(true);
@@ -34,7 +52,7 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
           setMessage("");
           setShowMessage(false);
         } else {
-          setStatus(action);
+          setStatus(data.status || action);
         }
       }
     } catch {
@@ -44,6 +62,76 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
     }
   }
 
+  // Success states: deposit_paid or booked
+  if (status === "deposit_paid" || status === "booked") {
+    return (
+      <div className="card p-8 text-center border-green-900/50">
+        <PartyPopper className="w-12 h-12 text-green-400 mx-auto mb-3" />
+        <h3 className="font-display text-xl font-semibold mb-1">Event Confirmed!</h3>
+        <p className="text-sm text-[#f5ede0] mb-2">Your event has been fully booked and confirmed.</p>
+        <p className="text-sm text-[#9c8876]">The catering team will be in touch shortly to finalize all the details. We look forward to making your event special.</p>
+      </div>
+    );
+  }
+
+  // Contract signed, waiting for deposit
+  if (status === "signed") {
+    if (requireDeposit) {
+      return (
+        <div className="card p-8 text-center border-brand-900/50">
+          <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+          <h3 className="font-display text-xl font-semibold mb-1">Contract Signed</h3>
+          <p className="text-sm text-[#f5ede0] mb-2">Thank you for signing the contract.</p>
+          <p className="text-sm text-[#9c8876]">Your caterer will follow up with deposit payment instructions to finalize your booking.</p>
+        </div>
+      );
+    }
+    // No deposit required -- show confirmed
+    return (
+      <div className="card p-8 text-center border-green-900/50">
+        <PartyPopper className="w-12 h-12 text-green-400 mx-auto mb-3" />
+        <h3 className="font-display text-xl font-semibold mb-1">Event Confirmed!</h3>
+        <p className="text-sm text-[#f5ede0] mb-2">Your contract has been signed and your event is confirmed.</p>
+        <p className="text-sm text-[#9c8876]">The catering team will be in touch shortly to finalize all the details.</p>
+      </div>
+    );
+  }
+
+  // Approved -- show contract acceptance or waiting state
+  if (status === "approved") {
+    if (requireContract) {
+      return (
+        <ContractAcceptance
+          shareToken={shareToken}
+          terms={terms}
+          companyName={companyName}
+          eventName={eventName}
+          totalAmount={totalAmount}
+        />
+      );
+    }
+    if (requireDeposit) {
+      return (
+        <div className="card p-8 text-center border-brand-900/50">
+          <Clock className="w-12 h-12 text-brand-400 mx-auto mb-3" />
+          <h3 className="font-display text-xl font-semibold mb-1">Proposal Approved</h3>
+          <p className="text-sm text-[#f5ede0] mb-2">Thank you for approving the proposal.</p>
+          <p className="text-sm text-[#9c8876]">Your caterer will follow up with deposit payment instructions to finalize your booking.</p>
+        </div>
+      );
+    }
+    // No contract or deposit required -- show confirmed
+    return (
+      <div className="card p-8 text-center border-green-900/50">
+        <PartyPopper className="w-12 h-12 text-green-400 mx-auto mb-3" />
+        <h3 className="font-display text-xl font-semibold mb-1">Event Confirmed!</h3>
+        <p className="text-sm text-[#f5ede0] mb-2">Thank you! Your event has been confirmed.</p>
+        <p className="text-sm text-[#9c8876]">The catering team will be in touch shortly to finalize all the details. We look forward to making your event special.</p>
+      </div>
+    );
+  }
+
+  // Backward compat: "accepted" status
   if (status === "accepted") {
     return (
       <div className="card p-8 text-center border-green-900/50">
@@ -66,6 +154,17 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
     );
   }
 
+  if (status === "expired") {
+    return (
+      <div className="card p-8 text-center">
+        <Clock className="w-12 h-12 text-[#6b5a4a] mx-auto mb-3" />
+        <h3 className="font-display text-xl font-semibold mb-1">Proposal Expired</h3>
+        <p className="text-sm text-[#f5ede0] mb-2">This proposal is no longer valid.</p>
+        <p className="text-sm text-[#9c8876]">Please contact the catering team if you would like to request a new proposal.</p>
+      </div>
+    );
+  }
+
   if (revisionSent) {
     return (
       <div className="card p-8 text-center">
@@ -76,7 +175,7 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
     );
   }
 
-  // Show previous messages from this thread
+  // Default: sent/viewed -- show Approve/Revision/Decline buttons
   const visibleMessages = clientMessages.filter(m => m.message);
 
   return (
@@ -130,12 +229,12 @@ export function ClientResponse({ shareToken, currentStatus, clientMessages = [] 
 
         <div className="flex items-center justify-center gap-3">
           <button
-            onClick={() => handleResponse("accepted")}
+            onClick={() => handleResponse("approved")}
             disabled={loading}
             className="btn-primary flex items-center gap-2 px-6 py-3 text-sm"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            Accept Proposal
+            Approve Proposal
           </button>
           <button
             onClick={() => handleResponse("revision_requested")}

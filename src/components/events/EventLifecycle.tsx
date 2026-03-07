@@ -5,7 +5,7 @@ import { CheckCircle2, Circle, FileText, Send, PartyPopper, XCircle } from "luci
 const STEPS = [
   { key: "draft", label: "Draft", icon: Circle },
   { key: "proposed", label: "Proposed", icon: Send },
-  { key: "confirmed", label: "Confirmed", icon: CheckCircle2 },
+  { key: "confirmed", label: "Booked", icon: CheckCircle2 },
   { key: "completed", label: "Completed", icon: PartyPopper },
 ] as const;
 
