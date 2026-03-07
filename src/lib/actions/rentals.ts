@@ -38,3 +38,25 @@ export async function deleteRentalItemAction(itemId: string) {
   revalidatePath("/rentals");
   return {};
 }
+
+export async function updateRentalItemAction(itemId: string, data: {
+  name?: string;
+  category?: string | null;
+  unit_cost?: number;
+  vendor?: string | null;
+  notes?: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { error } = await supabase
+    .from("rental_items")
+    .update(data)
+    .eq("id", itemId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/rentals");
+  return { success: true };
+}

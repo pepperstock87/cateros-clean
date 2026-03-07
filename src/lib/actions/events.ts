@@ -30,6 +30,24 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
     .single();
 
   if (error) return { error: error.message };
+
+  // If a template was selected, apply its pricing_data to the new event
+  const templateId = formData.get("template_id") as string;
+  if (templateId && data) {
+    const { data: template } = await supabase
+      .from("event_templates")
+      .select("pricing_data")
+      .eq("id", templateId)
+      .eq("user_id", user.id)
+      .single();
+    if (template?.pricing_data) {
+      await supabase
+        .from("events")
+        .update({ pricing_data: template.pricing_data })
+        .eq("id", data.id);
+    }
+  }
+
   redirect(`/events/${data.id}`);
 }
 
@@ -167,5 +185,46 @@ export async function deleteEventAction(eventId: string) {
   if (error) return { error: error.message };
   revalidatePath("/events");
   revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function saveAsTemplateAction(eventId: string, templateName: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("pricing_data, guest_count")
+    .eq("id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!event || !event.pricing_data) return { error: "Event has no pricing data" };
+
+  const { error } = await supabase.from("event_templates").insert({
+    user_id: user.id,
+    name: templateName,
+    guest_count: event.guest_count,
+    pricing_data: event.pricing_data,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/events/new");
+  return { success: true };
+}
+
+export async function deleteTemplateAction(templateId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { error } = await supabase
+    .from("event_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
   return { success: true };
 }

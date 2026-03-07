@@ -86,7 +86,7 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
       {showForm ? (
         <form action={handleSubmit} className="card p-5 space-y-4">
           <h3 className="font-medium text-sm">Add Staff Member</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Name *</label>
               <input name="name" className="input" placeholder="John Smith" required />
@@ -96,7 +96,7 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
               <input name="role" className="input" placeholder="Server, Chef, Bartender..." required />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="label">Hourly rate</label>
               <div className="relative">

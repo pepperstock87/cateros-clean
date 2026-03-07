@@ -2,9 +2,10 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Check, Loader2, Receipt, FileText, Trash2 } from "lucide-react";
+import { Upload, X, Check, Loader2, Receipt, FileText, Trash2, Download, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { deleteReceiptAction, deleteInvoiceAction } from "@/lib/actions/spending";
+import { downloadCSV } from "@/lib/csv";
+import { deleteReceiptAction, deleteInvoiceAction, addManualReceiptAction } from "@/lib/actions/spending";
 import { toast } from "sonner";
 import type { Receipt as ReceiptType, DistributorInvoice, InvoiceLineItem } from "./page";
 
@@ -48,6 +49,8 @@ export function SpendingClient({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [savingQuickAdd, setSavingQuickAdd] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleDeleteReceipt(id: string) {
@@ -66,6 +69,30 @@ export function SpendingClient({
     if (result.error) toast.error(result.error);
     else { toast.success("Invoice deleted"); router.refresh(); }
     setDeleting(null);
+  }
+
+  async function handleQuickAddSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const vendor = formData.get("vendor") as string;
+    const date = formData.get("date") as string;
+    const amount = parseFloat(formData.get("amount") as string);
+    const category = (formData.get("category") as string) || null;
+    const event_id = (formData.get("event_id") as string) || null;
+
+    if (!vendor || !date || isNaN(amount)) return;
+
+    setSavingQuickAdd(true);
+    const result = await addManualReceiptAction({ vendor, date, amount, category, event_id });
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Receipt added");
+      router.refresh();
+      setShowQuickAdd(false);
+    }
+    setSavingQuickAdd(false);
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -171,9 +198,38 @@ export function SpendingClient({
           Distributor Invoices
           <span className="ml-1 text-xs text-[#6b5a4a]">({invoices.length})</span>
         </button>
+        <div className="ml-auto mb-px">
+          <button
+            onClick={() => {
+              if (activeTab === "receipts") {
+                const rows = receipts.map((r) => ({
+                  Date: new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                  Vendor: r.vendor,
+                  Amount: r.amount,
+                  Category: r.category ?? null,
+                  Week: r.week_label ?? null,
+                }));
+                downloadCSV(rows, "receipts.csv");
+              } else {
+                const rows = invoices.map((inv) => ({
+                  Distributor: inv.distributor,
+                  Date: new Date(inv.invoice_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                  "Invoice #": inv.invoice_number ?? null,
+                  Total: inv.total,
+                  Status: inv.status,
+                }));
+                downloadCSV(rows, "invoices.csv");
+              }
+            }}
+            className="btn-secondary text-xs flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download CSV
+          </button>
+        </div>
       </div>
 
-      {/* Upload Button */}
+      {/* Upload & Quick Add Buttons */}
       <div className="mb-6">
         <input
           ref={fileInputRef}
@@ -182,29 +238,127 @@ export function SpendingClient({
           onChange={handleUpload}
           className="hidden"
         />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="btn-primary flex items-center gap-2"
-        >
-          {uploading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4" />
-              Upload {activeTab === "receipts" ? "Receipt" : "Invoice"}
-            </>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="btn-primary flex items-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Upload {activeTab === "receipts" ? "Receipt" : "Invoice"}
+              </>
+            )}
+          </button>
+          {activeTab === "receipts" && (
+            <button
+              onClick={() => setShowQuickAdd((v) => !v)}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Quick Add
+            </button>
           )}
-        </button>
+        </div>
         <p className="text-xs text-[#6b5a4a] mt-2">
           {activeTab === "receipts"
             ? "Upload a photo of a receipt (JPG, PNG). AI will extract the details."
             : "Upload an invoice (PDF, JPG, PNG). AI will extract distributor info and line items."}
         </p>
       </div>
+
+      {/* Quick Add Receipt Form */}
+      {showQuickAdd && activeTab === "receipts" && (
+        <div className="card p-4 md:p-5 mb-6">
+          <h3 className="font-display text-sm font-semibold mb-4">Quick Add Receipt</h3>
+          <form onSubmit={handleQuickAddSave} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-[#9c8876] mb-1">Vendor *</label>
+                <input
+                  name="vendor"
+                  className="input w-full"
+                  required
+                  placeholder="e.g. Costco, Restaurant Depot"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#9c8876] mb-1">Date *</label>
+                <input
+                  name="date"
+                  type="date"
+                  className="input w-full"
+                  required
+                  defaultValue={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#9c8876] mb-1">Amount *</label>
+                <input
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="input w-full"
+                  required
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#9c8876] mb-1">Category</label>
+                <input
+                  name="category"
+                  className="input w-full"
+                  placeholder="e.g. Produce, Supplies"
+                />
+              </div>
+            </div>
+            {events.length > 0 && (
+              <div>
+                <label className="block text-xs text-[#9c8876] mb-1">Link to Event (optional)</label>
+                <select name="event_id" className="input w-full">
+                  <option value="">No event</option>
+                  {events.map((ev) => (
+                    <option key={ev.id} value={ev.id}>{ev.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={savingQuickAdd}
+                className="btn-primary flex items-center gap-2"
+              >
+                {savingQuickAdd ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Save Receipt
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowQuickAdd(false)}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Error */}
       {error && (

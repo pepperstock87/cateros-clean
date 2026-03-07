@@ -3,8 +3,9 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/utils";
+import { downloadCSV } from "@/lib/csv";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -93,15 +94,45 @@ export function EventsTable({ events }: { events: Event[] }) {
           ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="input pl-9 w-full"
-          />
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input pl-9 w-full"
+            />
+          </div>
+          <button
+            onClick={() => {
+              const rows = filteredEvents.map((event) => {
+                const p = event.pricing_data as PricingData | null;
+                const pay = event.payment_data as PaymentData | null;
+                const paid = pay?.totalPaid ?? 0;
+                const total = p?.suggestedPrice ?? 0;
+                let paymentStatus = "Unpaid";
+                if (p && paid >= total) paymentStatus = "Paid";
+                else if (p && paid > 0) paymentStatus = "Partial";
+                return {
+                  "Event Name": event.name,
+                  Client: event.client_name,
+                  Date: format(new Date(event.event_date), "MMM d, yyyy"),
+                  Guests: event.guest_count,
+                  Revenue: p ? p.suggestedPrice : null,
+                  Margin: p ? +(p.projectedMargin * 100).toFixed(1) : null,
+                  "Payment Status": p ? paymentStatus : null,
+                  Status: event.status,
+                };
+              });
+              downloadCSV(rows, "events.csv");
+            }}
+            className="btn-secondary text-xs flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download CSV
+          </button>
         </div>
       </div>
 

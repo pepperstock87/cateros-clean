@@ -182,3 +182,17 @@ CREATE TABLE IF NOT EXISTS recurring_costs (
 ALTER TABLE recurring_costs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own recurring costs" ON recurring_costs
   FOR ALL USING (auth.uid() = user_id);
+
+-- 16. Event templates
+CREATE TABLE IF NOT EXISTS event_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  guest_count INTEGER DEFAULT 100,
+  pricing_data JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE event_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own templates" ON event_templates
+  FOR ALL USING (auth.uid() = user_id);

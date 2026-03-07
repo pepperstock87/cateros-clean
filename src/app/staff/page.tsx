@@ -39,10 +39,10 @@ export default async function StaffPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Staff</h1>
+          <h1 className="font-display text-xl md:text-2xl font-semibold">Staff</h1>
           <p className="text-sm text-[#9c8876] mt-1">{staff.length} team member{staff.length !== 1 ? "s" : ""}</p>
         </div>
       </div>

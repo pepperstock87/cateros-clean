@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { Mail, Phone, CalendarDays, DollarSign, Search, Users } from "lucide-react";
+import { Mail, Phone, CalendarDays, DollarSign, Search, Users, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csv";
 import type { ClientData } from "./page";
 
 const statusColors: Record<string, string> = {
@@ -25,15 +26,34 @@ export function ClientList({ clients }: { clients: ClientData[] }) {
   return (
     <div>
       {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
-        <input
-          type="text"
-          placeholder="Search clients..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-[#1a1714] border border-[#2e271f] rounded-lg text-[#f5ede0] placeholder-[#6b5a4a] text-sm focus:outline-none focus:ring-1 focus:ring-[#9c8876] focus:border-[#9c8876]"
-        />
+      <div className="flex items-center gap-2 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
+          <input
+            type="text"
+            placeholder="Search clients..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-[#1a1714] border border-[#2e271f] rounded-lg text-[#f5ede0] placeholder-[#6b5a4a] text-sm focus:outline-none focus:ring-1 focus:ring-[#9c8876] focus:border-[#9c8876]"
+          />
+        </div>
+        <button
+          onClick={() => {
+            const rows = filtered.map((c) => ({
+              "Client Name": c.name,
+              Email: c.email ?? null,
+              Phone: c.phone ?? null,
+              Events: c.eventCount,
+              Revenue: c.totalRevenue,
+              "Last Event": format(new Date(c.mostRecentDate + "T00:00:00"), "MMM d, yyyy"),
+            }));
+            downloadCSV(rows, "clients.csv");
+          }}
+          className="btn-secondary text-xs flex items-center gap-1.5"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Download CSV
+        </button>
       </div>
 
       {filtered.length === 0 ? (

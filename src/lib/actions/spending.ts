@@ -95,3 +95,28 @@ export async function deleteRecurringCostAction(id: string) {
   revalidatePath("/spending");
   return { success: true };
 }
+
+export async function addManualReceiptAction(data: {
+  vendor: string;
+  date: string;
+  amount: number;
+  category: string | null;
+  event_id: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const { error } = await supabase.from("receipts").insert({
+    user_id: user.id,
+    vendor: data.vendor,
+    receipt_date: data.date,
+    total_amount: data.amount,
+    category: data.category,
+    event_id: data.event_id,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/spending");
+  return { success: true };
+}
