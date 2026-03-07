@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
 import { format } from "date-fns";
+import { ArrowLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
 import type { Event, PricingData, Recipe } from "@/types";
@@ -85,7 +87,10 @@ export default async function BEOPage({ params }: Props) {
         }
       `}</style>
 
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <Link href={`/events/${e.id}`} className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-3 transition-colors print:hidden">
+          <ArrowLeft className="w-4 h-4" /> Back to event
+        </Link>
         <BEOActions event={e} />
 
         {/* BEO Content - light theme for print readability */}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Search, Download } from "lucide-react";
@@ -52,8 +53,14 @@ function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payme
 }
 
 export function EventsTable({ events }: { events: Event[] }) {
+  const searchParams = useSearchParams();
+  const clientParam = searchParams.get("client") ?? "";
   const [activeStatus, setActiveStatus] = useState<StatusFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(clientParam);
+
+  useEffect(() => {
+    if (clientParam) setSearchQuery(clientParam);
+  }, [clientParam]);
 
   const filteredEvents = useMemo(() => {
     let result = events;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, ShoppingCart, Printer } from "lucide-react";
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 
 type AggIngredient = {
@@ -29,7 +30,11 @@ export function ShoppingListClient({ ingredients, totalCost }: { ingredients: Ag
       <div className="card p-12 text-center">
         <ShoppingCart className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
         <h2 className="font-medium text-lg mb-2">No items to shop for</h2>
-        <p className="text-sm text-[#9c8876]">No confirmed events with matched recipes in the next 7 days.</p>
+        <p className="text-sm text-[#9c8876] mb-4">No confirmed events with matched recipes in the next 7 days.</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link href="/events" className="btn-secondary text-sm">View Events</Link>
+          <Link href="/recipes" className="btn-secondary text-sm">View Recipes</Link>
+        </div>
       </div>
     );
   }

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { createRecipeAction } from "@/lib/actions/recipes";
 import { useActionState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import type { RecipeIngredient } from "@/types";
 
@@ -46,8 +47,12 @@ export default function NewRecipePage() {
   const removeIngredient = (idx: number) => setIngredients(p => p.filter((_, i) => i !== idx));
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <h1 className="font-display text-2xl font-semibold mb-6">New Recipe</h1>
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
+      <Link href="/recipes" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-3 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> All recipes
+      </Link>
+      <h1 className="font-display text-xl md:text-2xl font-semibold">New Recipe</h1>
+      <p className="text-sm text-[#9c8876] mt-1 mb-6">Add a recipe with ingredients and costing.</p>
 
       <form action={action} className="space-y-6">
         <div className="card p-6 space-y-4">
@@ -56,7 +61,7 @@ export default function NewRecipePage() {
             <input type="text" name="name" required className="input" placeholder="e.g., Grilled Chicken Breast" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Servings</label>
               <input type="number" name="servings" required min="1" className="input" placeholder="4" value={servingsValue} onChange={e => setServingsValue(e.target.value)} />
@@ -144,7 +149,7 @@ export default function NewRecipePage() {
 
         <div className="card p-6">
           <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Case Pricing</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-[#9c8876] mb-1">Case Price ($)</label>
               <div className="relative">
@@ -169,7 +174,7 @@ export default function NewRecipePage() {
             </div>
           </div>
           {casePrice && unitsPerCase && (
-            <div className="mt-4 pt-4 border-t border-[#2e271f] grid grid-cols-2 gap-4">
+            <div className="mt-4 pt-4 border-t border-[#2e271f] grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="text-lg font-semibold text-brand-300">{formatCurrency(costPerUnit)}</div>
                 <div className="text-xs text-[#9c8876]">cost per {caseUnitType || "unit"}</div>

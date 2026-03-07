@@ -62,7 +62,7 @@ export function NewEventForm({ templates }: { templates: Template[] }) {
             <label className="label">Event name *</label>
             <input name="name" className="input" placeholder="Smith-Johnson Wedding Reception" required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Event date *</label>
               <input name="event_date" type="date" className="input" min={today} required />
@@ -81,7 +81,7 @@ export function NewEventForm({ templates }: { templates: Template[] }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Start time</label>
               <input name="start_time" type="time" className="input" />
@@ -103,7 +103,7 @@ export function NewEventForm({ templates }: { templates: Template[] }) {
             <label className="label">Client name *</label>
             <input name="client_name" className="input" placeholder="Sarah & Michael Smith" required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Client email</label>
               <input name="client_email" type="email" className="input" placeholder="client@email.com" />
