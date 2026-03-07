@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/events", icon: CalendarDays, label: "Events" },
+  { href: "/clients", icon: Contact, label: "Clients" },
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
   { href: "/staff", icon: Users, label: "Staff" },
@@ -17,6 +19,7 @@ const NAV = [
   { href: "/branding", icon: Palette, label: "Branding" },
   { href: "/proposals", icon: FileText, label: "Proposals" },
   { href: "/spending", icon: Receipt, label: "Spending" },
+  { href: "/shopping", icon: ShoppingCart, label: "Shopping List" },
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
 ];
@@ -24,6 +27,36 @@ const NAV = [
 export function Sidebar({ companyName }: { companyName?: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [badges, setBadges] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    Promise.all([
+      // Upcoming events (confirmed or proposed, event_date >= today)
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["confirmed", "proposed"])
+        .gte("event_date", new Date().toISOString().split("T")[0]),
+      // Pending proposals (status = sent)
+      supabase
+        .from("proposals")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "sent"),
+      // Unconfirmed staff assignments
+      supabase
+        .from("event_staff_assignments")
+        .select("id", { count: "exact", head: true })
+        .eq("confirmed", false),
+    ]).then(([eventsRes, proposalsRes, staffRes]) => {
+      const newBadges: Record<string, number> = {};
+      if (eventsRes.count) newBadges["/events"] = eventsRes.count;
+      if (proposalsRes.count) newBadges["/proposals"] = proposalsRes.count;
+      if (staffRes.count) newBadges["/staff"] = staffRes.count;
+      setBadges(newBadges);
+    });
+  }, []);
 
   return (
     <>
@@ -82,6 +115,11 @@ export function Sidebar({ companyName }: { companyName?: string }) {
               >
                 <Icon className={cn("w-4 h-4 flex-shrink-0", active ? "text-brand-400" : "")} />
                 {label}
+                {badges[href] && (
+                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">
+                    {badges[href]}
+                  </span>
+                )}
               </Link>
             );
           })}

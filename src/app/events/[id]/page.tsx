@@ -14,6 +14,8 @@ import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { StaffAssignments } from "@/components/events/StaffAssignments";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { formatCurrency } from "@/lib/utils";
+import { EventActivityLog } from "@/components/events/EventActivityLog";
+import type { ActivityItem } from "@/components/events/EventActivityLog";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -58,7 +60,7 @@ export default async function EventDetailPage({ params }: Props) {
       .eq("user_id", user.id),
     supabase
       .from("event_staff_assignments")
-      .select("id, staff_member_id, role, start_time, end_time, confirmed, notes, staff_members(name, role, hourly_rate, phone)")
+      .select("id, staff_member_id, role, start_time, end_time, confirmed, notes, created_at, staff_members(name, role, hourly_rate, phone)")
       .eq("event_id", id)
       .eq("user_id", user.id),
     supabase
@@ -274,6 +276,66 @@ export default async function EventDetailPage({ params }: Props) {
       </div>
 
       <PricingEngine eventId={e.id} guestCount={e.guest_count} initialPricing={e.pricing_data as PricingData | null} />
+
+      {/* Activity Log */}
+      {(() => {
+        const activities: ActivityItem[] = [];
+
+        // Event created
+        activities.push({
+          id: "created",
+          type: "created",
+          title: "Event created",
+          date: e.created_at,
+        });
+
+        // Proposals
+        for (const p of proposals) {
+          activities.push({
+            id: `proposal-${p.id}`,
+            type: "proposal",
+            title: `Proposal "${p.title}" created`,
+            detail: `Status: ${p.status}`,
+            date: p.created_at,
+          });
+        }
+
+        // Payments
+        const paymentData = e.payment_data as PaymentData | null;
+        if (paymentData?.payments) {
+          for (const pay of paymentData.payments) {
+            activities.push({
+              id: `payment-${pay.id}`,
+              type: "payment",
+              title: `Payment received`,
+              detail: `${formatCurrency(pay.amount)} via ${pay.method}${pay.note ? ` — ${pay.note}` : ""}`,
+              date: pay.date,
+            });
+          }
+        }
+
+        // Staff assignments
+        for (const a of assignments) {
+          activities.push({
+            id: `staff-${a.id}`,
+            type: "staff",
+            title: `${(a as any).staff_members?.name ?? "Staff"} assigned`,
+            detail: a.role ?? undefined,
+            date: (a as any).created_at ?? e.created_at,
+          });
+        }
+
+        // Sort by date descending
+        activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        return activities.length > 0 ? (
+          <div className="mt-6">
+            <h2 className="font-display text-lg font-semibold mb-1">Activity Log</h2>
+            <p className="text-sm text-[#9c8876] mb-4">Timeline of events and changes</p>
+            <EventActivityLog activities={activities} />
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }

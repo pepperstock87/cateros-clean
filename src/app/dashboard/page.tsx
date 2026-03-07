@@ -7,6 +7,7 @@ import { TrendingUp, CalendarDays, DollarSign, Percent, Plus, ArrowRight, AlertT
 import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
+import { RevenueGoal } from "@/components/dashboard/RevenueGoal";
 
 async function getDashboardData(userId: string) {
   const supabase = await createClient();
@@ -157,6 +158,29 @@ export default async function DashboardPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Revenue Goal + Next Event */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+        <RevenueGoal currentRevenue={stats.totalRevenueThisMonth} />
+        {stats.upcomingEvents.length > 0 && (() => {
+          const next = stats.upcomingEvents[0];
+          const daysUntil = Math.ceil((new Date(next.event_date).getTime() - Date.now()) / 86400000);
+          return (
+            <div className="card p-4 md:p-5 flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarDays className="w-4 h-4 text-[#9c8876]" />
+                <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Next Event</span>
+              </div>
+              <div className="text-lg md:text-xl font-semibold font-display">
+                {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
+              </div>
+              <Link href={`/events/${next.id}`} className="text-xs text-brand-400 hover:text-brand-300 mt-1 transition-colors">
+                {next.name} — {next.client_name}
+              </Link>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Action Items & Notifications */}
