@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { BusinessSettings } from "@/types";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function getBusinessSettings(): Promise<BusinessSettings | null> {
   const supabase = await createClient();
@@ -30,8 +31,11 @@ export async function updateBusinessSettings(formData: FormData) {
     return { error: "Pro plan required for custom branding" };
   }
 
+  const org = await getCurrentOrg();
+
   const settings = {
     user_id: user.id,
+    organization_id: org?.orgId || null,
     business_name: formData.get("business_name") as string,
     phone: formData.get("phone") as string,
     email: formData.get("email") as string,
@@ -103,8 +107,11 @@ export async function updateBusinessDefaults(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  const org = await getCurrentOrg();
+
   const settings = {
     user_id: user.id,
+    organization_id: org?.orgId || null,
     ...data,
     updated_at: new Date().toISOString(),
   };

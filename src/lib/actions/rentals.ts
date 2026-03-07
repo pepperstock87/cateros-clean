@@ -3,14 +3,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function createRentalItemAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const org = await getCurrentOrg();
+
   const { error } = await supabase.from("rental_items").insert({
     user_id: user.id,
+    organization_id: org?.orgId || null,
     name: formData.get("name") as string,
     category: formData.get("category") as string || null,
     unit_cost: Number(formData.get("unit_cost")) || 0,

@@ -7,6 +7,7 @@ export type UserProfile = {
   stripe_subscription_id: string | null;
   subscription_status: "active" | "trialing" | "canceled" | "past_due" | null;
   plan_tier: "basic" | "pro" | null;
+  current_organization_id: string | null;
   created_at: string;
 };
 
@@ -24,6 +25,7 @@ export type Event = {
   client_phone: string | null;
   notes: string | null;
   status: "draft" | "proposed" | "confirmed" | "completed" | "canceled";
+  organization_id?: string | null;
   pricing_data: PricingData | null;
   payment_data: PaymentData | null;
   created_at: string;
@@ -93,6 +95,7 @@ export type Recipe = {
   units_per_case: number | null;
   case_unit_type: string | null;
   yield_percent: number | null;
+  organization_id?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -108,6 +111,7 @@ export type RecipeIngredient = {
 
 export type BusinessSettings = {
   user_id: string;
+  organization_id?: string | null;
   business_name: string | null;
   logo_url: string | null;
   phone: string | null;
@@ -151,6 +155,7 @@ export type Proposal = {
   share_token: string | null;
   client_messages: ClientMessage[];
   revision_number: number;
+  organization_id?: string | null;
   revision_notes: string | null;
   parent_proposal_id: string | null;
   created_at: string;
@@ -175,6 +180,7 @@ export type PaymentData = {
 export type StaffMember = {
   id: string;
   user_id: string;
+  organization_id?: string | null;
   name: string;
   role: string;
   hourly_rate: number;
@@ -187,6 +193,7 @@ export type StaffMember = {
 export type RentalItem = {
   id: string;
   user_id: string;
+  organization_id?: string | null;
   name: string;
   category: string | null;
   unit_cost: number;
@@ -200,6 +207,7 @@ export type StaffAssignment = {
   event_id: string;
   staff_member_id: string;
   user_id: string;
+  organization_id?: string | null;
   role: string | null;
   start_time: string | null;
   end_time: string | null;
@@ -213,4 +221,38 @@ export type UserEntitlements = {
   plan: "basic" | "pro";
   subscription_status: "active" | "trialing" | "past_due" | "canceled" | "none";
   isPro: boolean;
+};
+
+// Organization types
+export type OrganizationType = 'caterer' | 'venue' | 'planner' | 'rental_vendor' | 'florist' | 'entertainment_vendor' | 'other_vendor';
+export type OrgMemberRole = 'owner' | 'admin' | 'manager' | 'staff' | 'viewer';
+
+export type Organization = {
+  id: string;
+  name: string;
+  slug: string | null;
+  organization_type: OrganizationType;
+  primary_contact_name: string | null;
+  primary_contact_email: string | null;
+  primary_contact_phone: string | null;
+  logo_url: string | null;
+  status: 'active' | 'inactive' | 'suspended';
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrganizationMember = {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: OrgMemberRole;
+  status: 'active' | 'invited' | 'inactive';
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrgContext = {
+  userId: string;
+  orgId: string;
+  role: OrgMemberRole;
 };

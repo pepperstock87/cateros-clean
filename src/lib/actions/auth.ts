@@ -41,6 +41,36 @@ export async function signupAction(_prevState: AuthState, formData: FormData): P
   // Profile is auto-created by the on_auth_user_created DB trigger.
   // Update with company_name since the trigger only sets email/full_name from metadata.
   await supabase.from("profiles").update({ company_name: parsed.data.company_name }).eq("id", data.user.id);
+
+  // Create default organization for new user
+  const slug = (parsed.data.company_name || parsed.data.full_name || "org")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    + '-' + Date.now().toString(36);
+
+  const { data: org } = await supabase.from("organizations").insert({
+    name: parsed.data.company_name || parsed.data.full_name || "My Organization",
+    slug,
+    organization_type: "caterer",
+    primary_contact_email: parsed.data.email,
+  }).select("id").single();
+
+  if (org) {
+    // Add user as owner
+    await supabase.from("organization_members").insert({
+      organization_id: org.id,
+      user_id: data.user.id,
+      role: "owner",
+      status: "active",
+    });
+
+    // Set as current org
+    await supabase.from("profiles")
+      .update({ current_organization_id: org.id })
+      .eq("id", data.user.id);
+  }
+
   redirect(`/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }
 

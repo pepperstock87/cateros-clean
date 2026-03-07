@@ -5,16 +5,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { PricingData, PaymentData } from "@/types";
 import { logActivity } from "@/lib/activity";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function createEventAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const org = await getCurrentOrg();
 
   const { data, error } = await supabase
     .from("events")
     .insert({
       user_id: user.id,
+      organization_id: org?.orgId || null,
       name: formData.get("name") as string,
       client_name: formData.get("client_name") as string,
       client_email: formData.get("client_email") as string || null,
@@ -168,11 +171,13 @@ export async function duplicateEventAction(eventId: string) {
     .single();
 
   if (!original) return { error: "Event not found" };
+  const org = await getCurrentOrg();
 
   const { data: newEvent, error } = await supabase
     .from("events")
     .insert({
       user_id: user.id,
+      organization_id: org?.orgId || null,
       name: `${original.name} (Copy)`,
       client_name: original.client_name,
       client_email: original.client_email,
@@ -225,9 +230,11 @@ export async function saveAsTemplateAction(eventId: string, templateName: string
     .single();
 
   if (!event || !event.pricing_data) return { error: "Event has no pricing data" };
+  const org = await getCurrentOrg();
 
   const { error } = await supabase.from("event_templates").insert({
     user_id: user.id,
+    organization_id: org?.orgId || null,
     name: templateName,
     guest_count: event.guest_count,
     pricing_data: event.pricing_data,

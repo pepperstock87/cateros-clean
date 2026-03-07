@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { RecipeIngredient } from "@/types";
+import { getCurrentOrg } from "@/lib/organizations";
 
 function calcCosts(ingredients: RecipeIngredient[], servings: number) {
   const total_cost = ingredients.reduce((s, i) => s + i.total_cost, 0);
@@ -19,8 +20,9 @@ export async function createRecipeAction(_prevState: unknown, formData: FormData
   const { total_cost, cost_per_serving } = calcCosts(ingredients, servings);
   const casePriceRaw = formData.get("case_price") as string;
   const unitsPerCaseRaw = formData.get("units_per_case") as string;
+  const org = await getCurrentOrg();
   const { error } = await supabase.from("recipes").insert({
-    user_id: user.id, name: formData.get("name") as string,
+    user_id: user.id, organization_id: org?.orgId || null, name: formData.get("name") as string,
     description: formData.get("description") as string || null,
     servings, category: formData.get("category") as string || null,
     ingredients, total_cost, cost_per_serving,

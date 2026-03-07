@@ -9,6 +9,7 @@ import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard,
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { OrgSwitcher } from "@/components/layout/OrgSwitcher";
 
 const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: boolean }[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -26,12 +27,57 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/shopping", icon: ShoppingCart, label: "Shopping List" },
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
+  { href: "/team", icon: Users, label: "Team" },
 ];
 
 export function Sidebar({ companyName }: { companyName?: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [badges, setBadges] = useState<Record<string, number>>({});
+  const [orgData, setOrgData] = useState<{
+    currentOrg: { id: string; name: string; slug: string } | null;
+    allOrgs: Array<{ id: string; name: string }>;
+  }>({ currentOrg: null, allOrgs: [] });
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Fetch org data for OrgSwitcher
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("current_organization_id")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.current_organization_id) return;
+
+      const [orgRes, membershipsRes] = await Promise.all([
+        supabase
+          .from("organizations")
+          .select("id, name, slug")
+          .eq("id", profile.current_organization_id)
+          .single(),
+        supabase
+          .from("organization_members")
+          .select("organization_id, organizations(id, name)")
+          .eq("user_id", user.id),
+      ]);
+
+      if (orgRes.data) {
+        const allOrgs = (membershipsRes.data ?? [])
+          .map((m: any) => m.organizations)
+          .filter(Boolean)
+          .map((o: any) => ({ id: o.id, name: o.name }));
+
+        setOrgData({
+          currentOrg: orgRes.data,
+          allOrgs: allOrgs.length > 0 ? allOrgs : [{ id: orgRes.data.id, name: orgRes.data.name }],
+        });
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -102,6 +148,13 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Mobile Padding for fixed header */}
         <div className="md:hidden h-14" />
+
+        {/* Org Switcher */}
+        {orgData.currentOrg && (
+          <div className="border-b border-[#2e271f]">
+            <OrgSwitcher currentOrg={orgData.currentOrg} allOrgs={orgData.allOrgs} />
+          </div>
+        )}
 
         {/* Search */}
         <div className="px-3 pt-3">

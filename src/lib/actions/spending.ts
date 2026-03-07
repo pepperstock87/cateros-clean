@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function deleteReceiptAction(receiptId: string) {
   const supabase = await createClient();
@@ -45,8 +46,11 @@ export async function addRecurringCostAction(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  const org = await getCurrentOrg();
+
   const { error } = await supabase.from("recurring_costs").insert({
     user_id: user.id,
+    organization_id: org?.orgId || null,
     name: data.name,
     amount: data.amount,
     frequency: data.frequency,
@@ -107,8 +111,11 @@ export async function addManualReceiptAction(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  const org = await getCurrentOrg();
+
   const { error } = await supabase.from("receipts").insert({
     user_id: user.id,
+    organization_id: org?.orgId || null,
     vendor: data.vendor,
     receipt_date: data.date,
     total_amount: data.amount,
