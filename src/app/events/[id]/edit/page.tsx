@@ -18,7 +18,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("events").select("*").eq("id", id).single().then(({ data }) => {
+    supabase.from("events").select("*").eq("id", id).maybeSingle().then(({ data }) => {
       setEvent(data as Event | null);
       setLoading(false);
     });

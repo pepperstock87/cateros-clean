@@ -8,7 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Record<string, any> | null>(null);
 
   const [editingName, setEditingName] = useState(false);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -18,7 +18,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("*").single().then(({ data }) => {
+    supabase.from("profiles").select("*").maybeSingle().then(({ data }) => {
       setProfile(data);
       setNameValue(data?.full_name || "");
       setCompanyValue(data?.company_name || "");

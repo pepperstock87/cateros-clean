@@ -48,7 +48,7 @@ export async function generateProposalPDF(
       doc.addImage(img, 'PNG', margin, 20, logoWidth, logoHeight);
       headerY = 70;
     } catch (e) {
-      console.error('Failed to load logo:', e);
+      // Logo failed to load, continue without it
     }
   }
 

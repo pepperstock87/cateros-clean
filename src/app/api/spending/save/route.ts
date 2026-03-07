@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
       });
 
       if (insertError) {
-        console.error("Receipt insert error:", insertError);
         return NextResponse.json({ error: "Failed to save receipt" }, { status: 500 });
       }
 
@@ -62,7 +61,6 @@ export async function POST(req: NextRequest) {
       });
 
       if (insertError) {
-        console.error("Invoice insert error:", insertError);
         return NextResponse.json({ error: "Failed to save invoice" }, { status: 500 });
       }
 
@@ -71,7 +69,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid type. Use 'receipt' or 'invoice'." }, { status: 400 });
   } catch (err: any) {
-    console.error("Save error:", err);
-    return NextResponse.json({ error: err.message || "Save failed" }, { status: 500 });
+    return NextResponse.json({ error: "Save failed" }, { status: 500 });
   }
 }

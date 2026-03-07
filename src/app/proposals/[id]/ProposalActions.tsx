@@ -42,7 +42,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       const [profileRes, entitlementsRes, settingsRes] = await Promise.all([
         supabase.from("profiles").select("company_name").eq("id", user!.id).single(),
         fetch("/api/entitlements").then(r => r.json()),
-        supabase.from("business_settings").select("*").eq("user_id", user!.id).single(),
+        supabase.from("business_settings").select("*").eq("user_id", user!.id).maybeSingle(),
       ]);
 
       const entitlements: UserEntitlements = entitlementsRes;
@@ -60,9 +60,8 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       const filename = `proposal-${event.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.pdf`;
       doc.save(filename);
       toast.success("PDF downloaded");
-    } catch (e) {
+    } catch {
       toast.error("Failed to generate PDF");
-      console.error(e);
     } finally {
       setRegenerating(false);
     }

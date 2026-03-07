@@ -114,7 +114,6 @@ Return ONLY a valid JSON object with these fields, no other text. Example:
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.error("Anthropic API error:", errBody);
       return NextResponse.json({ error: "AI extraction failed" }, { status: 500 });
     }
 
@@ -132,13 +131,11 @@ Return ONLY a valid JSON object with these fields, no other text. Example:
       if (!jsonMatch) throw new Error("No JSON found in response");
       extracted = JSON.parse(jsonMatch[0]);
     } catch {
-      console.error("Failed to parse AI response:", textContent);
       return NextResponse.json({ error: "Failed to parse extracted data" }, { status: 500 });
     }
 
     return NextResponse.json({ extracted });
   } catch (err: any) {
-    console.error("Extract error:", err);
-    return NextResponse.json({ error: err.message || "Extraction failed" }, { status: 500 });
+    return NextResponse.json({ error: "Extraction failed" }, { status: 500 });
   }
 }

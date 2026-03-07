@@ -6,14 +6,14 @@ import Link from "next/link";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 
 export function SubscriptionBanner() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{ plan_tier?: string; subscription_status?: string; trial_end?: string } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from("profiles")
       .select("plan_tier, subscription_status, trial_end")
-      .single()
+      .maybeSingle()
       .then(({ data }) => setProfile(data));
   }, []);
 

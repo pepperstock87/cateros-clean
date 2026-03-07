@@ -25,7 +25,7 @@ export function GenerateProposalButton({ event }: { event: Event }) {
       const [profileRes, entitlementsRes, settingsRes] = await Promise.all([
         supabase.from("profiles").select("company_name").eq("id", user!.id).single(),
         fetch("/api/entitlements").then(r => r.json()),
-        supabase.from("business_settings").select("*").eq("user_id", user!.id).single()
+        supabase.from("business_settings").select("*").eq("user_id", user!.id).maybeSingle()
       ]);
 
       const profile = profileRes.data;
@@ -58,16 +58,15 @@ export function GenerateProposalButton({ event }: { event: Event }) {
       });
 
       if (insertError) {
-        console.error("Failed to save proposal record:", insertError);
+        toast.error("Failed to save proposal record");
       } else {
         toast.success("Proposal saved");
       }
 
       toast.success("Proposal PDF downloaded!");
       setShowModal(false);
-    } catch (e) {
+    } catch {
       toast.error("Failed to generate proposal");
-      console.error(e);
     } finally {
       setLoading(false);
     }

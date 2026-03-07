@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", response.status, errorText);
+      // Anthropic API returned an error
       return new Response(
         JSON.stringify({ error: "AI service error", details: errorText }),
         { status: response.status, headers: { "Content-Type": "application/json" } }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Assistant API error:", error);
+    // Internal error
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { "Content-Type": "application/json" } }

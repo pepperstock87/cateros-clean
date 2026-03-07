@@ -18,7 +18,7 @@ export default function BrandingPage() {
     
     Promise.all([
       fetch("/api/entitlements").then(r => r.json()),
-      supabase.from("business_settings").select("*").single()
+      supabase.from("business_settings").select("*").maybeSingle()
     ]).then(([ent, { data }]) => {
       setEntitlements(ent);
       setSettings(data);

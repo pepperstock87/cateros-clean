@@ -20,13 +20,13 @@ const PRO_FEATURES = [
 ];
 
 export default function BillingPage() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("*").single().then(({ data }) => setProfile(data));
+    supabase.from("profiles").select("*").maybeSingle().then(({ data }) => setProfile(data));
   }, []);
 
   async function handleSubscribe(plan: "basic" | "pro") {
