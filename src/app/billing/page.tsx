@@ -33,30 +33,22 @@ export default function BillingPage() {
     setLoading(plan);
     setError(null);
     try {
-      console.log("Starting checkout for plan:", plan);
-      const res = await fetch("/api/stripe/checkout", { 
+      const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
-      console.log("Response status:", res.status);
       const data = await res.json();
-      console.log("Response data:", data);
-      
+
       if (data.error) {
         setError(data.error);
-        alert(`Error: ${data.error}`);
       } else if (data.url) {
-        console.log("Redirecting to:", data.url);
         window.location.href = data.url;
       } else {
-        setError("No checkout URL returned");
-        alert("Failed to create checkout session");
+        setError("Failed to create checkout session");
       }
     } catch (e: any) {
-      console.error("Checkout error:", e);
       setError(e.message);
-      alert(`Error: ${e.message}`);
     } finally {
       setLoading(null);
     }
@@ -70,7 +62,6 @@ export default function BillingPage() {
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch (e: any) {
-      console.error(e);
       setError(e.message);
     }
     setLoading(null);

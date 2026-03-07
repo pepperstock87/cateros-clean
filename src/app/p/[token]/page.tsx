@@ -30,7 +30,7 @@ export default async function PublicProposalPage({ params }: Props) {
     .from("business_settings")
     .select("*")
     .eq("user_id", proposal.user_id)
-    .single();
+    .maybeSingle();
 
   const { data: profile } = await supabase
     .from("profiles")

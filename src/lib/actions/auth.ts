@@ -38,7 +38,9 @@ export async function signupAction(_prevState: AuthState, formData: FormData): P
   });
   if (error) return { error: error.message };
   if (!data.user) return { error: "Signup failed." };
-  await supabase.from("profiles").insert({ id: data.user.id, email: parsed.data.email, full_name: parsed.data.full_name, company_name: parsed.data.company_name });
+  // Profile is auto-created by the on_auth_user_created DB trigger.
+  // Update with company_name since the trigger only sets email/full_name from metadata.
+  await supabase.from("profiles").update({ company_name: parsed.data.company_name }).eq("id", data.user.id);
   redirect(`/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }
 

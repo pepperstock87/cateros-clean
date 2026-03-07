@@ -15,7 +15,7 @@ export async function getBusinessSettings(): Promise<BusinessSettings | null> {
     .from("business_settings")
     .select("*")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   return data;
 }

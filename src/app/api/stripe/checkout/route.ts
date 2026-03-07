@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
   if (profile?.subscription_status === "active" || profile?.subscription_status === "trialing") {
-    return NextResponse.json({ error: "You already have an active subscription.", redirectTo: "/billing" }, { status: 400 });
+    return NextResponse.json({ error: "You already have an active subscription." }, { status: 400 });
   }
 
   let customerId = profile?.stripe_customer_id;
