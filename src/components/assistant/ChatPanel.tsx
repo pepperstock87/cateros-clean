@@ -67,7 +67,7 @@ function ActionCard({
         {action.action === "create_event" ? "Create Event" : "Create Recipe"}
       </p>
       <p className="text-sm text-[#c4b5a0] mb-3">{action.confirmation_message}</p>
-      <div className="text-xs text-[#6b5a4a] bg-[#0f0d0b] rounded p-2 mb-3 max-h-32 overflow-y-auto">
+      <div className="text-xs text-[#7A8BA8] bg-[#0C1220] rounded p-2 mb-3 max-h-32 overflow-y-auto">
         <pre className="whitespace-pre-wrap">{JSON.stringify(action.data, null, 2)}</pre>
       </div>
       {status === "pending" && (
@@ -81,7 +81,7 @@ function ActionCard({
           </button>
           <button
             onClick={onDismiss}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2e271f] hover:bg-[#3a3028] text-[#9c8876] text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2A3A5C] hover:bg-[#3a3028] text-[#D4A373] text-xs font-medium transition-colors"
           >
             <XCircle className="w-3 h-3" />
             Cancel
@@ -280,13 +280,13 @@ export function ChatPanel({
     <>
       {/* Header */}
       {!fullScreen && (
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#2e271f]">
-          <h3 className="text-sm font-semibold text-[#f5ede0]">AI Assistant</h3>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A3A5C]">
+          <h3 className="text-sm font-semibold text-[#F4F1ED]">AI Assistant</h3>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-[#2e271f] transition-colors"
+            className="p-1 rounded hover:bg-[#2A3A5C] transition-colors"
           >
-            <X className="w-4 h-4 text-[#9c8876]" />
+            <X className="w-4 h-4 text-[#D4A373]" />
           </button>
         </div>
       )}
@@ -295,7 +295,7 @@ export function ChatPanel({
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <p className="text-sm text-[#6b5a4a] mb-4">
+            <p className="text-sm text-[#7A8BA8] mb-4">
               Ask me anything about your catering business.
             </p>
             {suggestedPrompts && suggestedPrompts.length > 0 && (
@@ -336,7 +336,7 @@ export function ChatPanel({
                   "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed",
                   msg.role === "user"
                     ? "bg-brand-600 text-white"
-                    : "bg-[#1c1814] text-[#c4b5a0] border border-[#2e271f]"
+                    : "bg-[#1A2538] text-[#c4b5a0] border border-[#2A3A5C]"
                 )}
               >
                 {msg.role === "assistant" ? (
@@ -370,7 +370,7 @@ export function ChatPanel({
       {/* Input */}
       <form
         onSubmit={handleSubmit}
-        className="px-4 py-3 border-t border-[#2e271f]"
+        className="px-4 py-3 border-t border-[#2A3A5C]"
       >
         <div className="flex gap-2">
           <input
@@ -380,7 +380,7 @@ export function ChatPanel({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your business..."
             disabled={isStreaming}
-            className="flex-1 bg-[#1c1814] border border-[#2e271f] rounded-lg px-3 py-2 text-sm text-[#f5ede0] placeholder:text-[#6b5a4a] focus:outline-none focus:ring-1 focus:ring-brand-600 disabled:opacity-50"
+            className="flex-1 bg-[#1A2538] border border-[#2A3A5C] rounded-lg px-3 py-2 text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:ring-1 focus:ring-brand-600 disabled:opacity-50"
           />
           <button
             type="submit"
@@ -400,7 +400,7 @@ export function ChatPanel({
 
   if (fullScreen) {
     return (
-      <div className="flex flex-col h-full bg-[#0f0d0b]">{panelContent}</div>
+      <div className="flex flex-col h-full bg-[#0C1220]">{panelContent}</div>
     );
   }
 
@@ -412,7 +412,7 @@ export function ChatPanel({
         onClick={onClose}
       />
       {/* Panel */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md flex flex-col bg-[#0f0d0b] border-l border-[#2e271f] shadow-2xl animate-in slide-in-from-right duration-300">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md flex flex-col bg-[#0C1220] border-l border-[#2A3A5C] shadow-2xl animate-in slide-in-from-right duration-300">
         {panelContent}
       </div>
     </>

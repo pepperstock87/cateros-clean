@@ -47,14 +47,14 @@ export function ProposalFollowUp({ proposal }: ProposalFollowUpProps) {
   return (
     <div className="card p-5">
       <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
-        <Clock className="w-4 h-4 text-[#9c8876]" />
+        <Clock className="w-4 h-4 text-[#D4A373]" />
         Follow-Up Status
       </h3>
 
       <div className="space-y-3">
         {/* Days since sent */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-[#9c8876]">Sent</span>
+          <span className="text-sm text-[#D4A373]">Sent</span>
           <span className="text-sm">
             {daysSinceSent === 0
               ? "Today"
@@ -66,7 +66,7 @@ export function ProposalFollowUp({ proposal }: ProposalFollowUpProps) {
 
         {/* Response status */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-[#9c8876]">Client Response</span>
+          <span className="text-sm text-[#D4A373]">Client Response</span>
           {hasResponded ? (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800/40">
               <CheckCircle className="w-3 h-3" />
@@ -83,7 +83,7 @@ export function ProposalFollowUp({ proposal }: ProposalFollowUpProps) {
               Declined
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-[#2e271f] text-[#9c8876]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-[#2A3A5C] text-[#D4A373]">
               Awaiting response
             </span>
           )}
@@ -92,9 +92,9 @@ export function ProposalFollowUp({ proposal }: ProposalFollowUpProps) {
         {/* Client email */}
         {proposal.client_email && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#9c8876]">Client Email</span>
+            <span className="text-sm text-[#D4A373]">Client Email</span>
             <span className="text-sm flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-[#9c8876]" />
+              <Mail className="w-3.5 h-3.5 text-[#D4A373]" />
               {proposal.client_email}
             </span>
           </div>

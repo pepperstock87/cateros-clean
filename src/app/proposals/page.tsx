@@ -63,7 +63,7 @@ export default async function ProposalsPage() {
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Proposals</h1>
-          <p className="text-sm text-[#9c8876] mt-1">Client-facing proposals generated from your events.</p>
+          <p className="text-sm text-[#D4A373] mt-1">Client-facing proposals generated from your events.</p>
         </div>
         {proposals.length > 0 && <ProposalsExport proposals={proposals} />}
       </div>
@@ -98,8 +98,8 @@ export default async function ProposalsPage() {
               key={status}
               className={`px-3 py-1.5 rounded-lg font-medium border ${
                 counts[status] > 0
-                  ? "border-[#2e271f] text-[#9c8876]"
-                  : "border-transparent text-[#6b5a4a]"
+                  ? "border-[#2A3A5C] text-[#D4A373]"
+                  : "border-transparent text-[#7A8BA8]"
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)} ({counts[status]})
@@ -110,9 +110,9 @@ export default async function ProposalsPage() {
 
       {proposals.length === 0 ? (
         <div className="card p-16 text-center">
-          <FileText className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <FileText className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No proposals yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">Open an event, build pricing, then click "Generate Proposal" to create one.</p>
+          <p className="text-sm text-[#D4A373] mb-6">Open an event, build pricing, then click "Generate Proposal" to create one.</p>
           <Link href="/events" className="btn-primary inline-flex">View events</Link>
         </div>
       ) : (
@@ -125,18 +125,18 @@ export default async function ProposalsPage() {
                 <Link
                   key={proposal.id}
                   href={`/proposals/${proposal.id}`}
-                  className="card block p-4 hover:bg-[#1c1814] transition-colors"
+                  className="card block p-4 hover:bg-[#1A2538] transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span className="font-medium text-sm truncate">{proposal.title}</span>
                     <span className={`badge ${statusBadgeClass[proposal.status]} flex-shrink-0`}>{proposal.status}</span>
                   </div>
                   {proposal.event?.client_name && (
-                    <div className="text-xs text-[#9c8876] mb-1">{proposal.event.client_name}</div>
+                    <div className="text-xs text-[#D4A373] mb-1">{proposal.event.client_name}</div>
                   )}
-                  <div className="flex items-center gap-3 text-xs text-[#6b5a4a]">
+                  <div className="flex items-center gap-3 text-xs text-[#7A8BA8]">
                     {proposal.event && <span>{format(new Date(proposal.event.event_date), "MMM d, yyyy")}</span>}
-                    {pricing && <span className="text-[#9c8876]">{formatCurrency(pricing.suggestedPrice)}</span>}
+                    {pricing && <span className="text-[#D4A373]">{formatCurrency(pricing.suggestedPrice)}</span>}
                   </div>
                 </Link>
               );
@@ -148,39 +148,39 @@ export default async function ProposalsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#2e271f]">
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Proposal</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Client</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Event Date</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Amount</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Status</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Created</th>
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3"></th>
+                  <tr className="border-b border-[#2A3A5C]">
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Proposal</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Client</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Event Date</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Amount</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Status</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Created</th>
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {proposals.map(proposal => {
                     const pricing = proposal.event?.pricing_data;
                     return (
-                      <tr key={proposal.id} className="border-b border-[#1c1814] hover:bg-[#1c1814] transition-colors">
+                      <tr key={proposal.id} className="border-b border-[#1A2538] hover:bg-[#1A2538] transition-colors">
                         <td className="px-5 py-3.5 font-medium text-sm max-w-[200px]">
                           <Link href={`/proposals/${proposal.id}`} className="hover:text-brand-400 transition-colors truncate block">
                             {proposal.title}
                           </Link>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-[#9c8876]">
+                        <td className="px-5 py-3.5 text-sm text-[#D4A373]">
                           {proposal.event?.client_name ?? "—"}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
+                        <td className="px-5 py-3.5 text-sm text-[#D4A373] whitespace-nowrap">
                           {proposal.event ? format(new Date(proposal.event.event_date), "MMM d, yyyy") : "—"}
                         </td>
                         <td className="px-5 py-3.5 text-sm">
-                          {pricing ? formatCurrency(pricing.suggestedPrice) : <span className="text-[#6b5a4a]">—</span>}
+                          {pricing ? formatCurrency(pricing.suggestedPrice) : <span className="text-[#7A8BA8]">—</span>}
                         </td>
                         <td className="px-5 py-3.5">
                           <span className={`badge ${statusBadgeClass[proposal.status]}`}>{proposal.status}</span>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
+                        <td className="px-5 py-3.5 text-sm text-[#D4A373] whitespace-nowrap">
                           {format(new Date(proposal.created_at), "MMM d, yyyy")}
                         </td>
                         <td className="px-5 py-3.5">

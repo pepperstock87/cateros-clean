@@ -93,13 +93,13 @@ export function FilteredEventsView({ events, companyName }: Props) {
     <div>
       <EventFilters onFilterChange={handleFilterChange} initialSearch={clientParam} />
 
-      <p className="text-sm text-[#9c8876] mb-4">
+      <p className="text-sm text-[#D4A373] mb-4">
         Showing {filteredEvents.length} of {events.length} events
       </p>
 
       {filteredEvents.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-[#6b5a4a] text-sm">No events match your filters.</p>
+          <p className="text-[#7A8BA8] text-sm">No events match your filters.</p>
         </div>
       ) : (
         <EventsTable events={filteredEvents} />

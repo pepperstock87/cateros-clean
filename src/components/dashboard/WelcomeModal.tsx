@@ -71,11 +71,11 @@ export function WelcomeModal({ hasSeenWelcome }: WelcomeModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg mx-4 bg-[#1a1714] border border-[#2e271f] rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+      <div className="relative z-10 w-full max-w-lg mx-4 bg-[#182030] border border-[#2A3A5C] rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
         {/* Close button */}
         <button
           onClick={handleDismiss}
-          className="absolute top-4 right-4 text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+          className="absolute top-4 right-4 text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -86,10 +86,10 @@ export function WelcomeModal({ hasSeenWelcome }: WelcomeModalProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-950 border border-brand-800 mb-5">
             <ChefHat className="w-8 h-8 text-brand-400" />
           </div>
-          <h2 className="font-display text-2xl font-semibold text-[#f5ede0] mb-2">
+          <h2 className="font-display text-2xl font-semibold text-[#F4F1ED] mb-2">
             Welcome to CaterOS
           </h2>
-          <p className="text-sm text-[#9c8876] max-w-sm mx-auto leading-relaxed">
+          <p className="text-sm text-[#D4A373] max-w-sm mx-auto leading-relaxed">
             Your catering command center is ready. Here are a few things to get
             you up and running.
           </p>
@@ -102,20 +102,20 @@ export function WelcomeModal({ hasSeenWelcome }: WelcomeModalProps) {
               key={step.href}
               href={step.href}
               onClick={handleDismiss}
-              className="group flex items-start gap-4 p-4 rounded-xl bg-[#0f0d0b] border border-[#2e271f] hover:border-brand-800 transition-all duration-200"
+              className="group flex items-start gap-4 p-4 rounded-xl bg-[#0C1220] border border-[#2A3A5C] hover:border-brand-800 transition-all duration-200"
             >
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-950 border border-brand-800 flex items-center justify-center group-hover:bg-brand-900 transition-colors">
                 <step.icon className="w-5 h-5 text-brand-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#f5ede0] group-hover:text-brand-300 transition-colors">
+                <p className="text-sm font-medium text-[#F4F1ED] group-hover:text-brand-300 transition-colors">
                   {step.title}
                 </p>
-                <p className="text-xs text-[#9c8876] mt-0.5 leading-relaxed">
+                <p className="text-xs text-[#D4A373] mt-0.5 leading-relaxed">
                   {step.description}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#9c8876] mt-1 flex-shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+              <ArrowRight className="w-4 h-4 text-[#D4A373] mt-1 flex-shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
             </Link>
           ))}
         </div>
@@ -130,7 +130,7 @@ export function WelcomeModal({ hasSeenWelcome }: WelcomeModalProps) {
             <Sparkles className="w-4 h-4" />
             Get Started
           </button>
-          <p className="text-center text-xs text-[#9c8876] mt-3">
+          <p className="text-center text-xs text-[#D4A373] mt-3">
             You can always find these in your dashboard.
           </p>
         </div>

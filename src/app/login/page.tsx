@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [state, action, pending] = useActionState(loginAction, { error: "" });
 
   return (
-    <div className="min-h-screen bg-[#0f0d0b] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#0C1220] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2.5 mb-4">
@@ -21,7 +21,7 @@ export default function LoginPage() {
             <span className="font-display text-xl font-semibold">Cateros</span>
           </div>
           <h1 className="font-display text-2xl font-semibold mb-2">Welcome back</h1>
-          <p className="text-sm text-[#9c8876]">Sign in to your account</p>
+          <p className="text-sm text-[#D4A373]">Sign in to your account</p>
         </div>
 
         <div className="card p-6">
@@ -47,7 +47,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-sm text-[#9c8876] text-center mt-4">
+          <p className="text-sm text-[#D4A373] text-center mt-4">
             Don't have an account?{" "}
             <Link href="/signup" className="text-brand-400 hover:text-brand-300 font-medium">Sign up</Link>
           </p>

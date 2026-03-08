@@ -91,7 +91,7 @@ export default function SchedulePage() {
             <Lock className="w-8 h-8 text-brand-400" />
           </div>
           <h2 className="font-display text-xl font-semibold mb-2">Pro Feature</h2>
-          <p className="text-sm text-[#9c8876] mb-6">
+          <p className="text-sm text-[#D4A373] mb-6">
             Calendar scheduling is available on the Pro plan. Upgrade to access the visual calendar and advanced scheduling features.
           </p>
           <Link href="/billing" className="btn-primary inline-flex items-center gap-2">
@@ -163,7 +163,7 @@ export default function SchedulePage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">Schedule</h1>
-          <p className="text-sm text-[#9c8876] mt-1">Calendar view of your events</p>
+          <p className="text-sm text-[#D4A373] mt-1">Calendar view of your events</p>
         </div>
         <div className="flex items-center gap-2">
           <BulkCalendarExport events={events} />
@@ -225,7 +225,7 @@ export default function SchedulePage() {
 
         <div className="grid grid-cols-7 gap-1 md:gap-2">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-            <div key={day} className="text-center text-xs md:text-sm text-[#6b5a4a] font-medium py-2">
+            <div key={day} className="text-center text-xs md:text-sm text-[#7A8BA8] font-medium py-2">
               <span className="hidden sm:inline">{day}</span>
               <span className="sm:hidden">{day[0]}</span>
             </div>
@@ -246,8 +246,8 @@ export default function SchedulePage() {
                 className={`
                   aspect-square p-1 md:p-2 rounded-lg border transition-all text-left relative
                   ${!isSameMonth(day, currentDate) ? "opacity-30" : ""}
-                  ${isToday ? "border-brand-400 bg-brand-950" : "border-[#2e271f]"}
-                  ${isSelected ? "bg-brand-900 border-brand-400" : "hover:bg-[#1c1814]"}
+                  ${isToday ? "border-brand-400 bg-brand-950" : "border-[#2A3A5C]"}
+                  ${isSelected ? "bg-brand-900 border-brand-400" : "hover:bg-[#1A2538]"}
                 `}
               >
                 <div className="flex items-center justify-between">
@@ -271,7 +271,7 @@ export default function SchedulePage() {
                           {event.name}
                         </div>
                         {eventAssignments.length > 0 && (
-                          <div className="flex items-center gap-0.5 px-1 text-[10px] text-[#6b5a4a]">
+                          <div className="flex items-center gap-0.5 px-1 text-[10px] text-[#7A8BA8]">
                             <Users className="w-2.5 h-2.5" />
                             <span>{eventAssignments.length}</span>
                           </div>
@@ -280,7 +280,7 @@ export default function SchedulePage() {
                     );
                   })}
                   {dayEvents.length > 2 && (
-                    <div className="text-[10px] text-[#6b5a4a]">+{dayEvents.length - 2} more</div>
+                    <div className="text-[10px] text-[#7A8BA8]">+{dayEvents.length - 2} more</div>
                   )}
                 </div>
               </button>
@@ -295,7 +295,7 @@ export default function SchedulePage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="font-display text-xl font-semibold">{format(selectedDay, "MMMM d, yyyy")}</h3>
-                <p className="text-sm text-[#9c8876]">{selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? "s" : ""}</p>
+                <p className="text-sm text-[#D4A373]">{selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? "s" : ""}</p>
               </div>
               <button onClick={() => setSelectedDay(null)} className="btn-ghost p-2">
                 <X className="w-5 h-5" />
@@ -318,7 +318,7 @@ export default function SchedulePage() {
 
             <div className="space-y-3">
               {selectedDayEvents.length === 0 ? (
-                <p className="text-sm text-[#6b5a4a] text-center py-8">No events on this day</p>
+                <p className="text-sm text-[#7A8BA8] text-center py-8">No events on this day</p>
               ) : (
                 selectedDayEvents.map(event => {
                   const eventAssignments = assignmentsForEvent(event.id);
@@ -326,14 +326,14 @@ export default function SchedulePage() {
                     <div key={event.id} className="card p-4">
                       <Link
                         href={`/events/${event.id}`}
-                        className="block hover:bg-[#1c1814] transition-colors -m-4 p-4 rounded-lg"
+                        className="block hover:bg-[#1A2538] transition-colors -m-4 p-4 rounded-lg"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold truncate">{event.name}</h4>
-                            <p className="text-sm text-[#9c8876]">{event.client_name}</p>
+                            <p className="text-sm text-[#D4A373]">{event.client_name}</p>
                             {(event.start_time || event.end_time) && (
-                              <p className="text-xs text-[#6b5a4a] mt-1">
+                              <p className="text-xs text-[#7A8BA8] mt-1">
                                 {event.start_time && format(new Date(`2000-01-01T${event.start_time}`), "h:mm a")}
                                 {event.start_time && event.end_time && " - "}
                                 {event.end_time && format(new Date(`2000-01-01T${event.end_time}`), "h:mm a")}
@@ -347,10 +347,10 @@ export default function SchedulePage() {
                       </Link>
 
                       {eventAssignments.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-[#2e271f]">
+                        <div className="mt-3 pt-3 border-t border-[#2A3A5C]">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Users className="w-3.5 h-3.5 text-[#6b5a4a]" />
-                            <span className="text-xs text-[#6b5a4a] font-medium">
+                            <Users className="w-3.5 h-3.5 text-[#7A8BA8]" />
+                            <span className="text-xs text-[#7A8BA8] font-medium">
                               Staff ({eventAssignments.length})
                             </span>
                           </div>
@@ -367,16 +367,16 @@ export default function SchedulePage() {
                                     }`}
                                     title={a.confirmed ? "Confirmed" : "Not confirmed"}
                                   />
-                                  <span className="text-[10px] text-[#6b5a4a] truncate">
+                                  <span className="text-[10px] text-[#7A8BA8] truncate">
                                     {a.staff_members?.name || "Unknown"}
                                   </span>
                                   {a.role && (
-                                    <span className="text-[10px] text-[#6b5a4a]/60">
+                                    <span className="text-[10px] text-[#7A8BA8]/60">
                                       ({a.role})
                                     </span>
                                   )}
                                   {(a.start_time || a.end_time) && (
-                                    <span className="text-[10px] text-[#6b5a4a]/60 ml-auto flex-shrink-0">
+                                    <span className="text-[10px] text-[#7A8BA8]/60 ml-auto flex-shrink-0">
                                       {a.start_time && format(new Date(`2000-01-01T${a.start_time}`), "h:mm a")}
                                       {a.start_time && a.end_time && " - "}
                                       {a.end_time && format(new Date(`2000-01-01T${a.end_time}`), "h:mm a")}

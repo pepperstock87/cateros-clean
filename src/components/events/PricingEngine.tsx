@@ -130,7 +130,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           { icon: Users, label: "Per Person", value: formatCurrency(pricing.suggestedPrice / guestCount), color: "" },
         ].map(({ icon: Icon, label, value, color }) => (
           <div key={label}>
-            <div className="flex items-center gap-1.5 mb-1"><Icon className="w-3.5 h-3.5 text-[#9c8876]" /><span className="stat-label">{label}</span></div>
+            <div className="flex items-center gap-1.5 mb-1"><Icon className="w-3.5 h-3.5 text-[#D4A373]" /><span className="stat-label">{label}</span></div>
             <div className={`text-xl font-semibold font-display ${color}`}>{value}</div>
           </div>
         ))}
@@ -154,30 +154,30 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
             </div>
             <div className="space-y-2">
             {menuItems.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
-                <UtensilsCrossed className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
-                <p className="text-sm font-medium text-[#9c8876] mb-1">No menu items yet</p>
-                <p className="text-xs text-[#6b5a4a] mb-3">Add dishes, courses, or menu components to build your pricing</p>
+              <div className="text-center py-6 border border-dashed border-[#2A3A5C] rounded-lg">
+                <UtensilsCrossed className="w-6 h-6 text-[#7A8BA8] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#D4A373] mb-1">No menu items yet</p>
+                <p className="text-xs text-[#7A8BA8] mb-3">Add dishes, courses, or menu components to build your pricing</p>
                 <button onClick={addMenuItem} className="btn-primary text-xs px-3 py-1.5">+ Add Menu Item</button>
               </div>
             ) : menuItems.map(item => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                 <input className="input col-span-5 text-sm" placeholder="Item name" value={item.name} onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }} />
                 <div className="col-span-3 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                   <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
                     onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
                 </div>
                 <input className="input col-span-3 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
                   onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
-                <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
             {menuItems.length > 0 && (
-              <div className="flex justify-between text-xs text-[#9c8876] pt-2 border-t border-[#2e271f]">
-                <span>Food cost total</span><span className="font-medium text-[#f5ede0]">{formatCurrency(pricing.foodCostTotal)}</span>
+              <div className="flex justify-between text-xs text-[#D4A373] pt-2 border-t border-[#2A3A5C]">
+                <span>Food cost total</span><span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.foodCostTotal)}</span>
               </div>
             )}
             </div>
@@ -198,15 +198,15 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
             </div>
             <div className="space-y-2">
             {staffing.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
-                <Users className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
-                <p className="text-sm font-medium text-[#9c8876] mb-1">No staffing added</p>
-                <p className="text-xs text-[#6b5a4a] mb-3">Add your service team — servers, chefs, bartenders</p>
+              <div className="text-center py-6 border border-dashed border-[#2A3A5C] rounded-lg">
+                <Users className="w-6 h-6 text-[#7A8BA8] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#D4A373] mb-1">No staffing added</p>
+                <p className="text-xs text-[#7A8BA8] mb-3">Add your service team — servers, chefs, bartenders</p>
                 <button onClick={addStaffItem} className="btn-primary text-xs px-3 py-1.5">+ Add Staff</button>
               </div>
             ) : (
               <div>
-                <div className="grid grid-cols-12 gap-2 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider mb-2 px-0.5">
+                <div className="grid grid-cols-12 gap-2 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider mb-2 px-0.5">
                   <span className="col-span-4">Role</span>
                   <span className="col-span-2">Rate/hr</span>
                   <span className="col-span-2">Hours</span>
@@ -221,15 +221,15 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                     </div>
                     <input className="input col-span-2 text-sm" type="number" placeholder="Hrs" min={0} value={s.hours || ""} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, hours: parseFloat(e.target.value) || 0 } : st)); markDirty(); }} />
                     <input className="input col-span-2 text-sm" type="number" placeholder="# staff" min={1} value={s.headcount || ""} onChange={e => { setStaffing(p => p.map(st => st.id === s.id ? { ...st, headcount: parseInt(e.target.value) || 1 } : st)); markDirty(); }} />
-                    <div className="col-span-1 text-xs text-[#9c8876] text-center">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</div>
-                    <button type="button" onClick={() => { setStaffing(p => p.filter(st => st.id !== s.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                    <div className="col-span-1 text-xs text-[#D4A373] text-center">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</div>
+                    <button type="button" onClick={() => { setStaffing(p => p.filter(st => st.id !== s.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
-                <div className="flex justify-between text-xs text-[#9c8876] pt-2 border-t border-[#2e271f]">
+                <div className="flex justify-between text-xs text-[#D4A373] pt-2 border-t border-[#2A3A5C]">
                   <span>Staffing total</span>
-                  <span className="font-medium text-[#f5ede0]">{formatCurrency(pricing.staffingTotal)}</span>
+                  <span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.staffingTotal)}</span>
                 </div>
               </div>
             )}
@@ -251,28 +251,28 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
             </div>
             <div className="space-y-2">
             {rentals.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-[#2e271f] rounded-lg">
-                <Package className="w-6 h-6 text-[#6b5a4a] mx-auto mb-2" />
-                <p className="text-sm font-medium text-[#9c8876] mb-1">No rentals added</p>
-                <p className="text-xs text-[#6b5a4a] mb-3">Add tables, chairs, linens, and equipment</p>
+              <div className="text-center py-6 border border-dashed border-[#2A3A5C] rounded-lg">
+                <Package className="w-6 h-6 text-[#7A8BA8] mx-auto mb-2" />
+                <p className="text-sm font-medium text-[#D4A373] mb-1">No rentals added</p>
+                <p className="text-xs text-[#7A8BA8] mb-3">Add tables, chairs, linens, and equipment</p>
                 <button onClick={addRentalItem} className="btn-primary text-xs px-3 py-1.5">+ Add Rental</button>
               </div>
             ) : rentals.map(r => (
               <div key={r.id} className="grid grid-cols-12 gap-2 items-center">
                 <input className="input col-span-6 text-sm" placeholder="Item (e.g. 60in round tables)" value={r.item} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, item: e.target.value } : rt)); markDirty(); }} />
                 <div className="col-span-3 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                   <input className="input pl-6 text-sm" type="number" placeholder="0.00" min={0} value={r.unitCost || ""} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, unitCost: parseFloat(e.target.value) || 0 } : rt)); markDirty(); }} />
                 </div>
                 <input className="input col-span-2 text-sm" type="number" placeholder="Qty" min={1} value={r.quantity || ""} onChange={e => { setRentals(p => p.map(rt => rt.id === r.id ? { ...rt, quantity: parseInt(e.target.value) || 1 } : rt)); markDirty(); }} />
-                <button type="button" onClick={() => { setRentals(p => p.filter(rt => rt.id !== r.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+                <button type="button" onClick={() => { setRentals(p => p.filter(rt => rt.id !== r.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
             {rentals.length > 0 && (
-              <div className="flex justify-between text-xs text-[#9c8876] pt-2 border-t border-[#2e271f]">
-                <span>Rentals total</span><span className="font-medium text-[#f5ede0]">{formatCurrency(pricing.rentalsTotal)}</span>
+              <div className="flex justify-between text-xs text-[#D4A373] pt-2 border-t border-[#2A3A5C]">
+                <span>Rentals total</span><span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.rentalsTotal)}</span>
               </div>
             )}
             </div>
@@ -282,24 +282,24 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           <div className="card p-5">
             <h3 className="font-medium text-sm mb-3">Bar Package</h3>
             <div className="flex flex-wrap gap-2 mb-3">
-              <button type="button" onClick={() => { setBarPackage(null); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${!barPackage ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>None</button>
+              <button type="button" onClick={() => { setBarPackage(null); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${!barPackage ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2A3A5C] text-[#D4A373] hover:border-[#344570]"}`}>None</button>
               {BAR_OPTIONS.map(opt => (
-                <button type="button" key={opt.type} onClick={() => { setBarPackage({ ...opt }); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${barPackage?.type === opt.type ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2e271f] text-[#9c8876] hover:border-[#3d3028]"}`}>
+                <button type="button" key={opt.type} onClick={() => { setBarPackage({ ...opt }); markDirty(); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${barPackage?.type === opt.type ? "bg-brand-950 border-brand-700 text-brand-300" : "border-[#2A3A5C] text-[#D4A373] hover:border-[#344570]"}`}>
                   {opt.label}{opt.costPerPerson > 0 ? ` ($${opt.costPerPerson}/pp)` : ""}
                 </button>
               ))}
             </div>
             {barPackage?.type === "custom" && (
               <div className="flex items-center gap-2">
-                <label className="text-xs text-[#9c8876]">$/person:</label>
+                <label className="text-xs text-[#D4A373]">$/person:</label>
                 <div className="relative w-28">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                   <input className="input pl-6 text-sm" type="number" min={0} placeholder="0.00" value={barPackage.costPerPerson || ""}
                     onChange={e => { setBarPackage(p => p ? { ...p, costPerPerson: parseFloat(e.target.value) || 0 } : null); markDirty(); }} />
                 </div>
               </div>
             )}
-            {barPackage && <div className="text-xs text-[#9c8876] mt-2">Bar total: <span className="text-[#f5ede0] font-medium">{formatCurrency(pricing.barTotal)}</span></div>}
+            {barPackage && <div className="text-xs text-[#D4A373] mt-2">Bar total: <span className="text-[#F4F1ED] font-medium">{formatCurrency(pricing.barTotal)}</span></div>}
           </div>
         </div>
 
@@ -323,7 +323,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <label className="label">{label}</label>
                 <div className="relative">
                   <input className="input pr-7" type="number" min={0} max={100} step={0.5} value={value} onChange={e => { setter(parseFloat(e.target.value) || 0); markDirty(); }} />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
                 </div>
               </div>
             ))}
@@ -339,19 +339,19 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 { label: "Bar", value: pricing.barTotal },
               ].map(row => (
                 <div key={row.label} className="flex justify-between text-sm">
-                  <span className="text-[#9c8876]">{row.label}</span><span>{formatCurrency(row.value)}</span>
+                  <span className="text-[#D4A373]">{row.label}</span><span>{formatCurrency(row.value)}</span>
                 </div>
               ))}
-              <div className="border-t border-[#2e271f] pt-2.5 flex justify-between text-sm">
-                <span className="text-[#9c8876]">Subtotal</span><span>{formatCurrency(pricing.subtotal)}</span>
+              <div className="border-t border-[#2A3A5C] pt-2.5 flex justify-between text-sm">
+                <span className="text-[#D4A373]">Subtotal</span><span>{formatCurrency(pricing.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Admin ({adminPercent}%)</span><span>{formatCurrency(pricing.adminFee)}</span>
+                <span className="text-[#D4A373]">Admin ({adminPercent}%)</span><span>{formatCurrency(pricing.adminFee)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Tax ({taxPercent}%)</span><span>{formatCurrency(pricing.taxAmount)}</span>
+                <span className="text-[#D4A373]">Tax ({taxPercent}%)</span><span>{formatCurrency(pricing.taxAmount)}</span>
               </div>
-              <div className="border-t border-[#2e271f] pt-2.5 flex justify-between font-semibold text-sm">
+              <div className="border-t border-[#2A3A5C] pt-2.5 flex justify-between font-semibold text-sm">
                 <span>Total Cost</span><span>{formatCurrency(pricing.totalCost)}</span>
               </div>
               <div className="flex justify-between font-semibold text-sm text-brand-300">

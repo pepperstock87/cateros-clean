@@ -80,9 +80,9 @@ export function StaffAvailability({ eventId, eventDate }: Props) {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-sm flex items-center gap-2">
-          <Users className="w-4 h-4 text-[#9c8876]" />
+          <Users className="w-4 h-4 text-[#D4A373]" />
           Staff Availability
-          <span className="text-xs text-[#6b5a4a]">
+          <span className="text-xs text-[#7A8BA8]">
             {availableCount} available, {busyCount} busy
           </span>
         </h2>
@@ -90,17 +90,17 @@ export function StaffAvailability({ eventId, eventDate }: Props) {
 
       {loading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin text-[#6b5a4a]" />
+          <Loader2 className="w-5 h-5 animate-spin text-[#7A8BA8]" />
         </div>
       ) : staff.length === 0 ? (
-        <p className="text-xs text-[#6b5a4a] text-center py-4">
+        <p className="text-xs text-[#7A8BA8] text-center py-4">
           No staff members found. Add staff in Settings first.
         </p>
       ) : (
         <div className="space-y-1.5">
           {staff.map((member) => (
             <div key={member.id}>
-              <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+              <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Availability dot */}
                   <div
@@ -119,7 +119,7 @@ export function StaffAvailability({ eventId, eventDate }: Props) {
                     <div className="text-sm font-medium truncate">
                       {member.name}
                     </div>
-                    <div className="text-[10px] text-[#6b5a4a]">
+                    <div className="text-[10px] text-[#7A8BA8]">
                       {member.role} &middot; ${member.hourly_rate}/hr
                       {member.status === "busy" && member.assignedEvent && (
                         <span className="text-red-400/80">
@@ -137,7 +137,7 @@ export function StaffAvailability({ eventId, eventDate }: Props) {
                   className={`text-xs px-2.5 py-1 rounded-md flex items-center gap-1 transition-colors flex-shrink-0 ${
                     member.status === "available"
                       ? "bg-brand-600 hover:bg-brand-500 text-white"
-                      : "bg-[#2e271f] hover:bg-[#3a3129] text-[#9c8876]"
+                      : "bg-[#2A3A5C] hover:bg-[#3a3129] text-[#D4A373]"
                   }`}
                 >
                   {assigning === member.id ? (
@@ -173,7 +173,7 @@ export function StaffAvailability({ eventId, eventDate }: Props) {
                         </button>
                         <button
                           onClick={() => setShowConflictWarning(null)}
-                          className="text-[10px] px-2 py-1 rounded bg-[#2e271f] hover:bg-[#3a3129] text-[#9c8876] transition-colors"
+                          className="text-[10px] px-2 py-1 rounded bg-[#2A3A5C] hover:bg-[#3a3129] text-[#D4A373] transition-colors"
                         >
                           Cancel
                         </button>

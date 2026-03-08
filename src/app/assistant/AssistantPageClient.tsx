@@ -51,8 +51,8 @@ export function AssistantPageClient() {
   return (
     <div className="h-full flex">
       {/* Conversation sidebar */}
-      <div className="w-64 border-r border-[#2e271f] flex flex-col bg-[#0f0d0b]">
-        <div className="p-4 border-b border-[#2e271f]">
+      <div className="w-64 border-r border-[#2A3A5C] flex flex-col bg-[#0C1220]">
+        <div className="p-4 border-b border-[#2A3A5C]">
           <button onClick={handleNewChat} className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
             <Plus className="w-4 h-4" /> New Chat
           </button>
@@ -61,17 +61,17 @@ export function AssistantPageClient() {
           {conversations.map(conv => (
             <div
               key={conv.id}
-              className={`group flex items-center gap-2 px-4 py-3 cursor-pointer border-b border-[#1c1814] hover:bg-[#1c1814] transition-colors ${activeId === conv.id ? "bg-[#1c1814]" : ""}`}
+              className={`group flex items-center gap-2 px-4 py-3 cursor-pointer border-b border-[#1A2538] hover:bg-[#1A2538] transition-colors ${activeId === conv.id ? "bg-[#1A2538]" : ""}`}
               onClick={() => handleSelectConversation(conv)}
             >
-              <MessageSquare className="w-3.5 h-3.5 text-[#6b5a4a] flex-shrink-0" />
+              <MessageSquare className="w-3.5 h-3.5 text-[#7A8BA8] flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm truncate">{conv.title}</div>
-                <div className="text-[10px] text-[#6b5a4a]">{new Date(conv.updated_at).toLocaleDateString()}</div>
+                <div className="text-[10px] text-[#7A8BA8]">{new Date(conv.updated_at).toLocaleDateString()}</div>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteConversation(conv.id); }}
-                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 text-[#6b5a4a] transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 text-[#7A8BA8] transition-all"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -82,9 +82,9 @@ export function AssistantPageClient() {
 
       {/* Chat area */}
       <div className="flex-1 flex flex-col">
-        <div className="px-8 py-6 border-b border-[#2e271f]">
+        <div className="px-8 py-6 border-b border-[#2A3A5C]">
           <h1 className="text-xl font-display font-semibold">AI Assistant</h1>
-          <p className="text-sm text-[#6b5a4a] mt-1">Your catering business co-pilot</p>
+          <p className="text-sm text-[#7A8BA8] mt-1">Your catering business co-pilot</p>
         </div>
         <div className="flex-1 overflow-hidden">
           <ChatPanel

@@ -149,7 +149,7 @@ export default function SettingsPage() {
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="mb-6 md:mb-8">
         <h1 className="font-display text-xl md:text-2xl font-semibold">Settings</h1>
-        <p className="text-xs md:text-sm text-[#9c8876] mt-1">Manage your account, defaults, and preferences</p>
+        <p className="text-xs md:text-sm text-[#D4A373] mt-1">Manage your account, defaults, and preferences</p>
       </div>
 
       <UnsavedBanner show={isDirty} />
@@ -162,14 +162,14 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#9c8876] mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-[#D4A373] mb-1">Full Name</label>
             {editingName ? (
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={nameValue}
                   onChange={(e) => { setNameValue(e.target.value); markDirty(); }}
-                  className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
+                  className="input text-sm px-3 py-1.5 rounded-md border border-[#344570] bg-[#1a1510] focus:outline-none focus:border-brand-400"
                   autoFocus
                 />
                 <button
@@ -185,7 +185,7 @@ export default function SettingsPage() {
                     setNameValue(profile?.full_name || "");
                     markClean();
                   }}
-                  className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
+                  className="text-xs px-3 py-1.5 rounded-md border border-[#344570] hover:bg-[#2A3A5C] text-[#D4A373] font-medium"
                 >
                   Cancel
                 </button>
@@ -195,7 +195,7 @@ export default function SettingsPage() {
                 <span className="text-sm">{profile?.full_name || "\u2014"}</span>
                 <button
                   onClick={() => setEditingName(true)}
-                  className="text-[#9c8876] hover:text-brand-400 transition-colors"
+                  className="text-[#D4A373] hover:text-brand-400 transition-colors"
                   title="Edit name"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -204,7 +204,7 @@ export default function SettingsPage() {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9c8876] mb-1">Email</label>
+            <label className="block text-sm font-medium text-[#D4A373] mb-1">Email</label>
             <div className="text-sm">{profile?.email || "\u2014"}</div>
           </div>
         </div>
@@ -218,14 +218,14 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#9c8876] mb-1">Company Name</label>
+            <label className="block text-sm font-medium text-[#D4A373] mb-1">Company Name</label>
             {editingCompany ? (
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={companyValue}
                   onChange={(e) => { setCompanyValue(e.target.value); markDirty(); }}
-                  className="input text-sm px-3 py-1.5 rounded-md border border-[#3e362e] bg-[#1a1510] focus:outline-none focus:border-brand-400"
+                  className="input text-sm px-3 py-1.5 rounded-md border border-[#344570] bg-[#1a1510] focus:outline-none focus:border-brand-400"
                   autoFocus
                 />
                 <button
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                     setCompanyValue(profile?.company_name || "");
                     markClean();
                   }}
-                  className="text-xs px-3 py-1.5 rounded-md border border-[#3e362e] hover:bg-[#2e271f] text-[#9c8876] font-medium"
+                  className="text-xs px-3 py-1.5 rounded-md border border-[#344570] hover:bg-[#2A3A5C] text-[#D4A373] font-medium"
                 >
                   Cancel
                 </button>
@@ -251,7 +251,7 @@ export default function SettingsPage() {
                 <span className="text-sm">{profile?.company_name || "\u2014"}</span>
                 <button
                   onClick={() => setEditingCompany(true)}
-                  className="text-[#9c8876] hover:text-brand-400 transition-colors"
+                  className="text-[#D4A373] hover:text-brand-400 transition-colors"
                   title="Edit company name"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -268,7 +268,7 @@ export default function SettingsPage() {
           <DollarSign className="w-5 h-5 text-brand-400" />
           <h2 className="font-semibold text-lg">Pricing Defaults</h2>
         </div>
-        <p className="text-xs text-[#9c8876] mb-4">These defaults will be applied to new events automatically.</p>
+        <p className="text-xs text-[#D4A373] mb-4">These defaults will be applied to new events automatically.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="label">Default Admin Fee %</label>
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 onChange={(e) => setDefaultAdminFee(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
             </div>
           </div>
           <div>
@@ -297,7 +297,7 @@ export default function SettingsPage() {
                 onChange={(e) => setDefaultTaxRate(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
             </div>
           </div>
           <div>
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                 onChange={(e) => setDefaultTargetMargin(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
             </div>
           </div>
           <div>
@@ -327,7 +327,7 @@ export default function SettingsPage() {
                 onChange={(e) => setDefaultDepositPercent(parseInt(e.target.value) || 0)}
                 className="input pr-7"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
             </div>
           </div>
           <div>
@@ -342,7 +342,7 @@ export default function SettingsPage() {
                 onChange={(e) => setServiceChargePercent(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">%</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">%</span>
             </div>
           </div>
         </div>
@@ -451,7 +451,7 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#9c8876] mb-1">Current Plan</label>
+            <label className="block text-sm font-medium text-[#D4A373] mb-1">Current Plan</label>
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">Cateros {planName}</span>
               {isActive && (
@@ -481,7 +481,7 @@ export default function SettingsPage() {
           <Mail className="w-5 h-5 text-brand-400" />
           <h2 className="font-semibold text-lg">Support</h2>
         </div>
-        <p className="text-sm text-[#9c8876] mb-4">
+        <p className="text-sm text-[#D4A373] mb-4">
           Need help? Have questions? We're here to help.
         </p>
         <a
@@ -506,7 +506,7 @@ function ToggleRow({ label, description, checked, onChange }: {
     <div className="flex items-center justify-between py-2">
       <div>
         <div className="text-sm font-medium">{label}</div>
-        <div className="text-xs text-[#9c8876]">{description}</div>
+        <div className="text-xs text-[#D4A373]">{description}</div>
       </div>
       <button
         type="button"
@@ -514,7 +514,7 @@ function ToggleRow({ label, description, checked, onChange }: {
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? "bg-brand-500" : "bg-[#2e271f]"
+          checked ? "bg-brand-500" : "bg-[#2A3A5C]"
         }`}
       >
         <span

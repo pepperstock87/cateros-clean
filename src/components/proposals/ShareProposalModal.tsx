@@ -61,18 +61,18 @@ Feel free to reach out with any questions.`;
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 bg-[#1a1714] border border-[#2e271f] rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-md mx-4 bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#2e271f]">
+        <div className="flex items-center justify-between p-5 border-b border-[#2A3A5C]">
           <div className="flex items-center gap-2">
             <Link className="w-4 h-4 text-brand-400" />
-            <h2 className="font-display text-lg font-semibold text-[#f5ede0]">
+            <h2 className="font-display text-lg font-semibold text-[#F4F1ED]">
               Share Proposal
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-[#9c8876] hover:text-[#f5ede0] transition-colors p-1"
+            className="text-[#D4A373] hover:text-[#F4F1ED] transition-colors p-1"
           >
             <X className="w-4 h-4" />
           </button>
@@ -82,7 +82,7 @@ Feel free to reach out with any questions.`;
         <div className="p-5 space-y-5">
           {/* Share URL */}
           <div>
-            <label className="block text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">
               Share Link
             </label>
             <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ Feel free to reach out with any questions.`;
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="flex-1 bg-[#0f0d0b] border border-[#2e271f] rounded-lg px-3 py-2 text-sm text-[#f5ede0] select-all focus:outline-none focus:border-brand-600"
+                className="flex-1 bg-[#0C1220] border border-[#2A3A5C] rounded-lg px-3 py-2 text-sm text-[#F4F1ED] select-all focus:outline-none focus:border-brand-600"
                 onFocus={(e) => e.target.select()}
               />
               <button
@@ -109,10 +109,10 @@ Feel free to reach out with any questions.`;
 
           {/* Email Template */}
           <div>
-            <label className="block text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">
               Email Template
             </label>
-            <div className="bg-[#0f0d0b] border border-[#2e271f] rounded-lg p-3 text-sm text-[#9c8876] leading-relaxed whitespace-pre-wrap mb-3 max-h-48 overflow-y-auto">
+            <div className="bg-[#0C1220] border border-[#2A3A5C] rounded-lg p-3 text-sm text-[#D4A373] leading-relaxed whitespace-pre-wrap mb-3 max-h-48 overflow-y-auto">
               {emailTemplate}
             </div>
             <button
@@ -130,7 +130,7 @@ Feel free to reach out with any questions.`;
 
           {/* Client info hint */}
           {clientEmail && (
-            <p className="text-xs text-[#9c8876]">
+            <p className="text-xs text-[#D4A373]">
               Client email: {clientEmail}
             </p>
           )}

@@ -44,7 +44,7 @@ export function SaveAsTemplateButton({ eventId }: { eventId: string }) {
       <button onClick={handleSave} disabled={saving || !name.trim()} className="text-green-400 hover:text-green-300 p-1">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
       </button>
-      <button onClick={() => { setOpen(false); setName(""); }} className="text-[#6b5a4a] hover:text-[#9c8876] p-1">
+      <button onClick={() => { setOpen(false); setName(""); }} className="text-[#7A8BA8] hover:text-[#D4A373] p-1">
         <X className="w-4 h-4" />
       </button>
     </div>

@@ -189,11 +189,11 @@ export function CommandPalette() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#6b5a4a] hover:text-[#f5ede0] hover:bg-[#1c1814] transition-all border border-[#2e271f] bg-[#0f0d0b]"
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all border border-[#2A3A5C] bg-[#0C1220]"
       >
         <Search className="w-4 h-4 flex-shrink-0" />
         <span className="flex-1 text-left">Search...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1c1814] border border-[#2e271f] text-[10px] font-mono text-[#6b5a4a]">
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8]">
           ⌘K
         </kbd>
       </button>
@@ -205,10 +205,10 @@ export function CommandPalette() {
   return (
     <>
       {/* Trigger button (hidden when open) */}
-      <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#6b5a4a] border border-[#2e271f] bg-[#0f0d0b] opacity-50 cursor-default">
+      <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#7A8BA8] border border-[#2A3A5C] bg-[#0C1220] opacity-50 cursor-default">
         <Search className="w-4 h-4 flex-shrink-0" />
         <span className="flex-1 text-left">Search...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1c1814] border border-[#2e271f] text-[10px] font-mono text-[#6b5a4a]">
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8]">
           ⌘K
         </kbd>
       </button>
@@ -223,23 +223,23 @@ export function CommandPalette() {
       >
         {/* Modal */}
         <div
-          className="w-full max-w-lg bg-[#1a1714] border border-[#2e271f] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="w-full max-w-lg bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           onKeyDown={handlePaletteKeyDown}
         >
           {/* Search input */}
-          <div className="flex items-center gap-3 px-4 border-b border-[#2e271f] bg-[#0f0d0b]">
-            <Search className="w-4 h-4 text-[#6b5a4a] flex-shrink-0" />
+          <div className="flex items-center gap-3 px-4 border-b border-[#2A3A5C] bg-[#0C1220]">
+            <Search className="w-4 h-4 text-[#7A8BA8] flex-shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search events, recipes, staff, clients..."
-              className="flex-1 py-3.5 bg-transparent text-[#f5ede0] placeholder:text-[#6b5a4a] text-sm outline-none"
+              className="flex-1 py-3.5 bg-transparent text-[#F4F1ED] placeholder:text-[#7A8BA8] text-sm outline-none"
             />
             <kbd
               onClick={close}
-              className="cursor-pointer px-1.5 py-0.5 rounded bg-[#1c1814] border border-[#2e271f] text-[10px] font-mono text-[#6b5a4a] hover:text-[#f5ede0] transition-colors"
+              className="cursor-pointer px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors"
             >
               ESC
             </kbd>
@@ -248,13 +248,13 @@ export function CommandPalette() {
           {/* Results */}
           <div className="max-h-80 overflow-y-auto">
             {query.trim() && !loading && !hasResults && (
-              <div className="px-4 py-8 text-center text-sm text-[#6b5a4a]">
+              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
                 No results found for &quot;{query.trim()}&quot;
               </div>
             )}
 
             {loading && !hasResults && (
-              <div className="px-4 py-8 text-center text-sm text-[#6b5a4a]">
+              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
                 Searching...
               </div>
             )}
@@ -344,7 +344,7 @@ export function CommandPalette() {
             )}
 
             {!query.trim() && (
-              <div className="px-4 py-8 text-center text-sm text-[#6b5a4a]">
+              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
                 Start typing to search...
               </div>
             )}
@@ -364,7 +364,7 @@ function ResultGroup({
 }) {
   return (
     <div className="mb-1">
-      <div className="px-4 py-1.5 text-[#6b5a4a] uppercase text-xs tracking-wider font-medium">
+      <div className="px-4 py-1.5 text-[#7A8BA8] uppercase text-xs tracking-wider font-medium">
         {label}
       </div>
       {children}
@@ -389,18 +389,18 @@ function ResultItem({
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
-        active ? "bg-[#251f19]" : "hover:bg-[#251f19]"
+        active ? "bg-[#1F2A44]" : "hover:bg-[#1F2A44]"
       }`}
     >
-      <span className="text-[#9c8876] flex-shrink-0">{icon}</span>
+      <span className="text-[#D4A373] flex-shrink-0">{icon}</span>
       <span className="flex-1 min-w-0">
-        <span className="text-[#f5ede0] block truncate">{title}</span>
+        <span className="text-[#F4F1ED] block truncate">{title}</span>
         {detail && (
-          <span className="text-[#9c8876] text-xs block truncate">{detail}</span>
+          <span className="text-[#D4A373] text-xs block truncate">{detail}</span>
         )}
       </span>
       <ArrowRight
-        className={`w-3.5 h-3.5 text-[#6b5a4a] flex-shrink-0 transition-opacity ${
+        className={`w-3.5 h-3.5 text-[#7A8BA8] flex-shrink-0 transition-opacity ${
           active ? "opacity-100" : "opacity-0"
         }`}
       />

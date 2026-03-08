@@ -22,8 +22,8 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
   owner: "bg-brand-950 text-brand-300 border-brand-800/60",
   admin: "bg-blue-950 text-blue-300 border-blue-800/60",
   manager: "bg-green-950 text-green-300 border-green-800/60",
-  staff: "bg-[#1c1814] text-[#9c8876] border-[#2e271f]",
-  viewer: "bg-[#1c1814] text-[#6b5a4a] border-[#2e271f]",
+  staff: "bg-[#1A2538] text-[#D4A373] border-[#2A3A5C]",
+  viewer: "bg-[#1A2538] text-[#7A8BA8] border-[#2A3A5C]",
 };
 
 function RoleBadge({ role }: { role: string }) {
@@ -120,7 +120,7 @@ export function TeamClient({
               Invite Member
             </button>
           ) : (
-            <form onSubmit={handleInvite} className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-5">
+            <form onSubmit={handleInvite} className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-5">
               <h3 className="text-sm font-semibold mb-4">Invite a Team Member</h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
@@ -129,20 +129,20 @@ export function TeamClient({
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   required
-                  className="flex-1 px-3 py-2 rounded-lg bg-[#0f0d0b] border border-[#2e271f] text-sm text-[#f5ede0] placeholder:text-[#6b5a4a] focus:outline-none focus:border-brand-600 transition-colors"
+                  className="flex-1 px-3 py-2 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:border-brand-600 transition-colors"
                 />
                 <div className="relative">
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as "owner" | "admin" | "manager" | "staff" | "viewer")}
-                    className="appearance-none px-3 py-2 pr-8 rounded-lg bg-[#0f0d0b] border border-[#2e271f] text-sm text-[#f5ede0] focus:outline-none focus:border-brand-600 transition-colors cursor-pointer"
+                    className="appearance-none px-3 py-2 pr-8 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] focus:outline-none focus:border-brand-600 transition-colors cursor-pointer"
                   >
                     <option value="admin">Admin</option>
                     <option value="manager">Manager</option>
                     <option value="staff">Staff</option>
                     <option value="viewer">Viewer</option>
                   </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#6b5a4a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#7A8BA8] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -156,7 +156,7 @@ export function TeamClient({
                   <button
                     type="button"
                     onClick={() => { setShowInviteForm(false); setInviteEmail(""); }}
-                    className="px-3 py-2 rounded-lg text-sm text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#1c1814] transition-colors"
+                    className="px-3 py-2 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-colors"
                   >
                     Cancel
                   </button>
@@ -168,18 +168,18 @@ export function TeamClient({
       )}
 
       {/* Members List */}
-      <div className="rounded-xl border border-[#2e271f] overflow-hidden">
+      <div className="rounded-xl border border-[#2A3A5C] overflow-hidden">
         {/* Table Header */}
-        <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-5 py-3 border-b border-[#2e271f] bg-[#1a1714]">
-          <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Name</span>
-          <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Email</span>
-          <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Role</span>
-          <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Joined</span>
-          {isAdmin && <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider w-10"></span>}
+        <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-4 items-center px-5 py-3 border-b border-[#2A3A5C] bg-[#182030]">
+          <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Name</span>
+          <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Email</span>
+          <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Role</span>
+          <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Joined</span>
+          {isAdmin && <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider w-10"></span>}
         </div>
 
         {members.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-[#6b5a4a]">
+          <div className="px-5 py-10 text-center text-sm text-[#7A8BA8]">
             No team members yet. Invite someone to get started.
           </div>
         ) : (
@@ -189,11 +189,11 @@ export function TeamClient({
             return (
               <div
                 key={member.id}
-                className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-2 sm:gap-4 items-center px-5 py-3.5 border-b border-[#1c1814] last:border-b-0 hover:bg-[#1a1714]/50 transition-colors"
+                className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-2 sm:gap-4 items-center px-5 py-3.5 border-b border-[#1A2538] last:border-b-0 hover:bg-[#182030]/50 transition-colors"
               >
                 {/* Name */}
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[#2e271f] flex items-center justify-center text-xs font-semibold text-[#9c8876] flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-[#2A3A5C] flex items-center justify-center text-xs font-semibold text-[#D4A373] flex-shrink-0">
                     {(member.profile.full_name || member.profile.email).charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -201,13 +201,13 @@ export function TeamClient({
                       {member.profile.full_name || "Unnamed"}
                     </span>
                     {isCurrentUser && (
-                      <span className="text-[10px] text-[#6b5a4a]">(you)</span>
+                      <span className="text-[10px] text-[#7A8BA8]">(you)</span>
                     )}
                   </div>
                 </div>
 
                 {/* Email */}
-                <span className="text-sm text-[#9c8876] truncate">{member.profile.email}</span>
+                <span className="text-sm text-[#D4A373] truncate">{member.profile.email}</span>
 
                 {/* Role */}
                 <div className="flex items-center gap-2">
@@ -217,16 +217,16 @@ export function TeamClient({
                         value={member.role}
                         onChange={(e) => handleRoleChange(member.id, e.target.value as "owner" | "admin" | "manager" | "staff" | "viewer")}
                         disabled={changingRole === member.id}
-                        className="appearance-none text-[11px] font-semibold px-2 py-1 pr-6 rounded-full border cursor-pointer focus:outline-none transition-colors bg-[#1c1814] text-[#9c8876] border-[#2e271f] hover:border-brand-600"
+                        className="appearance-none text-[11px] font-semibold px-2 py-1 pr-6 rounded-full border cursor-pointer focus:outline-none transition-colors bg-[#1A2538] text-[#D4A373] border-[#2A3A5C] hover:border-brand-600"
                       >
                         {ROLES.filter(r => r !== "owner").map(r => (
                           <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                         ))}
                       </select>
                       {changingRole === member.id ? (
-                        <Loader2 className="w-3 h-3 text-[#6b5a4a] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none animate-spin" />
+                        <Loader2 className="w-3 h-3 text-[#7A8BA8] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none animate-spin" />
                       ) : (
-                        <ChevronDown className="w-3 h-3 text-[#6b5a4a] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <ChevronDown className="w-3 h-3 text-[#7A8BA8] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       )}
                     </div>
                   ) : (
@@ -235,7 +235,7 @@ export function TeamClient({
                 </div>
 
                 {/* Joined date */}
-                <span className="text-xs text-[#6b5a4a] whitespace-nowrap">
+                <span className="text-xs text-[#7A8BA8] whitespace-nowrap">
                   {new Date(member.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
 
@@ -253,7 +253,7 @@ export function TeamClient({
                         </button>
                         <button
                           onClick={() => setConfirmRemove(null)}
-                          className="text-[10px] px-2 py-1 rounded text-[#6b5a4a] hover:text-[#9c8876] transition-colors"
+                          className="text-[10px] px-2 py-1 rounded text-[#7A8BA8] hover:text-[#D4A373] transition-colors"
                         >
                           No
                         </button>
@@ -261,7 +261,7 @@ export function TeamClient({
                     ) : (
                       <button
                         onClick={() => setConfirmRemove(member.id)}
-                        className="p-1.5 rounded-lg text-[#6b5a4a] hover:text-red-400 hover:bg-red-900/20 transition-colors"
+                        className="p-1.5 rounded-lg text-[#7A8BA8] hover:text-red-400 hover:bg-red-900/20 transition-colors"
                         title="Remove member"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

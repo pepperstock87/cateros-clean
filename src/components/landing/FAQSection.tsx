@@ -44,7 +44,7 @@ export default function FAQSection() {
       <h2 className="text-center font-display text-3xl font-semibold mb-4">
         Frequently asked questions
       </h2>
-      <p className="text-center text-[#9c8876] mb-12">
+      <p className="text-center text-[#D4A373] mb-12">
         Everything you need to know about Cateros
       </p>
       <div className="space-y-3">
@@ -61,7 +61,7 @@ export default function FAQSection() {
               >
                 <span className="font-medium text-sm">{faq.question}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#9c8876] shrink-0 transition-transform duration-200 ${
+                  className={`w-4 h-4 text-[#D4A373] shrink-0 transition-transform duration-200 ${
                     isOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -72,7 +72,7 @@ export default function FAQSection() {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <p className="px-5 pb-5 text-sm text-[#9c8876] leading-relaxed">
+                  <p className="px-5 pb-5 text-sm text-[#D4A373] leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>

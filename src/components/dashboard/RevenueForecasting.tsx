@@ -73,10 +73,10 @@ export function RevenueForecasting({ events }: { events: EventInput[] }) {
   if (futureEvents.length === 0) {
     return (
       <div className="card p-4 md:p-5">
-        <h3 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">
+        <h3 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">
           Revenue Forecast
         </h3>
-        <p className="text-sm text-[#6b5a4a] text-center py-6">
+        <p className="text-sm text-[#7A8BA8] text-center py-6">
           No upcoming events to forecast.
         </p>
       </div>
@@ -87,22 +87,22 @@ export function RevenueForecasting({ events }: { events: EventInput[] }) {
     <div className="card p-4 md:p-5">
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="p-3 rounded-lg border border-[#2e271f] bg-[#151210]">
-          <div className="text-xs text-[#9c8876] mb-1">Projected (3 mo)</div>
+        <div className="p-3 rounded-lg border border-[#2A3A5C] bg-[#151210]">
+          <div className="text-xs text-[#D4A373] mb-1">Projected (3 mo)</div>
           <div className="text-lg font-semibold font-display">{formatCurrency(totalProjected)}</div>
         </div>
-        <div className="p-3 rounded-lg border border-[#2e271f] bg-[#151210]">
-          <div className="text-xs text-[#9c8876] mb-1">Confirmed</div>
+        <div className="p-3 rounded-lg border border-[#2A3A5C] bg-[#151210]">
+          <div className="text-xs text-[#D4A373] mb-1">Confirmed</div>
           <div className="text-lg font-semibold font-display text-green-400">
             {formatCurrency(totalConfirmed)}
           </div>
         </div>
-        <div className="p-3 rounded-lg border border-[#2e271f] bg-[#151210]">
-          <div className="text-xs text-[#9c8876] mb-1">Conversion Rate</div>
+        <div className="p-3 rounded-lg border border-[#2A3A5C] bg-[#151210]">
+          <div className="text-xs text-[#D4A373] mb-1">Conversion Rate</div>
           <div className="text-lg font-semibold font-display">
             {conversionRate.toFixed(0)}%
           </div>
-          <div className="text-[10px] text-[#6b5a4a]">
+          <div className="text-[10px] text-[#7A8BA8]">
             {confirmedCount}/{totalEvents} events
           </div>
         </div>
@@ -111,31 +111,31 @@ export function RevenueForecasting({ events }: { events: EventInput[] }) {
       {/* Stacked Bar Chart */}
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={monthlyForecast} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2e271f" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#2A3A5C" vertical={false} />
           <XAxis
             dataKey="month"
-            tick={{ fill: "#9c8876", fontSize: 11 }}
+            tick={{ fill: "#D4A373", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-            tick={{ fill: "#9c8876", fontSize: 11 }}
+            tick={{ fill: "#D4A373", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={40}
           />
           <Tooltip
             contentStyle={{
-              background: "#1c1814",
-              border: "1px solid #2e271f",
+              background: "#1A2538",
+              border: "1px solid #2A3A5C",
               borderRadius: "8px",
-              color: "#f5ede0",
+              color: "#F4F1ED",
             }}
             formatter={(v: number) => [formatCurrency(v)]}
-            labelStyle={{ color: "#9c8876", fontSize: 12 }}
+            labelStyle={{ color: "#D4A373", fontSize: 12 }}
           />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#9c8876" }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: "#D4A373" }} />
           <Bar dataKey="Confirmed" stackId="forecast" fill="#4ade80" radius={[0, 0, 0, 0]} />
           <Bar dataKey="Pipeline" stackId="forecast" fill="#c4956a" opacity={0.6} radius={[4, 4, 0, 0]} />
         </BarChart>

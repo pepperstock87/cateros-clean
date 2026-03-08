@@ -45,13 +45,13 @@ export function VenueCard({ venue, compact = false }: Props) {
   // ---------------------------------------------------------------------------
   if (compact) {
     return (
-      <div className="flex items-center gap-3 bg-[#1a1714] border border-[#2e271f] rounded-lg px-3 py-2.5">
-        <Building2 className="w-4 h-4 text-[#9c8876] flex-shrink-0" />
+      <div className="flex items-center gap-3 bg-[#182030] border border-[#2A3A5C] rounded-lg px-3 py-2.5">
+        <Building2 className="w-4 h-4 text-[#D4A373] flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium text-[#f5ede0] truncate block">
+          <span className="text-sm font-medium text-[#F4F1ED] truncate block">
             {venue.venue_name}
           </span>
-          <div className="flex items-center gap-3 text-[11px] text-[#6b5a4a]">
+          <div className="flex items-center gap-3 text-[11px] text-[#7A8BA8]">
             {location && (
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
@@ -72,7 +72,7 @@ export function VenueCard({ venue, compact = false }: Props) {
             href={venue.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#6b5a4a] hover:text-brand-400 transition-colors flex-shrink-0"
+            className="text-[#7A8BA8] hover:text-brand-400 transition-colors flex-shrink-0"
             title="Visit website"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -90,11 +90,11 @@ export function VenueCard({ venue, compact = false }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="min-w-0">
-          <h3 className="font-medium text-sm text-[#f5ede0] truncate">
+          <h3 className="font-medium text-sm text-[#F4F1ED] truncate">
             {venue.venue_name}
           </h3>
           {venue.organization && (
-            <p className="text-[10px] text-[#6b5a4a] mt-0.5 flex items-center gap-1">
+            <p className="text-[10px] text-[#7A8BA8] mt-0.5 flex items-center gap-1">
               <Building2 className="w-3 h-3" />
               {venue.organization.name}
             </p>
@@ -112,7 +112,7 @@ export function VenueCard({ venue, compact = false }: Props) {
               href={venue.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1"
+              className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1"
               title="Visit website"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -122,7 +122,7 @@ export function VenueCard({ venue, compact = false }: Props) {
       </div>
 
       {/* Location & capacity */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#9c8876] mb-3">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#D4A373] mb-3">
         {location && (
           <span className="flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" />
@@ -139,7 +139,7 @@ export function VenueCard({ venue, compact = false }: Props) {
 
       {/* Description */}
       {venue.description && (
-        <p className="text-xs text-[#9c8876] mb-3 line-clamp-2">
+        <p className="text-xs text-[#D4A373] mb-3 line-clamp-2">
           {venue.description}
         </p>
       )}
@@ -150,13 +150,13 @@ export function VenueCard({ venue, compact = false }: Props) {
           {visibleAmenities.map((amenity) => (
             <span
               key={amenity}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-[#251f19] text-[#9c8876] border border-[#2e271f]"
+              className="text-[10px] px-2 py-0.5 rounded-full bg-[#1F2A44] text-[#D4A373] border border-[#2A3A5C]"
             >
               {amenity}
             </span>
           ))}
           {overflowCount > 0 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#251f19] text-[#6b5a4a] border border-[#2e271f]">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1F2A44] text-[#7A8BA8] border border-[#2A3A5C]">
               +{overflowCount} more
             </span>
           )}

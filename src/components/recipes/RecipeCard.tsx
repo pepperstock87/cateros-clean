@@ -31,35 +31,35 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800/40">Case pricing</span>
             )}
           </div>
-          {recipe.description && <p className="text-xs text-[#9c8876] mt-0.5 truncate">{recipe.description}</p>}
+          {recipe.description && <p className="text-xs text-[#D4A373] mt-0.5 truncate">{recipe.description}</p>}
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0 ml-2" onClick={(e) => e.preventDefault()}>
-          <Link href={`/recipes/${recipe.id}/edit`} className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1" onClick={(e) => e.stopPropagation()}>
+          <Link href={`/recipes/${recipe.id}/edit`} className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1" onClick={(e) => e.stopPropagation()}>
             <Edit className="w-3.5 h-3.5" />
           </Link>
-          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }} disabled={deleting} className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1">
+          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }} disabled={deleting} className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="bg-[#251f19] rounded-lg p-2.5 text-center">
+        <div className="bg-[#1F2A44] rounded-lg p-2.5 text-center">
           <div className="text-sm font-semibold text-brand-300">{formatCurrency(recipe.cost_per_serving)}</div>
-          <div className="text-[10px] text-[#9c8876] mt-0.5">per person</div>
+          <div className="text-[10px] text-[#D4A373] mt-0.5">per person</div>
         </div>
-        <div className="bg-[#251f19] rounded-lg p-2.5 text-center">
+        <div className="bg-[#1F2A44] rounded-lg p-2.5 text-center">
           <div className="text-sm font-semibold">{formatCurrency(recipe.total_cost)}</div>
-          <div className="text-[10px] text-[#9c8876] mt-0.5">total cost</div>
+          <div className="text-[10px] text-[#D4A373] mt-0.5">total cost</div>
         </div>
-        <div className="bg-[#251f19] rounded-lg p-2.5 text-center">
+        <div className="bg-[#1F2A44] rounded-lg p-2.5 text-center">
           <div className="text-sm font-semibold">{recipe.servings}</div>
-          <div className="text-[10px] text-[#9c8876] mt-0.5">servings</div>
+          <div className="text-[10px] text-[#D4A373] mt-0.5">servings</div>
         </div>
       </div>
 
       {recipe.ingredients.length > 0 && (
-        <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-[#9c8876] hover:text-[#f5ede0] transition-colors">
+        <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-[#D4A373] hover:text-[#F4F1ED] transition-colors">
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           {recipe.ingredients.length} ingredients
         </button>
@@ -69,7 +69,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
         <div className="mt-3 space-y-1.5">
           {recipe.ingredients.map(ing => (
             <div key={ing.id} className="flex justify-between text-xs">
-              <span className="text-[#9c8876]">{ing.name} ({ing.quantity} {ing.unit})</span>
+              <span className="text-[#D4A373]">{ing.name} ({ing.quantity} {ing.unit})</span>
               <span>{formatCurrency(ing.total_cost)}</span>
             </div>
           ))}

@@ -31,7 +31,7 @@ export default async function RecipeAnalyticsPage() {
         <div>
           <Link
             href="/recipes"
-            className="flex items-center gap-2 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors mb-3"
+            className="flex items-center gap-2 text-sm text-[#D4A373] hover:text-[#F4F1ED] transition-colors mb-3"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to recipes
@@ -42,7 +42,7 @@ export default async function RecipeAnalyticsPage() {
             </div>
             <div>
               <h1 className="font-display text-xl md:text-2xl font-semibold">Recipe Analytics</h1>
-              <p className="text-sm text-[#9c8876] mt-0.5">Understand your recipe profitability</p>
+              <p className="text-sm text-[#D4A373] mt-0.5">Understand your recipe profitability</p>
             </div>
           </div>
         </div>

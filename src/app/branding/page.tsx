@@ -67,7 +67,7 @@ export default function BrandingPage() {
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="mb-6 md:mb-8">
         <h1 className="font-display text-xl md:text-2xl font-semibold">Branding</h1>
-        <p className="text-xs md:text-sm text-[#9c8876] mt-1">Customize how your proposals look to clients</p>
+        <p className="text-xs md:text-sm text-[#D4A373] mt-1">Customize how your proposals look to clients</p>
       </div>
 
       {!isPro && (
@@ -76,7 +76,7 @@ export default function BrandingPage() {
             <Lock className="w-5 h-5 text-brand-400 mt-0.5 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-brand-300 mb-1">Pro Feature</h3>
-              <p className="text-sm text-[#9c8876] mb-3">
+              <p className="text-sm text-[#D4A373] mb-3">
                 Custom branding is available on the Pro plan. Upgrade to add your logo and business details to proposals.
               </p>
               <Link href="/billing" className="btn-primary inline-flex items-center gap-2">
@@ -110,7 +110,7 @@ export default function BrandingPage() {
                 className="hidden"
               />
             </label>
-            <p className="text-xs text-[#6b5a4a] mt-1">PNG or JPG, max 2MB</p>
+            <p className="text-xs text-[#7A8BA8] mt-1">PNG or JPG, max 2MB</p>
           </div>
 
           {/* Business Name */}
@@ -124,7 +124,7 @@ export default function BrandingPage() {
               className="input"
               placeholder="Your Business Name"
             />
-            <p className="text-xs text-[#6b5a4a] mt-1">Appears at the top of proposals</p>
+            <p className="text-xs text-[#7A8BA8] mt-1">Appears at the top of proposals</p>
           </div>
 
           {/* Contact Info */}
@@ -175,7 +175,7 @@ export default function BrandingPage() {
                 name="brand_color"
                 defaultValue={settings?.brand_color || "#c4956a"}
                 disabled={!isPro}
-                className="w-10 h-10 rounded border border-[#2e271f] bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded border border-[#2A3A5C] bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <input
                 type="text"
@@ -186,7 +186,7 @@ export default function BrandingPage() {
                 placeholder="#c4956a"
               />
             </div>
-            <p className="text-xs text-[#6b5a4a] mt-1">Accent color used in proposals</p>
+            <p className="text-xs text-[#7A8BA8] mt-1">Accent color used in proposals</p>
           </div>
 
           {/* Proposal Template */}
@@ -201,7 +201,7 @@ export default function BrandingPage() {
               <option value="simple">Simple</option>
               <option value="modern">Modern</option>
             </select>
-            <p className="text-xs text-[#6b5a4a] mt-1">Choose the layout style for your proposals</p>
+            <p className="text-xs text-[#7A8BA8] mt-1">Choose the layout style for your proposals</p>
           </div>
 
           {/* Proposal Terms */}
@@ -215,7 +215,7 @@ export default function BrandingPage() {
               className="input"
               placeholder="Payment terms, cancellation policy, etc."
             />
-            <p className="text-xs text-[#6b5a4a] mt-1">Appears at the bottom of every proposal</p>
+            <p className="text-xs text-[#7A8BA8] mt-1">Appears at the bottom of every proposal</p>
           </div>
 
           {isPro && (

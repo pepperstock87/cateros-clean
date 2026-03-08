@@ -10,7 +10,7 @@ export default function VenuesLoading() {
       </div>
 
       {/* Form skeleton */}
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-6 space-y-6">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-6 space-y-6">
         {/* Venue name */}
         <div>
           <Skeleton className="h-4 w-24 mb-2" />

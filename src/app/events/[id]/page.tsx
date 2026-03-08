@@ -153,11 +153,11 @@ export default async function EventDetailPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div className="min-w-0">
-          <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-3 transition-colors">
+          <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-3 transition-colors">
             <ArrowLeft className="w-4 h-4" /> All events
           </Link>
           <h1 className="font-display text-2xl font-semibold truncate">{e.name}</h1>
-          <p className="text-sm text-[#9c8876] mt-1">{e.client_name}</p>
+          <p className="text-sm text-[#D4A373] mt-1">{e.client_name}</p>
           <div className="mt-2">
             <EventReadinessFlags
               daysUntil={daysUntilEvent}
@@ -228,7 +228,7 @@ export default async function EventDetailPage({ params }: Props) {
               {pricing && (
                 <div className="card p-4 mb-6">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <DollarSign className="w-3.5 h-3.5 text-[#9c8876]" />
+                    <DollarSign className="w-3.5 h-3.5 text-[#D4A373]" />
                     <span className="stat-label">Revenue</span>
                   </div>
                   <div className="text-sm font-medium text-brand-300">{formatCurrency(pricing.suggestedPrice)}</div>
@@ -248,19 +248,19 @@ export default async function EventDetailPage({ params }: Props) {
               {/* Linked proposals */}
               {proposals.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Proposals</h2>
+                  <h2 className="font-medium text-sm mb-3 text-[#D4A373]">Proposals</h2>
                   <div className="flex flex-wrap gap-2">
                     {proposals.map((p: any) => (
-                      <div key={p.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a1714] border border-[#2e271f] text-sm">
+                      <div key={p.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#182030] border border-[#2A3A5C] text-sm">
                         <Link href={`/proposals/${p.id}`} className="inline-flex items-center gap-2 hover:text-brand-300 transition-colors">
-                          <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
+                          <FileText className="w-3.5 h-3.5 text-[#D4A373]" />
                           <span>{p.title}</span>
                           <span className={`badge text-[10px] ${p.status === "draft" ? "badge-draft" : p.status === "sent" ? "badge-proposed" : ["accepted", "approved", "signed", "deposit_paid", "booked"].includes(p.status) ? "badge-confirmed" : "badge-canceled"}`}>
                             {p.status}
                           </span>
                         </Link>
                         {p.share_token && (
-                          <Link href={`/p/${p.share_token}/portal`} className="text-[#6b5a4a] hover:text-brand-400 transition-colors" title="Client portal">
+                          <Link href={`/p/${p.share_token}/portal`} className="text-[#7A8BA8] hover:text-brand-400 transition-colors" title="Client portal">
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
                         )}
@@ -274,26 +274,26 @@ export default async function EventDetailPage({ params }: Props) {
               {receipts.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-medium text-sm text-[#9c8876]">Event Spending</h2>
+                    <h2 className="font-medium text-sm text-[#D4A373]">Event Spending</h2>
                     <Link href="/spending" className="text-xs text-brand-400 hover:text-brand-300 transition-colors">View all spending</Link>
                   </div>
                   <div className="card p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="flex items-center gap-1.5 text-sm">
-                        <Receipt className="w-3.5 h-3.5 text-[#9c8876]" />
+                        <Receipt className="w-3.5 h-3.5 text-[#D4A373]" />
                         {receipts.length} receipt{receipts.length !== 1 ? "s" : ""} linked
                       </span>
                       <span className="text-sm font-medium">{formatCurrency(spendingTotal)}</span>
                     </div>
                     <div className="space-y-1.5">
                       {receipts.slice(0, 5).map((r: any) => (
-                        <div key={r.id} className="flex justify-between text-xs text-[#9c8876]">
+                        <div key={r.id} className="flex justify-between text-xs text-[#D4A373]">
                           <span>{r.vendor || "Unknown vendor"}{r.category ? ` · ${r.category}` : ""}</span>
                           <span>{formatCurrency(Number(r.total_amount) || 0)}</span>
                         </div>
                       ))}
                       {receipts.length > 5 && (
-                        <p className="text-xs text-[#6b5a4a]">+{receipts.length - 5} more</p>
+                        <p className="text-xs text-[#7A8BA8]">+{receipts.length - 5} more</p>
                       )}
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export default async function EventDetailPage({ params }: Props) {
               {/* Pricing Engine */}
               <div className="mb-4">
                 <h2 className="font-display text-lg font-semibold mb-1">Pricing Engine</h2>
-                <p className="text-sm text-[#9c8876]">Build your cost model. Calculations update in real time.</p>
+                <p className="text-sm text-[#D4A373]">Build your cost model. Calculations update in real time.</p>
               </div>
 
               <PricingEngine eventId={e.id} guestCount={e.guest_count} initialPricing={e.pricing_data as PricingData | null} />
@@ -349,8 +349,8 @@ export default async function EventDetailPage({ params }: Props) {
                       organizationId={org?.orgId ?? null}
                     />
                   </FeatureGate>
-                  <div className="mt-6 pt-6 border-t border-[#2e271f]">
-                    <h3 className="text-xs font-medium text-[#6b5a4a] uppercase tracking-wider mb-3">Legacy Payment Tracking</h3>
+                  <div className="mt-6 pt-6 border-t border-[#2A3A5C]">
+                    <h3 className="text-xs font-medium text-[#7A8BA8] uppercase tracking-wider mb-3">Legacy Payment Tracking</h3>
                     <PaymentTracker
                       eventId={e.id}
                       suggestedPrice={pricing.suggestedPrice}
@@ -361,9 +361,9 @@ export default async function EventDetailPage({ params }: Props) {
                 </>
               ) : (
                 <div className="card p-8 text-center">
-                  <DollarSign className="w-8 h-8 text-[#9c8876] mx-auto mb-3" />
+                  <DollarSign className="w-8 h-8 text-[#D4A373] mx-auto mb-3" />
                   <h3 className="font-medium text-sm mb-1">No pricing set</h3>
-                  <p className="text-sm text-[#9c8876]">Set up pricing in the Pricing tab first to track payments.</p>
+                  <p className="text-sm text-[#D4A373]">Set up pricing in the Pricing tab first to track payments.</p>
                 </div>
               )}
             </div>
@@ -395,7 +395,7 @@ export default async function EventDetailPage({ params }: Props) {
               <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
                 <div className="mt-6">
                   <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
-                  <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
+                  <p className="text-sm text-[#D4A373] mb-4">Organizations collaborating on this event</p>
                 </div>
                 <EventVendors eventId={e.id} isAdmin={true} />
                 <EventInviteManager eventId={e.id} />
@@ -406,7 +406,7 @@ export default async function EventDetailPage({ params }: Props) {
           activity: (
             <div>
               <h2 className="font-display text-lg font-semibold mb-1">Activity Log</h2>
-              <p className="text-sm text-[#9c8876] mb-4">Timeline of events and changes</p>
+              <p className="text-sm text-[#D4A373] mb-4">Timeline of events and changes</p>
               <EventActivityLog eventId={e.id} />
             </div>
           ),

@@ -4,8 +4,8 @@ import FAQSection from "@/components/landing/FAQSection";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0f0d0b] text-[#f5ede0]">
-      <nav className="border-b border-[#2e271f] px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#0C1220] text-[#F4F1ED]">
+      <nav className="border-b border-[#2A3A5C] px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <ChefHat className="w-4 h-4 text-white" />
@@ -28,14 +28,14 @@ export default function LandingPage() {
           Stop leaving money on the table.<br />
           <span className="text-brand-400">Price catering events right.</span>
         </h1>
-        <p className="text-[#9c8876] text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-[#D4A373] text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
           The all-in-one platform for restaurant catering operations. Calculate true costs, manage staff scheduling, and generate professional proposals that win business.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <Link href="/signup" className="btn-primary px-8 py-3 text-base">Start your free trial →</Link>
           <Link href="#pricing" className="btn-secondary px-8 py-3 text-base">See pricing</Link>
         </div>
-        <p className="text-xs text-[#6b5a4a] mt-4">(No credit card required) · Cancel anytime</p>
+        <p className="text-xs text-[#7A8BA8] mt-4">(No credit card required) · Cancel anytime</p>
       </div>
 
       {/* Features */}
@@ -57,7 +57,7 @@ export default function LandingPage() {
                 <Icon className="w-4 h-4 text-brand-400" />
               </div>
               <h3 className="font-medium text-sm mb-1">{title}</h3>
-              <p className="text-xs text-[#9c8876] leading-relaxed">{desc}</p>
+              <p className="text-xs text-[#D4A373] leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -66,10 +66,10 @@ export default function LandingPage() {
       {/* How It Works */}
       <div className="max-w-5xl mx-auto px-6 pb-24">
         <h2 className="text-center font-display text-3xl font-semibold mb-4">How it works</h2>
-        <p className="text-center text-[#9c8876] mb-16">Go from recipe to revenue in three simple steps</p>
+        <p className="text-center text-[#D4A373] mb-16">Go from recipe to revenue in three simple steps</p>
         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
           {/* Connecting line (visible on md+) */}
-          <div className="hidden md:block absolute top-6 left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-px bg-[#2e271f]" />
+          <div className="hidden md:block absolute top-6 left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-px bg-[#2A3A5C]" />
 
           {[
             {
@@ -93,14 +93,14 @@ export default function LandingPage() {
                 {step}
               </div>
               <h3 className="font-display text-lg font-semibold mb-2">{title}</h3>
-              <p className="text-sm text-[#9c8876] leading-relaxed max-w-xs">{desc}</p>
+              <p className="text-sm text-[#D4A373] leading-relaxed max-w-xs">{desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Social Proof / Stats Bar */}
-      <div className="bg-[#1a1714] border-y border-[#2e271f] py-12 mb-24">
+      <div className="bg-[#182030] border-y border-[#2A3A5C] py-12 mb-24">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { value: "5+ hours", label: "Saved per week on event planning" },
@@ -110,7 +110,7 @@ export default function LandingPage() {
           ].map(({ value, label }) => (
             <div key={label}>
               <div className="font-display text-2xl md:text-3xl font-bold text-brand-400 mb-1">{value}</div>
-              <div className="text-xs md:text-sm text-[#9c8876]">{label}</div>
+              <div className="text-xs md:text-sm text-[#D4A373]">{label}</div>
             </div>
           ))}
         </div>
@@ -119,7 +119,7 @@ export default function LandingPage() {
       {/* Testimonials */}
       <div className="max-w-6xl mx-auto px-6 pb-24">
         <h2 className="text-center font-display text-3xl font-semibold mb-4">Trusted by catering professionals</h2>
-        <p className="text-center text-[#9c8876] mb-12">See what our customers have to say</p>
+        <p className="text-center text-[#D4A373] mb-12">See what our customers have to say</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
@@ -149,7 +149,7 @@ export default function LandingPage() {
               <p className="italic text-sm leading-relaxed mb-6 flex-1">{quote}</p>
               <div>
                 <p className="font-medium text-sm">{name}</p>
-                <p className="text-xs text-[#9c8876]">
+                <p className="text-xs text-[#D4A373]">
                   {role}, {company}
                 </p>
               </div>
@@ -164,7 +164,7 @@ export default function LandingPage() {
       {/* Pricing */}
       <div id="pricing" className="max-w-6xl mx-auto px-6 pb-24">
         <h2 className="text-center font-display text-3xl font-semibold mb-4">Simple, transparent pricing</h2>
-        <p className="text-center text-[#9c8876] mb-12">Choose the plan that fits your business</p>
+        <p className="text-center text-[#D4A373] mb-12">Choose the plan that fits your business</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Free */}
@@ -172,11 +172,11 @@ export default function LandingPage() {
             <h3 className="font-display text-xl font-semibold mb-2">Free</h3>
             <div className="mb-4">
               <span className="text-3xl font-bold">$0</span>
-              <span className="text-[#9c8876]">/month</span>
+              <span className="text-[#D4A373]">/month</span>
             </div>
-            <p className="text-sm text-[#9c8876] mb-6">Perfect for testing the platform</p>
+            <p className="text-sm text-[#D4A373] mb-6">Perfect for testing the platform</p>
             <Link href="/signup" className="btn-secondary w-full block text-center mb-2">Get started free</Link>
-            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
+            <p className="text-xs text-[#7A8BA8] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -205,11 +205,11 @@ export default function LandingPage() {
             <h3 className="font-display text-xl font-semibold mb-2">Basic</h3>
             <div className="mb-4">
               <span className="text-3xl font-bold">$65</span>
-              <span className="text-[#9c8876]">/month</span>
+              <span className="text-[#D4A373]">/month</span>
             </div>
-            <p className="text-sm text-[#9c8876] mb-6">For small restaurants & caterers</p>
+            <p className="text-sm text-[#D4A373] mb-6">For small restaurants & caterers</p>
             <Link href="/signup" className="btn-primary w-full block text-center mb-2">Start 14-day trial →</Link>
-            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
+            <p className="text-xs text-[#7A8BA8] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -243,11 +243,11 @@ export default function LandingPage() {
             <h3 className="font-display text-xl font-semibold mb-2">Pro</h3>
             <div className="mb-4">
               <span className="text-3xl font-bold">$149</span>
-              <span className="text-[#9c8876]">/month</span>
+              <span className="text-[#D4A373]">/month</span>
             </div>
-            <p className="text-sm text-[#9c8876] mb-6">For growing operations</p>
+            <p className="text-sm text-[#D4A373] mb-6">For growing operations</p>
             <Link href="/signup" className="btn-secondary w-full block text-center mb-2">Start 14-day trial →</Link>
-            <p className="text-xs text-[#6b5a4a] text-center mb-6">(No credit card required)</p>
+            <p className="text-xs text-[#7A8BA8] text-center mb-6">(No credit card required)</p>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-brand-400 mt-0.5">✓</span>
@@ -283,12 +283,12 @@ export default function LandingPage() {
       </div>
 
       {/* Footer CTA */}
-      <div className="border-t border-[#2e271f] py-16">
+      <div className="border-t border-[#2A3A5C] py-16">
         <div className="max-w-3xl mx-auto text-center px-6">
           <h2 className="font-display text-3xl font-semibold mb-4">Ready to stop underpricing your catering?</h2>
-          <p className="text-[#9c8876] mb-8">Join restaurants across the country using Cateros to price events profitably.</p>
+          <p className="text-[#D4A373] mb-8">Join restaurants across the country using Cateros to price events profitably.</p>
           <Link href="/signup" className="btn-primary px-8 py-3 text-base inline-block">Start your free trial →</Link>
-          <p className="text-xs text-[#6b5a4a] mt-4">(No credit card required)</p>
+          <p className="text-xs text-[#7A8BA8] mt-4">(No credit card required)</p>
         </div>
       </div>
     </div>

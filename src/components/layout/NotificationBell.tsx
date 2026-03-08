@@ -106,7 +106,7 @@ export function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#1c1814] transition-all w-full"
+        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all w-full"
       >
         <div className="relative">
           <Bell className="w-4 h-4" />
@@ -120,10 +120,10 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-80 bg-[#1a1714] border border-[#2e271f] rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute bottom-full left-0 mb-2 w-80 bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2e271f]">
-            <h3 className="text-sm font-semibold text-[#f5ede0]">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A3A5C]">
+            <h3 className="text-sm font-semibold text-[#F4F1ED]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
@@ -137,7 +137,7 @@ export function NotificationBell() {
           {/* Notification List */}
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-[#6b5a4a]">
+              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
                 No notifications yet
               </div>
             ) : (
@@ -146,7 +146,7 @@ export function NotificationBell() {
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
                   className={cn(
-                    "w-full text-left px-4 py-3 hover:bg-[#251f19] transition-colors border-l-2",
+                    "w-full text-left px-4 py-3 hover:bg-[#1F2A44] transition-colors border-l-2",
                     n.read
                       ? "border-l-transparent"
                       : "border-l-brand-400 bg-[#1e1a15]"
@@ -156,17 +156,17 @@ export function NotificationBell() {
                     <p
                       className={cn(
                         "text-sm leading-tight",
-                        n.read ? "text-[#9c8876]" : "text-[#f5ede0] font-medium"
+                        n.read ? "text-[#D4A373]" : "text-[#F4F1ED] font-medium"
                       )}
                     >
                       {n.title}
                     </p>
-                    <span className="text-[#6b5a4a] text-xs whitespace-nowrap flex-shrink-0">
+                    <span className="text-[#7A8BA8] text-xs whitespace-nowrap flex-shrink-0">
                       {timeAgo(n.created_at)}
                     </span>
                   </div>
                   {n.message && (
-                    <p className="text-xs text-[#6b5a4a] mt-1 line-clamp-2">
+                    <p className="text-xs text-[#7A8BA8] mt-1 line-clamp-2">
                       {n.message}
                     </p>
                   )}

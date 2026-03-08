@@ -117,7 +117,7 @@ export default async function BEOPage({ params }: Props) {
         >
 
         {/* BEO Content - light theme for print readability */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#2e271f] print:shadow-none print:border-none print:rounded-none print:bg-white">
+        <div className="bg-white rounded-xl shadow-sm border border-[#2A3A5C] print:shadow-none print:border-none print:rounded-none print:bg-white">
           {/* Header */}
           <div className="bg-gray-900 text-white px-8 py-6 rounded-t-xl print:rounded-none print:bg-gray-900">
             {companyName && (

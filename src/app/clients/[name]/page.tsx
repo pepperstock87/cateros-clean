@@ -19,7 +19,7 @@ import type { Event, PricingData } from "@/types";
 type Props = { params: Promise<{ name: string }> };
 
 const statusColors: Record<string, string> = {
-  draft: "bg-[#2e271f] text-[#9c8876]",
+  draft: "bg-[#2A3A5C] text-[#D4A373]",
   proposed: "bg-blue-900/30 text-blue-400",
   confirmed: "bg-emerald-900/30 text-emerald-400",
   completed: "bg-green-900/30 text-green-400",
@@ -66,7 +66,7 @@ export default async function ClientDetailPage({ params }: Props) {
       {/* Back link */}
       <Link
         href="/clients"
-        className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-3 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-3 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> All clients
       </Link>
@@ -92,14 +92,14 @@ export default async function ClientDetailPage({ params }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="card p-4">
           <div className="flex items-center gap-1.5 mb-1">
-            <Users className="w-3.5 h-3.5 text-[#9c8876]" />
+            <Users className="w-3.5 h-3.5 text-[#D4A373]" />
             <span className="stat-label">Total Events</span>
           </div>
           <div className="text-lg font-semibold">{events.length}</div>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-1.5 mb-1">
-            <DollarSign className="w-3.5 h-3.5 text-[#9c8876]" />
+            <DollarSign className="w-3.5 h-3.5 text-[#D4A373]" />
             <span className="stat-label">Total Revenue</span>
           </div>
           <div className="text-lg font-semibold text-brand-300">
@@ -108,7 +108,7 @@ export default async function ClientDetailPage({ params }: Props) {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-1.5 mb-1">
-            <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
+            <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
             <span className="stat-label">First Event</span>
           </div>
           <div className="text-sm font-medium">
@@ -117,7 +117,7 @@ export default async function ClientDetailPage({ params }: Props) {
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-1.5 mb-1">
-            <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
+            <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
             <span className="stat-label">Last Event</span>
           </div>
           <div className="text-sm font-medium">
@@ -129,7 +129,7 @@ export default async function ClientDetailPage({ params }: Props) {
       {/* Events list */}
       <div className="mb-8">
         <h2 className="font-display text-lg font-semibold mb-1">Events</h2>
-        <p className="text-sm text-[#9c8876] mb-4">
+        <p className="text-sm text-[#D4A373] mb-4">
           All events for this client
         </p>
         <div className="space-y-3">
@@ -139,7 +139,7 @@ export default async function ClientDetailPage({ params }: Props) {
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="card p-4 flex items-center justify-between gap-4 hover:border-[#9c8876]/40 transition-colors group"
+                className="card p-4 flex items-center justify-between gap-4 hover:border-[#D4A373]/40 transition-colors group"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -147,12 +147,12 @@ export default async function ClientDetailPage({ params }: Props) {
                       {event.name}
                     </span>
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[event.status] ?? "bg-[#2e271f] text-[#9c8876]"}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[event.status] ?? "bg-[#2A3A5C] text-[#D4A373]"}`}
                     >
                       {event.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#9c8876]">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#D4A373]">
                     <span className="flex items-center gap-1">
                       <CalendarDays className="w-3 h-3" />
                       {format(
@@ -172,7 +172,7 @@ export default async function ClientDetailPage({ params }: Props) {
                     )}
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[#6b5a4a] group-hover:text-[#9c8876] transition-colors shrink-0" />
+                <ChevronRight className="w-4 h-4 text-[#7A8BA8] group-hover:text-[#D4A373] transition-colors shrink-0" />
               </Link>
             );
           })}
@@ -182,7 +182,7 @@ export default async function ClientDetailPage({ params }: Props) {
       {/* Notes section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <StickyNote className="w-4 h-4 text-[#9c8876]" />
+          <StickyNote className="w-4 h-4 text-[#D4A373]" />
           <h2 className="font-display text-lg font-semibold">Notes</h2>
         </div>
         <ClientNotesForm clientName={clientName} initialNotes={savedNotes} />

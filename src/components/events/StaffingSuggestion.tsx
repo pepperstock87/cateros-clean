@@ -51,21 +51,21 @@ export function StaffingSuggestion({ guestCount, eventType, currentStaffCount }:
           </span>
         </div>
         {collapsed ? (
-          <ChevronDown className="w-4 h-4 text-[#6b5a4a]" />
+          <ChevronDown className="w-4 h-4 text-[#7A8BA8]" />
         ) : (
-          <ChevronUp className="w-4 h-4 text-[#6b5a4a]" />
+          <ChevronUp className="w-4 h-4 text-[#7A8BA8]" />
         )}
       </button>
 
       {!collapsed && (
-        <div className="px-4 pb-3 text-xs text-[#9c8876] space-y-1 border-t border-[#2e271f] pt-2">
+        <div className="px-4 pb-3 text-xs text-[#D4A373] space-y-1 border-t border-[#2A3A5C] pt-2">
           <p>
             Suggested: {suggestedServers} server{suggestedServers !== 1 ? "s" : ""}, {suggestedKitchen} kitchen staff for {guestCount} guests
           </p>
-          <p className="text-[#6b5a4a]">
+          <p className="text-[#7A8BA8]">
             Ratio: 1 server per {serverRatio} guests{eventType ? ` (${eventType})` : ""} &middot; 1 chef per 50 guests
           </p>
-          <p className="text-[#6b5a4a]">
+          <p className="text-[#7A8BA8]">
             Currently assigned: {currentStaffCount} staff
           </p>
         </div>

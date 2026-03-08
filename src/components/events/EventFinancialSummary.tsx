@@ -42,9 +42,9 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
   if (loading) {
     return (
       <div className="card p-4 mb-6 animate-pulse">
-        <div className="h-4 bg-[#2e271f] rounded w-1/3 mb-3" />
-        <div className="h-3 bg-[#2e271f] rounded w-1/2 mb-2" />
-        <div className="h-3 bg-[#2e271f] rounded w-2/5" />
+        <div className="h-4 bg-[#2A3A5C] rounded w-1/3 mb-3" />
+        <div className="h-3 bg-[#2A3A5C] rounded w-1/2 mb-2" />
+        <div className="h-3 bg-[#2A3A5C] rounded w-2/5" />
       </div>
     );
   }
@@ -71,26 +71,26 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
   return (
     <div className="card p-4 mb-6">
       <div className="flex items-center gap-1.5 mb-3">
-        <DollarSign className="w-3.5 h-3.5 text-[#9c8876]" />
-        <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Financial Summary</span>
+        <DollarSign className="w-3.5 h-3.5 text-[#D4A373]" />
+        <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Financial Summary</span>
       </div>
 
       {/* Totals Row */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div>
-          <div className="text-[10px] text-[#6b5a4a] uppercase tracking-wider mb-0.5">Proposal Total</div>
-          <div className="text-sm font-medium text-[#f5ede0]">
+          <div className="text-[10px] text-[#7A8BA8] uppercase tracking-wider mb-0.5">Proposal Total</div>
+          <div className="text-sm font-medium text-[#F4F1ED]">
             {total > 0 ? formatCurrency(total) : "--"}
           </div>
         </div>
         <div>
-          <div className="text-[10px] text-[#6b5a4a] uppercase tracking-wider mb-0.5">Total Paid</div>
+          <div className="text-[10px] text-[#7A8BA8] uppercase tracking-wider mb-0.5">Total Paid</div>
           <div className="text-sm font-medium text-green-400">
             {totalPaid > 0 ? formatCurrency(totalPaid) : "$0.00"}
           </div>
         </div>
         <div>
-          <div className="text-[10px] text-[#6b5a4a] uppercase tracking-wider mb-0.5">Remaining</div>
+          <div className="text-[10px] text-[#7A8BA8] uppercase tracking-wider mb-0.5">Remaining</div>
           <div className={`text-sm font-medium ${remaining > 0 ? "text-yellow-400" : "text-green-400"}`}>
             {formatCurrency(remaining)}
           </div>
@@ -100,18 +100,18 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
       {/* Progress Bar */}
       {total > 0 && (
         <div className="mb-4">
-          <div className="flex items-center justify-between text-[10px] text-[#6b5a4a] mb-1">
+          <div className="flex items-center justify-between text-[10px] text-[#7A8BA8] mb-1">
             <span>Payment Progress</span>
             <span>{progressPercent.toFixed(0)}%</span>
           </div>
-          <div className="w-full h-2 rounded-full bg-[#2e271f] overflow-hidden">
+          <div className="w-full h-2 rounded-full bg-[#2A3A5C] overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 progressPercent >= 100
                   ? "bg-green-500"
                   : progressPercent > 0
                   ? "bg-brand-500"
-                  : "bg-[#2e271f]"
+                  : "bg-[#2A3A5C]"
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -122,14 +122,14 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
       {/* Payment Schedule */}
       {scheduleItems.length > 0 && (
         <div className="mb-3">
-          <div className="text-[10px] text-[#6b5a4a] uppercase tracking-wider mb-2">Payment Schedule</div>
+          <div className="text-[10px] text-[#7A8BA8] uppercase tracking-wider mb-2">Payment Schedule</div>
           <div className="space-y-1.5">
             {scheduleItems.map((item) => {
               const itemOverdue = item.due_date && new Date(item.due_date) < now && item.status !== "paid" && item.status !== "waived";
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between text-xs py-1 px-2 rounded bg-[#1a1714]"
+                  className="flex items-center justify-between text-xs py-1 px-2 rounded bg-[#182030]"
                 >
                   <div className="flex items-center gap-2">
                     {item.status === "paid" ? (
@@ -139,18 +139,18 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
                     ) : (
                       <Clock className="w-3 h-3 text-yellow-400 flex-shrink-0" />
                     )}
-                    <span className={item.status === "paid" ? "text-[#6b5a4a] line-through" : "text-[#f5ede0]"}>
+                    <span className={item.status === "paid" ? "text-[#7A8BA8] line-through" : "text-[#F4F1ED]"}>
                       {item.installment_name}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     {item.due_date && (
-                      <span className={`flex items-center gap-1 ${itemOverdue ? "text-red-400" : "text-[#6b5a4a]"}`}>
+                      <span className={`flex items-center gap-1 ${itemOverdue ? "text-red-400" : "text-[#7A8BA8]"}`}>
                         <Calendar className="w-2.5 h-2.5" />
                         {new Date(item.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     )}
-                    <span className={`font-medium ${item.status === "paid" ? "text-green-400" : itemOverdue ? "text-red-400" : "text-[#f5ede0]"}`}>
+                    <span className={`font-medium ${item.status === "paid" ? "text-green-400" : itemOverdue ? "text-red-400" : "text-[#F4F1ED]"}`}>
                       {formatCurrency(item.amount)}
                     </span>
                   </div>
@@ -163,15 +163,15 @@ export function EventFinancialSummary({ eventId, proposalTotal, pricingData }: P
 
       {/* Next Payment Due */}
       {nextDue && total > 0 && (
-        <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${isOverdue ? "bg-red-950/30 border border-red-900/40" : "bg-[#1a1714] border border-[#2e271f]"}`}>
+        <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${isOverdue ? "bg-red-950/30 border border-red-900/40" : "bg-[#182030] border border-[#2A3A5C]"}`}>
           {isOverdue ? (
             <AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0" />
           ) : (
             <Calendar className="w-3 h-3 text-yellow-400 flex-shrink-0" />
           )}
-          <span className={isOverdue ? "text-red-400" : "text-[#9c8876]"}>
+          <span className={isOverdue ? "text-red-400" : "text-[#D4A373]"}>
             {isOverdue ? "Overdue" : "Next due"}:{" "}
-            <span className="font-medium text-[#f5ede0]">{nextDue.installment_name}</span>
+            <span className="font-medium text-[#F4F1ED]">{nextDue.installment_name}</span>
             {" -- "}
             {formatCurrency(nextDue.amount)}
             {nextDue.due_date && (

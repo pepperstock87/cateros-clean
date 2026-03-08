@@ -56,7 +56,7 @@ export function ActionAlerts({ alerts }: ActionAlertsProps) {
           <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-green-400">All clear!</p>
-            <p className="text-xs text-[#9c8876] mt-0.5">No action items right now.</p>
+            <p className="text-xs text-[#D4A373] mt-0.5">No action items right now.</p>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export function ActionAlerts({ alerts }: ActionAlertsProps) {
       {remaining > 0 && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 mt-3 text-xs text-[#9c8876] hover:text-[#f5ede0] transition-colors mx-auto"
+          className="flex items-center gap-1.5 mt-3 text-xs text-[#D4A373] hover:text-[#F4F1ED] transition-colors mx-auto"
         >
           {expanded ? (
             <>

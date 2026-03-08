@@ -100,7 +100,7 @@ export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Pr
       {visible.map((alert) => (
         <div
           key={alert.id}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg border border-[#2e271f] border-l-4 ${borderColors[alert.severity]} ${bgColors[alert.severity]}`}
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg border border-[#2A3A5C] border-l-4 ${borderColors[alert.severity]} ${bgColors[alert.severity]}`}
         >
           {alert.severity === "blue" ? (
             <Info className={`w-4 h-4 flex-shrink-0 ${iconColors[alert.severity]}`} />
@@ -118,7 +118,7 @@ export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Pr
           )}
           <button
             onClick={() => setDismissed((prev) => new Set(prev).add(alert.id))}
-            className="text-[#6b5a4a] hover:text-[#9c8876] transition-colors flex-shrink-0"
+            className="text-[#7A8BA8] hover:text-[#D4A373] transition-colors flex-shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>

@@ -15,8 +15,8 @@ export default function PlansLoading() {
           <div
             key={i}
             className={`rounded-xl border ${
-              i === 1 ? "border-2 border-brand-800" : "border-[#2e271f]"
-            } bg-[#1a1714] p-7`}
+              i === 1 ? "border-2 border-brand-800" : "border-[#2A3A5C]"
+            } bg-[#182030] p-7`}
           >
             {/* Icon + name */}
             <div className="flex items-center gap-3 mb-3">
@@ -45,8 +45,8 @@ export default function PlansLoading() {
       </div>
 
       {/* Comparison table */}
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] overflow-hidden">
-        <div className="p-6 border-b border-[#2e271f]">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] overflow-hidden">
+        <div className="p-6 border-b border-[#2A3A5C]">
           <Skeleton className="h-5 w-44 mb-2" />
           <Skeleton className="h-3.5 w-72" />
         </div>

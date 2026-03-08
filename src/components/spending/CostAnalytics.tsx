@@ -162,7 +162,7 @@ export function CostAnalytics({
         {/* Pie Chart - Category Breakdown */}
         {categoryData.length > 0 && (
           <div className="card p-4 md:p-5">
-            <h3 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">
+            <h3 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">
               Spend by Category
             </h3>
             <ResponsiveContainer width="100%" height={220}>
@@ -183,17 +183,17 @@ export function CostAnalytics({
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "#1c1814",
-                    border: "1px solid #2e271f",
+                    background: "#1A2538",
+                    border: "1px solid #2A3A5C",
                     borderRadius: "8px",
-                    color: "#f5ede0",
+                    color: "#F4F1ED",
                   }}
                   formatter={(v: number) => [formatCurrency(v)]}
-                  labelStyle={{ color: "#9c8876", fontSize: 12 }}
+                  labelStyle={{ color: "#D4A373", fontSize: 12 }}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 11, color: "#9c8876" }}
-                  formatter={(value) => <span style={{ color: "#9c8876" }}>{value}</span>}
+                  wrapperStyle={{ fontSize: 11, color: "#D4A373" }}
+                  formatter={(value) => <span style={{ color: "#D4A373" }}>{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -203,36 +203,36 @@ export function CostAnalytics({
         {/* Bar Chart - Monthly Spending Trend */}
         {monthlyData.length > 0 && (
           <div className="card p-4 md:p-5">
-            <h3 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">
+            <h3 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">
               Monthly Spending Trend
             </h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e271f" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2A3A5C" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: "#9c8876", fontSize: 11 }}
+                  tick={{ fill: "#D4A373", fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
                   tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                  tick={{ fill: "#9c8876", fontSize: 11 }}
+                  tick={{ fill: "#D4A373", fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   width={40}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "#1c1814",
-                    border: "1px solid #2e271f",
+                    background: "#1A2538",
+                    border: "1px solid #2A3A5C",
                     borderRadius: "8px",
-                    color: "#f5ede0",
+                    color: "#F4F1ED",
                   }}
                   formatter={(v: number) => [formatCurrency(v)]}
-                  labelStyle={{ color: "#9c8876", fontSize: 12 }}
+                  labelStyle={{ color: "#D4A373", fontSize: 12 }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11, color: "#9c8876" }} />
+                <Legend wrapperStyle={{ fontSize: 11, color: "#D4A373" }} />
                 <Bar dataKey="Receipts" stackId="a" fill="#c4956a" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="Invoices" stackId="a" fill="#d4801f" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -246,21 +246,21 @@ export function CostAnalytics({
         {/* Top 5 Vendors */}
         {topVendors.length > 0 && (
           <div className="card p-4 md:p-5">
-            <h3 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">
+            <h3 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">
               Top 5 Vendors
             </h3>
             <div className="space-y-3">
               {topVendors.map((v, i) => (
                 <div key={v.name} className="flex items-center gap-3">
-                  <span className="text-xs text-[#6b5a4a] w-4 text-right">{i + 1}.</span>
+                  <span className="text-xs text-[#7A8BA8] w-4 text-right">{i + 1}.</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium truncate">{v.name}</span>
-                      <span className="text-sm text-[#9c8876] flex-shrink-0 ml-2">
+                      <span className="text-sm text-[#D4A373] flex-shrink-0 ml-2">
                         {formatCurrency(v.amount)}
                       </span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-[#2e271f] overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-[#2A3A5C] overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -279,17 +279,17 @@ export function CostAnalytics({
         {/* Category Cards with MoM change */}
         {categoryCards.length > 0 && (
           <div className="card p-4 md:p-5">
-            <h3 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">
+            <h3 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">
               Cost by Category (this month)
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {categoryCards.map((c) => (
-                <div key={c.category} className="p-3 rounded-lg border border-[#2e271f] bg-[#151210]">
-                  <div className="text-xs text-[#9c8876] mb-1 truncate">{c.category}</div>
+                <div key={c.category} className="p-3 rounded-lg border border-[#2A3A5C] bg-[#151210]">
+                  <div className="text-xs text-[#D4A373] mb-1 truncate">{c.category}</div>
                   <div className="text-sm font-semibold">{formatCurrency(c.current)}</div>
                   <div className="flex items-center gap-1 mt-1">
                     {c.change === 0 ? (
-                      <span className="text-[10px] text-[#6b5a4a]">No change</span>
+                      <span className="text-[10px] text-[#7A8BA8]">No change</span>
                     ) : c.change > 0 ? (
                       <span className="text-[10px] text-red-400">+{Math.round(c.change)}% vs last month</span>
                     ) : (

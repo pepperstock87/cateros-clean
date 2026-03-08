@@ -27,7 +27,7 @@ export default async function TemplatesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Event Templates</h1>
-          <p className="text-sm text-[#9c8876] mt-1">
+          <p className="text-sm text-[#D4A373] mt-1">
             Reusable templates to quickly create new events
           </p>
         </div>
@@ -40,9 +40,9 @@ export default async function TemplatesPage() {
         />
       ) : items.length === 0 ? (
         <div className="card p-16 text-center mb-10">
-          <LayoutTemplate className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <LayoutTemplate className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No templates yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">
+          <p className="text-sm text-[#D4A373] mb-6">
             Save an event as a template from any event page.
           </p>
           <Link
@@ -55,7 +55,7 @@ export default async function TemplatesPage() {
         </div>
       ) : (
         <>
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Your Templates</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-4">Your Templates</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
             {items.map((template) => {
               const guestCount = template.guest_count;
@@ -75,10 +75,10 @@ export default async function TemplatesPage() {
                   className="card p-5 flex flex-col justify-between gap-4"
                 >
                   <div>
-                    <h3 className="font-medium text-[#f5ede0] mb-1 truncate">
+                    <h3 className="font-medium text-[#F4F1ED] mb-1 truncate">
                       {template.name}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#9c8876] mt-2">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#D4A373] mt-2">
                       {guestCount && (
                         <span className="inline-flex items-center gap-1">
                           <Users className="w-3.5 h-3.5" />
@@ -92,12 +92,12 @@ export default async function TemplatesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#6b5a4a] mt-3">
+                    <p className="text-xs text-[#7A8BA8] mt-3">
                       Created {createdDate}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-[#2e271f]">
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#2A3A5C]">
                     <Link
                       href={`/events/new?template=${template.id}`}
                       className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1.5 flex-1 justify-center"
@@ -118,23 +118,23 @@ export default async function TemplatesPage() {
       {isPro && (
         <>
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-4 h-4 text-[#9c8876]" />
-            <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Starter Templates</h2>
+            <Sparkles className="w-4 h-4 text-[#D4A373]" />
+            <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Starter Templates</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {DEFAULT_TEMPLATES.map((dt, idx) => (
               <div
                 key={idx}
-                className="p-5 flex flex-col justify-between gap-4 rounded-lg border border-dashed border-[#2e271f] bg-[#1a1714]/50"
+                className="p-5 flex flex-col justify-between gap-4 rounded-lg border border-dashed border-[#2A3A5C] bg-[#182030]/50"
               >
                 <div>
-                  <h3 className="font-medium text-[#f5ede0] mb-1 truncate">
+                  <h3 className="font-medium text-[#F4F1ED] mb-1 truncate">
                     {dt.name}
                   </h3>
-                  <p className="text-xs text-[#9c8876] leading-snug mt-1">
+                  <p className="text-xs text-[#D4A373] leading-snug mt-1">
                     {dt.description}
                   </p>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#9c8876] mt-3">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#D4A373] mt-3">
                     <span className="inline-flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
                       {dt.template_data.guest_count} guests
@@ -146,7 +146,7 @@ export default async function TemplatesPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-[#2e271f]">
+                <div className="pt-2 border-t border-[#2A3A5C]">
                   <Link
                     href={`/events/new?defaultTemplate=${idx}`}
                     className="btn-secondary text-xs px-3 py-1.5 inline-flex items-center gap-1.5 w-full justify-center"

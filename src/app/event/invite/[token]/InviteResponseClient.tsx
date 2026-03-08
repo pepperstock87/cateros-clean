@@ -75,7 +75,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
   if (isLoggedIn === null) {
     return (
       <div className="card p-6">
-        <div className="flex items-center justify-center gap-2 py-4 text-[#6b5a4a] text-sm">
+        <div className="flex items-center justify-center gap-2 py-4 text-[#7A8BA8] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading...
         </div>
@@ -89,7 +89,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
       <div className="card p-8 text-center">
         <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-4" />
         <h3 className="font-display text-lg font-semibold mb-2">Invite Accepted</h3>
-        <p className="text-sm text-[#9c8876]">
+        <p className="text-sm text-[#D4A373]">
           You&apos;ve been added to this event. Redirecting...
         </p>
       </div>
@@ -110,7 +110,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
 
       {isLoggedIn ? (
         <div className="space-y-3">
-          <p className="text-sm text-[#9c8876] mb-4">
+          <p className="text-sm text-[#D4A373] mb-4">
             You&apos;re signed in. Accept this invite to join the event workspace.
           </p>
           <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
             <button
               onClick={handleDecline}
               disabled={accepting || declining}
-              className="px-6 py-2.5 rounded-lg border border-[#2e271f] text-sm text-[#9c8876] hover:text-red-400 hover:border-red-800/60 transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 rounded-lg border border-[#2A3A5C] text-sm text-[#D4A373] hover:text-red-400 hover:border-red-800/60 transition-colors flex items-center gap-2"
             >
               {declining ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -142,7 +142,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-[#9c8876]">
+          <p className="text-sm text-[#D4A373]">
             Create an account or sign in to accept this invite and join the event workspace.
           </p>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -155,7 +155,7 @@ export function InviteResponseClient({ inviteToken, eventId }: Props) {
             </a>
             <a
               href={`/login?redirect=/event/invite/${inviteToken}`}
-              className="px-6 py-2.5 rounded-lg border border-[#2e271f] text-sm text-[#9c8876] hover:text-[#f5ede0] hover:border-brand-800/60 transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-2.5 rounded-lg border border-[#2A3A5C] text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:border-brand-800/60 transition-colors flex items-center justify-center gap-2"
             >
               <LogIn className="w-4 h-4" />
               Sign In

@@ -22,7 +22,7 @@ export function UpgradePrompt({
       <div className="bg-brand-950 border border-brand-800 rounded-lg p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-brand-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-[#f5ede0] mb-2">{message}</p>
+          <p className="text-sm text-[#F4F1ED] mb-2">{message}</p>
           <Link href="/billing" className="text-sm text-brand-400 hover:text-brand-300 font-medium">
             Upgrade to {planName} →
           </Link>
@@ -37,7 +37,7 @@ export function UpgradePrompt({
         <Lock className="w-8 h-8 text-brand-400" />
       </div>
       <h2 className="font-display text-xl font-semibold mb-2">{title}</h2>
-      <p className="text-sm text-[#9c8876] mb-6">{message}</p>
+      <p className="text-sm text-[#D4A373] mb-6">{message}</p>
       <Link href="/billing" className="btn-primary inline-flex items-center gap-2 px-6">
         <Zap className="w-4 h-4" />
         Upgrade to {planName} ({planPrice}/month)

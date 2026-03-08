@@ -60,16 +60,16 @@ export function NewEventForm({
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-6 transition-colors">
+      <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Events
       </Link>
       <h1 className="font-display text-2xl font-semibold mb-2">New Event</h1>
-      <p className="text-sm text-[#9c8876] mb-8">Fill in event details. Add full pricing on the next screen.</p>
+      <p className="text-sm text-[#D4A373] mb-8">Fill in event details. Add full pricing on the next screen.</p>
 
       {prefilledTemplate && (
         <div className="flex items-center gap-2.5 bg-brand-950 border border-brand-800/60 text-brand-300 text-sm px-4 py-3 rounded-lg mb-6">
           <LayoutTemplate className="w-4 h-4 text-brand-400 flex-shrink-0" />
-          Creating from template: <span className="font-medium text-[#f5ede0]">{prefilledTemplate.name}</span>
+          Creating from template: <span className="font-medium text-[#F4F1ED]">{prefilledTemplate.name}</span>
         </div>
       )}
 
@@ -77,9 +77,9 @@ export function NewEventForm({
         <div className="flex items-center justify-between bg-brand-950 border border-brand-800/60 text-brand-300 text-sm px-4 py-3 rounded-lg mb-6">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-brand-400 flex-shrink-0" />
-            Using starter template: <span className="font-medium text-[#f5ede0]">{activeDefault.name}</span>
+            Using starter template: <span className="font-medium text-[#F4F1ED]">{activeDefault.name}</span>
           </div>
-          <button type="button" onClick={clearDefaultTemplate} className="text-[#9c8876] hover:text-[#f5ede0] text-xs transition-colors">
+          <button type="button" onClick={clearDefaultTemplate} className="text-[#D4A373] hover:text-[#F4F1ED] text-xs transition-colors">
             Clear
           </button>
         </div>
@@ -88,7 +88,7 @@ export function NewEventForm({
       {/* Quick Start Templates */}
       {!prefilledTemplate && (
         <div className="mb-8">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-3">
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-3">
             {hasSavedTemplates ? "Suggested Templates" : "Quick Start Templates"}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -102,14 +102,14 @@ export function NewEventForm({
                   className={`text-left p-4 rounded-lg border transition-all ${
                     isActive
                       ? "bg-brand-950 border-brand-600 ring-1 ring-brand-600"
-                      : "bg-[#1a1714] border-[#2e271f] hover:border-[#9c8876]/50"
+                      : "bg-[#182030] border-[#2A3A5C] hover:border-[#D4A373]/50"
                   }`}
                 >
-                  <h3 className={`text-sm font-medium mb-1 ${isActive ? "text-brand-400" : "text-[#f5ede0]"}`}>
+                  <h3 className={`text-sm font-medium mb-1 ${isActive ? "text-brand-400" : "text-[#F4F1ED]"}`}>
                     {dt.name}
                   </h3>
-                  <p className="text-xs text-[#9c8876] leading-snug mb-2">{dt.description}</p>
-                  <span className="inline-flex items-center gap-1 text-xs text-[#6b5a4a]">
+                  <p className="text-xs text-[#D4A373] leading-snug mb-2">{dt.description}</p>
+                  <span className="inline-flex items-center gap-1 text-xs text-[#7A8BA8]">
                     <Users className="w-3 h-3" />
                     {dt.template_data.guest_count} guests
                   </span>
@@ -139,7 +139,7 @@ export function NewEventForm({
 
         {templates.length > 0 && (
           <div className="card p-6">
-            <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Start from Saved Template</h2>
+            <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-4">Start from Saved Template</h2>
             <select
               value={selectedTemplate}
               onChange={handleTemplateChange}
@@ -157,7 +157,7 @@ export function NewEventForm({
         )}
 
         <div className="card p-6 space-y-4">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Event Details</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Event Details</h2>
           <div>
             <label className="label">Event name *</label>
             <input name="name" className="input" placeholder="Smith-Johnson Wedding Reception" required />
@@ -198,7 +198,7 @@ export function NewEventForm({
         </div>
 
         <div className="card p-6 space-y-4">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Client Information</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Client Information</h2>
           <div>
             <label className="label">Client name *</label>
             <input name="client_name" className="input" placeholder="Sarah & Michael Smith" required />
@@ -216,7 +216,7 @@ export function NewEventForm({
         </div>
 
         <div className="card p-6">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Notes</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-4">Notes</h2>
           <textarea name="notes" className="input resize-none" rows={3} placeholder="Dietary restrictions, special requests, parking notes..." />
         </div>
 

@@ -19,11 +19,11 @@ export function DashboardChart({ data }: { data: Point[] }) {
             <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#2e271f" vertical={false} />
-        <XAxis dataKey="month" tick={{ fill: "#9c8876", fontSize: 11 }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fill: "#9c8876", fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
-        <Tooltip contentStyle={{ background: "#1c1814", border: "1px solid #2e271f", borderRadius: "8px", color: "#f5ede0" }} formatter={(v: number) => [formatCurrency(v)]} labelStyle={{ color: "#9c8876", fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#9c8876" }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#2A3A5C" vertical={false} />
+        <XAxis dataKey="month" tick={{ fill: "#D4A373", fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fill: "#D4A373", fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+        <Tooltip contentStyle={{ background: "#1A2538", border: "1px solid #2A3A5C", borderRadius: "8px", color: "#F4F1ED" }} formatter={(v: number) => [formatCurrency(v)]} labelStyle={{ color: "#D4A373", fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#D4A373" }} />
         <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#d4801f" strokeWidth={2} fill="url(#rev)" />
         <Area type="monotone" dataKey="profit" name="Profit" stroke="#4ade80" strokeWidth={2} fill="url(#pft)" />
       </AreaChart>

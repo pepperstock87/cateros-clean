@@ -76,7 +76,7 @@ const RELATIONSHIP_CONFIG: Record<
   },
   other_vendor: {
     label: "Other",
-    color: "bg-[#1c1814] text-[#9c8876] border-[#2e271f]",
+    color: "bg-[#1A2538] text-[#D4A373] border-[#2A3A5C]",
     icon: Building2,
   },
 };
@@ -430,7 +430,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
   if (loading) {
     return (
       <div className="card p-5">
-        <div className="flex items-center justify-center gap-2 py-8 text-[#6b5a4a] text-sm">
+        <div className="flex items-center justify-center gap-2 py-8 text-[#7A8BA8] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading vendors...
         </div>
@@ -463,9 +463,9 @@ export function EventVendors({ eventId, isAdmin }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-sm flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-[#9c8876]" />
+          <Building2 className="w-4 h-4 text-[#D4A373]" />
           Vendors
-          <span className="text-xs text-[#6b5a4a]">({vendors.length})</span>
+          <span className="text-xs text-[#7A8BA8]">({vendors.length})</span>
         </h2>
         {isAdmin && (
           <button
@@ -493,13 +493,13 @@ export function EventVendors({ eventId, isAdmin }: Props) {
             return (
               <div
                 key={v.id}
-                className="bg-[#1a1714] border border-[#2e271f] rounded-xl p-4"
+                className="bg-[#182030] border border-[#2A3A5C] rounded-xl p-4"
               >
                 {isEditing ? (
                   /* ---- Inline edit form ---- */
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-[#f5ede0]">
+                      <span className="text-sm font-medium text-[#F4F1ED]">
                         {v.organization?.name ?? "Unknown Vendor"}
                       </span>
                       <button
@@ -507,7 +507,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                           setEditingId(null);
                           setEditForm({});
                         }}
-                        className="text-[#6b5a4a] hover:text-[#9c8876] transition-colors"
+                        className="text-[#7A8BA8] hover:text-[#D4A373] transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -592,7 +592,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-[#f5ede0]">
+                        <span className="text-sm font-medium text-[#F4F1ED]">
                           {v.organization?.name ?? "Unknown Vendor"}
                         </span>
                         <RelBadge type={v.relationship_type} />
@@ -609,7 +609,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
                             onClick={() => startEdit(v)}
-                            className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1"
+                            className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1"
                             title="Edit vendor"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -617,7 +617,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                           <button
                             onClick={() => handleRemove(v.id)}
                             disabled={removingId === v.id}
-                            className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                            className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                             title="Remove vendor"
                           >
                             {removingId === v.id ? (
@@ -631,12 +631,12 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                     </div>
 
                     {v.role_label && (
-                      <p className="text-xs text-[#9c8876] mb-1.5">{v.role_label}</p>
+                      <p className="text-xs text-[#D4A373] mb-1.5">{v.role_label}</p>
                     )}
 
                     {/* Contact info */}
                     {(v.contact_name || v.contact_email || v.contact_phone) && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#9c8876] mb-1.5">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#D4A373] mb-1.5">
                         {v.contact_name && (
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
@@ -665,7 +665,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                     )}
 
                     {v.notes && (
-                      <p className="text-[11px] text-[#6b5a4a] mt-1">{v.notes}</p>
+                      <p className="text-[11px] text-[#7A8BA8] mt-1">{v.notes}</p>
                     )}
                   </div>
                 )}
@@ -675,10 +675,10 @@ export function EventVendors({ eventId, isAdmin }: Props) {
         </div>
       ) : (
         <div className="text-center py-8 mb-4">
-          <Building2 className="w-8 h-8 text-[#2e271f] mx-auto mb-2" />
-          <p className="text-xs text-[#6b5a4a]">No vendors added yet</p>
+          <Building2 className="w-8 h-8 text-[#2A3A5C] mx-auto mb-2" />
+          <p className="text-xs text-[#7A8BA8]">No vendors added yet</p>
           {isAdmin && (
-            <p className="text-[10px] text-[#6b5a4a] mt-1">
+            <p className="text-[10px] text-[#7A8BA8] mt-1">
               Click &quot;+ Add Vendor&quot; to assign vendors to this event.
             </p>
           )}
@@ -687,7 +687,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
 
       {/* Add vendor form */}
       {showAdd && (
-        <div className="p-4 rounded-xl border border-[#2e271f] bg-[#1a1714] space-y-4">
+        <div className="p-4 rounded-xl border border-[#2A3A5C] bg-[#182030] space-y-4">
           {/* Mode toggle */}
           <div className="flex items-center gap-2">
             <button
@@ -698,7 +698,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
               className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 addMode === "search"
                   ? "bg-brand-950 text-brand-300 border-brand-800/60"
-                  : "text-[#6b5a4a] border-[#2e271f] hover:text-[#9c8876]"
+                  : "text-[#7A8BA8] border-[#2A3A5C] hover:text-[#D4A373]"
               }`}
             >
               <Search className="w-3 h-3 inline mr-1" />
@@ -712,7 +712,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
               className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 addMode === "external"
                   ? "bg-brand-950 text-brand-300 border-brand-800/60"
-                  : "text-[#6b5a4a] border-[#2e271f] hover:text-[#9c8876]"
+                  : "text-[#7A8BA8] border-[#2A3A5C] hover:text-[#D4A373]"
               }`}
             >
               <Plus className="w-3 h-3 inline mr-1" />
@@ -725,7 +725,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
             <div ref={searchRef} className="relative">
               <label className="label">Search Organizations</label>
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a]" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8]" />
                 <input
                   type="text"
                   className="input text-sm w-full pl-8"
@@ -735,21 +735,21 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                   onFocus={() => searchResults.length > 0 && setShowResults(true)}
                 />
                 {searching && (
-                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a] animate-spin" />
+                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8] animate-spin" />
                 )}
               </div>
 
               {/* Search results dropdown */}
               {showResults && searchResults.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-[#141210] border border-[#2e271f] rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                <div className="absolute z-10 mt-1 w-full bg-[#141210] border border-[#2A3A5C] rounded-lg shadow-xl max-h-48 overflow-y-auto">
                   {searchResults.map((org) => (
                     <button
                       key={org.id}
                       onClick={() => selectOrg(org)}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[#1a1714] transition-colors border-b border-[#2e271f] last:border-b-0"
+                      className="w-full text-left px-3 py-2.5 hover:bg-[#182030] transition-colors border-b border-[#2A3A5C] last:border-b-0"
                     >
-                      <div className="text-sm text-[#f5ede0]">{org.name}</div>
-                      <div className="text-[10px] text-[#6b5a4a] flex items-center gap-2 mt-0.5">
+                      <div className="text-sm text-[#F4F1ED]">{org.name}</div>
+                      <div className="text-[10px] text-[#7A8BA8] flex items-center gap-2 mt-0.5">
                         <RelBadge type={org.organization_type} />
                         {org.primary_contact_email && (
                           <span>{org.primary_contact_email}</span>
@@ -761,8 +761,8 @@ export function EventVendors({ eventId, isAdmin }: Props) {
               )}
 
               {showResults && searchQuery.trim() && searchResults.length === 0 && !searching && (
-                <div className="absolute z-10 mt-1 w-full bg-[#141210] border border-[#2e271f] rounded-lg shadow-xl p-3 text-center">
-                  <p className="text-xs text-[#6b5a4a]">No organizations found</p>
+                <div className="absolute z-10 mt-1 w-full bg-[#141210] border border-[#2A3A5C] rounded-lg shadow-xl p-3 text-center">
+                  <p className="text-xs text-[#7A8BA8]">No organizations found</p>
                   <button
                     onClick={() => {
                       setAddMode("external");
@@ -779,9 +779,9 @@ export function EventVendors({ eventId, isAdmin }: Props) {
 
               {/* Selected org display */}
               {form.organization_id && (
-                <div className="mt-2 flex items-center gap-2 bg-[#141210] border border-[#2e271f] rounded-lg px-3 py-2">
-                  <Building2 className="w-4 h-4 text-[#9c8876] flex-shrink-0" />
-                  <span className="text-sm text-[#f5ede0] flex-1">
+                <div className="mt-2 flex items-center gap-2 bg-[#141210] border border-[#2A3A5C] rounded-lg px-3 py-2">
+                  <Building2 className="w-4 h-4 text-[#D4A373] flex-shrink-0" />
+                  <span className="text-sm text-[#F4F1ED] flex-1">
                     {form.organization_name}
                   </span>
                   <button
@@ -792,7 +792,7 @@ export function EventVendors({ eventId, isAdmin }: Props) {
                         organization_name: "",
                       }))
                     }
-                    className="text-[#6b5a4a] hover:text-[#9c8876] transition-colors"
+                    className="text-[#7A8BA8] hover:text-[#D4A373] transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

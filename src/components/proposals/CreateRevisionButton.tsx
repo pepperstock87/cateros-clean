@@ -81,29 +81,29 @@ export function CreateRevisionButton({
           />
 
           {/* Modal content */}
-          <div className="relative bg-[#1a1714] border border-[#2e271f] rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
+          <div className="relative bg-[#182030] border border-[#2A3A5C] rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[#f5ede0]">
+              <h2 className="text-lg font-semibold text-[#F4F1ED]">
                 Create Revision
               </h2>
               <button
                 onClick={() => !loading && setOpen(false)}
-                className="text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+                className="text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-sm text-[#9c8876] mb-4">
+            <p className="text-sm text-[#D4A373] mb-4">
               This will create a new version of this proposal with the same
               event details and pricing. You can then make changes to the new
               version.
             </p>
 
             <form onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium text-[#f5ede0] mb-1.5">
+              <label className="block text-sm font-medium text-[#F4F1ED] mb-1.5">
                 Revision Notes
-                <span className="text-[#9c8876] font-normal"> (optional)</span>
+                <span className="text-[#D4A373] font-normal"> (optional)</span>
               </label>
               <textarea
                 ref={textareaRef}
@@ -111,7 +111,7 @@ export function CreateRevisionButton({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="What changed in this revision..."
                 rows={3}
-                className="w-full rounded-lg bg-[#0f0d0b] border border-[#2e271f] px-3 py-2 text-sm text-[#f5ede0] placeholder:text-[#6b5a4a] focus:outline-none focus:ring-1 focus:ring-brand-600 resize-none"
+                className="w-full rounded-lg bg-[#0C1220] border border-[#2A3A5C] px-3 py-2 text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:ring-1 focus:ring-brand-600 resize-none"
               />
 
               <div className="flex justify-end gap-2 mt-4">

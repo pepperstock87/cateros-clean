@@ -16,7 +16,7 @@ export default async function AssistantLayout({ children }: { children: React.Re
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar companyName={profile?.company_name ?? undefined} />
-      <main className="flex-1 overflow-hidden bg-[#0f0d0b]">
+      <main className="flex-1 overflow-hidden bg-[#0C1220]">
         {children}
       </main>
     </div>

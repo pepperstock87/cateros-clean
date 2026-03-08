@@ -68,7 +68,7 @@ export function PortalTimeline({ event, proposal, payments }: Props) {
 
   return (
     <div className="card p-5">
-      <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-5">Timeline</h3>
+      <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-5">Timeline</h3>
       <div className="relative">
         {milestones.map((milestone, index) => {
           const isLast = index === milestones.length - 1;
@@ -79,7 +79,7 @@ export function PortalTimeline({ event, proposal, payments }: Props) {
               {!isLast && (
                 <div
                   className={`absolute left-[9px] top-[22px] w-px h-[calc(100%-4px)] ${
-                    milestone.completed ? "bg-green-800/60" : "bg-[#2e271f]"
+                    milestone.completed ? "bg-green-800/60" : "bg-[#2A3A5C]"
                   }`}
                 />
               )}
@@ -91,7 +91,7 @@ export function PortalTimeline({ event, proposal, payments }: Props) {
                 ) : milestone.current ? (
                   <Clock className="w-[18px] h-[18px] text-brand-400" />
                 ) : (
-                  <Circle className="w-[18px] h-[18px] text-[#3d3428]" />
+                  <Circle className="w-[18px] h-[18px] text-[#344570]" />
                 )}
               </div>
 
@@ -100,16 +100,16 @@ export function PortalTimeline({ event, proposal, payments }: Props) {
                 <div
                   className={`text-sm font-medium ${
                     milestone.completed
-                      ? "text-[#f5ede0]"
+                      ? "text-[#F4F1ED]"
                       : milestone.current
                       ? "text-brand-400"
-                      : "text-[#6b5a4a]"
+                      : "text-[#7A8BA8]"
                   }`}
                 >
                   {milestone.label}
                 </div>
                 {milestone.date && (
-                  <div className="text-xs text-[#6b5a4a] mt-0.5">
+                  <div className="text-xs text-[#7A8BA8] mt-0.5">
                     {format(new Date(milestone.date), "MMM d, yyyy")}
                   </div>
                 )}

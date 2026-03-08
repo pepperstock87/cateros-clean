@@ -99,7 +99,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
       case "refunded":
         return { label: "Refunded", className: "bg-purple-900/40 text-purple-400 border-purple-800/50" };
       default:
-        return { label: "Pending", className: "bg-[#2e271f] text-[#9c8876] border-[#3d3428]" };
+        return { label: "Pending", className: "bg-[#2A3A5C] text-[#D4A373] border-[#344570]" };
     }
   }
 
@@ -121,16 +121,16 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-1">
-              <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="text-xs text-[#9c8876]">Date</span>
+              <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="text-xs text-[#D4A373]">Date</span>
             </div>
             <div className="text-sm font-medium">{format(new Date(event.event_date), "EEE, MMM d, yyyy")}</div>
           </div>
           {(event.start_time || event.end_time) && (
             <div className="card p-4">
               <div className="flex items-center gap-1.5 mb-1">
-                <Clock className="w-3.5 h-3.5 text-[#9c8876]" />
-                <span className="text-xs text-[#9c8876]">Time</span>
+                <Clock className="w-3.5 h-3.5 text-[#D4A373]" />
+                <span className="text-xs text-[#D4A373]">Time</span>
               </div>
               <div className="text-sm font-medium">
                 {event.start_time && formatTime(event.start_time)}
@@ -141,16 +141,16 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
           )}
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-1">
-              <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="text-xs text-[#9c8876]">Guests</span>
+              <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="text-xs text-[#D4A373]">Guests</span>
             </div>
             <div className="text-sm font-medium">{event.guest_count}</div>
           </div>
           {event.venue && (
             <div className="card p-4">
               <div className="flex items-center gap-1.5 mb-1">
-                <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
-                <span className="text-xs text-[#9c8876]">Venue</span>
+                <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
+                <span className="text-xs text-[#D4A373]">Venue</span>
               </div>
               <div className="text-sm font-medium truncate">{event.venue}</div>
             </div>
@@ -179,33 +179,33 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
           <div className="space-y-2">
             {pricing.foodCostTotal > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Food & Menu</span>
+                <span className="text-[#D4A373]">Food & Menu</span>
                 <span>{formatCurrency(pricing.foodCostTotal)}</span>
               </div>
             )}
             {pricing.staffingTotal > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Staffing</span>
+                <span className="text-[#D4A373]">Staffing</span>
                 <span>{formatCurrency(pricing.staffingTotal)}</span>
               </div>
             )}
             {pricing.rentalsTotal > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Rentals</span>
+                <span className="text-[#D4A373]">Rentals</span>
                 <span>{formatCurrency(pricing.rentalsTotal)}</span>
               </div>
             )}
             {pricing.barTotal > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Bar</span>
+                <span className="text-[#D4A373]">Bar</span>
                 <span>{formatCurrency(pricing.barTotal)}</span>
               </div>
             )}
-            <div className="border-t border-[#2e271f] pt-2 flex justify-between text-sm">
-              <span className="text-[#9c8876]">Service Fee + Tax</span>
+            <div className="border-t border-[#2A3A5C] pt-2 flex justify-between text-sm">
+              <span className="text-[#D4A373]">Service Fee + Tax</span>
               <span>{formatCurrency(pricing.adminFee + pricing.taxAmount)}</span>
             </div>
-            <div className="border-t border-[#2e271f] pt-2 flex justify-between items-baseline">
+            <div className="border-t border-[#2A3A5C] pt-2 flex justify-between items-baseline">
               <span className="font-semibold text-brand-300">Total</span>
               <span className="text-xl font-semibold text-brand-300">{formatCurrency(pricing.suggestedPrice)}</span>
             </div>
@@ -236,22 +236,22 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
       {pricing && (proposal.status === "accepted" || proposal.status === "booked" || proposal.status === "approved" || proposal.status === "signed" || proposal.status === "deposit_paid") ? (
         <div className="card p-5">
           <h3 className="font-medium text-sm mb-4 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-[#9c8876]" />
+            <DollarSign className="w-4 h-4 text-[#D4A373]" />
             Payment Status
           </h3>
 
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
-              <div className="text-xs text-[#9c8876] mb-1">Total</div>
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+              <div className="text-xs text-[#D4A373] mb-1">Total</div>
               <div className="text-sm font-semibold">{formatCurrency(totalDue)}</div>
             </div>
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
-              <div className="text-xs text-[#9c8876] mb-1">Paid</div>
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+              <div className="text-xs text-[#D4A373] mb-1">Paid</div>
               <div className="text-sm font-semibold text-green-400">{formatCurrency(totalPaid)}</div>
             </div>
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
-              <div className="text-xs text-[#9c8876] mb-1">Balance</div>
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+              <div className="text-xs text-[#D4A373] mb-1">Balance</div>
               <div className={`text-sm font-semibold ${balanceDue > 0 ? "text-yellow-400" : "text-green-400"}`}>
                 {formatCurrency(balanceDue)}
               </div>
@@ -261,20 +261,20 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
           {/* Payment progress */}
           {totalDue > 0 && (
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex-1 h-2 rounded-full bg-[#2e271f] overflow-hidden">
+              <div className="flex-1 h-2 rounded-full bg-[#2A3A5C] overflow-hidden">
                 <div
                   className="h-full rounded-full bg-green-500 transition-all"
                   style={{ width: `${Math.min((totalPaid / totalDue) * 100, 100)}%` }}
                 />
               </div>
-              <span className="text-xs text-[#9c8876]">{Math.round((totalPaid / totalDue) * 100)}%</span>
+              <span className="text-xs text-[#D4A373]">{Math.round((totalPaid / totalDue) * 100)}%</span>
             </div>
           )}
 
           {/* New payment schedule system */}
           {hasNewPaymentSystem ? (
             <>
-              <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">Payment Schedule</div>
+              <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3">Payment Schedule</div>
               <div className="space-y-2 mb-4">
                 {schedules.map((schedule) => {
                   const badge = getScheduleStatusBadge(schedule.status);
@@ -282,7 +282,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
                   return (
                     <div
                       key={schedule.id}
-                      className="flex items-center justify-between p-3 rounded-lg border border-[#2e271f] bg-[#1a1613]"
+                      className="flex items-center justify-between p-3 rounded-lg border border-[#2A3A5C] bg-[#182030]"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
@@ -291,7 +291,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
                             {badge.label}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-[#9c8876]">
+                        <div className="flex items-center gap-2 text-xs text-[#D4A373]">
                           <span className="font-medium">{formatCurrency(schedule.amount)}</span>
                           {schedule.due_date && (
                             <>
@@ -318,11 +318,11 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
 
               {/* Payment history from new system */}
               {paidPayments.length > 0 && (
-                <div className="pt-3 border-t border-[#2e271f]">
-                  <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Payment History</div>
+                <div className="pt-3 border-t border-[#2A3A5C]">
+                  <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">Payment History</div>
                   <div className="space-y-1.5">
                     {paidPayments.map((p) => (
-                      <div key={p.id} className="flex justify-between text-xs text-[#9c8876]">
+                      <div key={p.id} className="flex justify-between text-xs text-[#D4A373]">
                         <span>
                           {p.paid_at ? format(new Date(p.paid_at), "MMM d, yyyy") : "—"}
                           {p.payment_method_type ? ` · ${p.payment_method_type}` : ""}
@@ -337,10 +337,10 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
           ) : (
             <>
               {/* Old system fallback: deposit status */}
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-[#2e271f]">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-[#2A3A5C]">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${depositPaid ? "bg-green-400" : "bg-yellow-400"}`} />
                 <div className="flex-1">
-                  <div className="text-xs text-[#9c8876]">
+                  <div className="text-xs text-[#D4A373]">
                     Deposit of {formatCurrency(depositRequired)} {depositPaid ? "received" : "required"}
                   </div>
                 </div>
@@ -348,11 +348,11 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
 
               {/* Old system fallback: payment history */}
               {payment?.payments && payment.payments.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-[#2e271f]">
-                  <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Payment History</div>
+                <div className="mt-4 pt-3 border-t border-[#2A3A5C]">
+                  <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">Payment History</div>
                   <div className="space-y-1.5">
                     {payment.payments.map((p) => (
-                      <div key={p.id} className="flex justify-between text-xs text-[#9c8876]">
+                      <div key={p.id} className="flex justify-between text-xs text-[#D4A373]">
                         <span>{p.date} · {p.method}{p.note ? ` · ${p.note}` : ""}</span>
                         <span className="text-green-400">{formatCurrency(p.amount)}</span>
                       </div>
@@ -365,8 +365,8 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         </div>
       ) : (
         <div className="card p-8 text-center">
-          <DollarSign className="w-10 h-10 text-[#3d3428] mx-auto mb-3" />
-          <p className="text-sm text-[#6b5a4a]">Payment details will appear here once the proposal is approved.</p>
+          <DollarSign className="w-10 h-10 text-[#344570] mx-auto mb-3" />
+          <p className="text-sm text-[#7A8BA8]">Payment details will appear here once the proposal is approved.</p>
         </div>
       )}
     </div>
@@ -376,7 +376,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
     <PortalVendors eventId={event.id} />
   ) : (
     <div className="card p-8 text-center">
-      <p className="text-sm text-[#6b5a4a]">No vendor information available.</p>
+      <p className="text-sm text-[#7A8BA8]">No vendor information available.</p>
     </div>
   );
 
@@ -385,9 +385,9 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
   );
 
   return (
-    <div className="min-h-screen bg-[#0f0d0b]">
+    <div className="min-h-screen bg-[#0C1220]">
       {/* Header */}
-      <div className="border-b border-[#2e271f]">
+      <div className="border-b border-[#2A3A5C]">
         <div className="max-w-3xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -396,7 +396,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
               )}
               <h1 className="font-display text-lg font-semibold">{companyName}</h1>
               {(settings?.phone || settings?.email) && (
-                <p className="text-xs text-[#9c8876] mt-0.5">
+                <p className="text-xs text-[#D4A373] mt-0.5">
                   {[settings?.phone, settings?.email].filter(Boolean).join(" · ")}
                 </p>
               )}
@@ -435,7 +435,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         {event && (
           <div>
             <h2 className="font-display text-2xl font-semibold mb-1">{event.name}</h2>
-            <p className="text-sm text-[#9c8876]">
+            <p className="text-sm text-[#D4A373]">
               Welcome, {event.client_name}
               {(proposal.status === "accepted" || proposal.status === "booked") && " — Your event is confirmed!"}
             </p>
@@ -464,7 +464,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
         </PortalTabs>
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#6b5a4a] pt-4 pb-8">
+        <div className="text-center text-xs text-[#7A8BA8] pt-4 pb-8">
           Powered by Cateros
         </div>
       </div>

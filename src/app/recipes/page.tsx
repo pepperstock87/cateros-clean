@@ -25,7 +25,7 @@ export default async function RecipesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Recipe Library</h1>
-          <p className="text-sm text-[#9c8876] mt-1">{recipes.length} recipes · Track ingredient costs & per-person pricing</p>
+          <p className="text-sm text-[#D4A373] mt-1">{recipes.length} recipes · Track ingredient costs & per-person pricing</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/recipes/analytics" className="btn-secondary flex items-center gap-2 text-sm">
@@ -39,16 +39,16 @@ export default async function RecipesPage() {
 
       {recipes.length === 0 ? (
         <div className="card p-16 text-center">
-          <BookOpen className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <BookOpen className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No recipes yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">Build your food cost library to auto-fill event pricing.</p>
+          <p className="text-sm text-[#D4A373] mb-6">Build your food cost library to auto-fill event pricing.</p>
           <Link href="/recipes/new" className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" />Add first recipe</Link>
         </div>
       ) : (
         <div className="space-y-8">
           {categories.length > 0 ? categories.map(cat => (
             <div key={cat}>
-              <h2 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">{cat}</h2>
+              <h2 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3">{cat}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recipes.filter(r => r.category === cat).map(recipe => <RecipeCard key={recipe.id} recipe={recipe} />)}
               </div>
@@ -56,7 +56,7 @@ export default async function RecipesPage() {
           )) : null}
           {recipes.filter(r => !r.category).length > 0 && (
             <div>
-              {categories.length > 0 && <h2 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">Uncategorized</h2>}
+              {categories.length > 0 && <h2 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3">Uncategorized</h2>}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recipes.filter(r => !r.category).map(recipe => <RecipeCard key={recipe.id} recipe={recipe} />)}
               </div>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("animate-pulse rounded-lg bg-[#1c1814]", className)}
+      className={cn("animate-pulse rounded-lg bg-[#1A2538]", className)}
     />
   );
 }
@@ -14,7 +14,7 @@ export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-[#1c1814] w-full h-[120px]",
+        "animate-pulse rounded-xl bg-[#1A2538] w-full h-[120px]",
         className
       )}
     />
@@ -23,9 +23,9 @@ export function SkeletonCard({ className }: { className?: string }) {
 
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="rounded-xl border border-[#2e271f] overflow-hidden">
+    <div className="rounded-xl border border-[#2A3A5C] overflow-hidden">
       {/* Header row */}
-      <div className="flex items-center gap-4 px-5 py-3 border-b border-[#2e271f]">
+      <div className="flex items-center gap-4 px-5 py-3 border-b border-[#2A3A5C]">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-3 w-20 hidden sm:block" />
         <Skeleton className="h-3 w-16" />
@@ -36,7 +36,7 @@ export function SkeletonTable({ rows = 5 }: { rows?: number }) {
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 px-5 py-3.5 border-b border-[#1c1814] last:border-b-0"
+          className="flex items-center gap-4 px-5 py-3.5 border-b border-[#1A2538] last:border-b-0"
         >
           <Skeleton className="h-3.5 w-32" />
           <Skeleton className="h-3.5 w-24 hidden sm:block" />
@@ -55,7 +55,7 @@ export function SkeletonStats({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-4 md:p-5"
+          className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-4 md:p-5"
         >
           <div className="flex items-center gap-2 mb-2">
             <Skeleton className="h-4 w-4 rounded" />

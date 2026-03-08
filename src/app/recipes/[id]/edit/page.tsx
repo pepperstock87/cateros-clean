@@ -120,14 +120,14 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
 
   if (loading) return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
-      <div className="card p-16 text-center text-[#9c8876] text-sm">Loading…</div>
+      <div className="card p-16 text-center text-[#D4A373] text-sm">Loading…</div>
     </div>
   );
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <Link href={`/recipes/${id}`} className="flex items-center gap-2 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors">
+        <Link href={`/recipes/${id}`} className="flex items-center gap-2 text-sm text-[#D4A373] hover:text-[#F4F1ED] transition-colors">
           <ArrowLeft className="w-4 h-4" />Back to recipe
         </Link>
         <button onClick={handleSave} disabled={saving} className="btn-primary">
@@ -136,22 +136,22 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="card p-6 mb-4 space-y-4">
-        <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Details</h2>
+        <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Details</h2>
         <div>
-          <label className="block text-xs text-[#9c8876] mb-1">Recipe name *</label>
+          <label className="block text-xs text-[#D4A373] mb-1">Recipe name *</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Chicken Piccata" className="input w-full" />
         </div>
         <div>
-          <label className="block text-xs text-[#9c8876] mb-1">Description</label>
+          <label className="block text-xs text-[#D4A373] mb-1">Description</label>
           <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Optional short description" className="input w-full" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Category</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Category</label>
             <input type="text" value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Entrée, Appetizer" className="input w-full" />
           </div>
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Servings *</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Servings *</label>
             <input type="number" value={servings} onChange={e => setServings(e.target.value)} min="1" className="input w-full" />
           </div>
         </div>
@@ -159,12 +159,12 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
 
       <div className="card p-6 mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Ingredients</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Ingredients</h2>
           <button onClick={() => setIngredients(prev => [...prev, blankIngredient()])} className="flex items-center gap-1 text-xs text-brand-300 hover:text-brand-200 transition-colors">
             <Plus className="w-3.5 h-3.5" /> Add ingredient
           </button>
         </div>
-        <div className="grid grid-cols-12 gap-2 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider mb-2">
+        <div className="grid grid-cols-12 gap-2 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider mb-2">
           <span className="col-span-4">Name</span>
           <span className="col-span-2">Qty</span>
           <span className="col-span-2">Unit</span>
@@ -180,10 +180,10 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
                 {["lb","oz","kg","g","each","cup","tbsp","tsp","liter","ml","case","bunch"].map(u => <option key={u} value={u}>{u}</option>)}
               </select>
               <div className="col-span-3 relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#9c8876]">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#D4A373]">$</span>
                 <input type="number" value={ing.cost_per_unit} onChange={e => updateIngredient(ing.id, "cost_per_unit", e.target.value)} placeholder="0.00" min="0" step="0.01" className="input w-full pl-6 text-sm" />
               </div>
-              <button onClick={() => setIngredients(prev => prev.length === 1 ? prev : prev.filter(i => i.id !== ing.id))} className="col-span-1 flex justify-center text-[#6b5a4a] hover:text-red-400 transition-colors">
+              <button onClick={() => setIngredients(prev => prev.length === 1 ? prev : prev.filter(i => i.id !== ing.id))} className="col-span-1 flex justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -192,40 +192,40 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="card p-6 mb-4">
-        <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Case Pricing</h2>
+        <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-4">Case Pricing</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Case Price ($)</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Case Price ($)</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#9c8876]">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#D4A373]">$</span>
               <input type="number" value={casePrice} onChange={e => setCasePrice(e.target.value)} className="input w-full pl-6 text-sm" placeholder="0.00" step="0.01" />
             </div>
           </div>
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Units per Case</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Units per Case</label>
             <input type="number" value={unitsPerCase} onChange={e => setUnitsPerCase(e.target.value)} className="input w-full text-sm" placeholder="0" min="1" step="1" />
           </div>
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Unit Type</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Unit Type</label>
             <select value={caseUnitType} onChange={e => setCaseUnitType(e.target.value)} className="input w-full text-sm">
               <option value="">Select...</option>
               {["lb", "oz", "each", "liter", "kg", "g", "cup", "gal", "qt"].map(u => <option key={u} value={u}>{u}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-[#9c8876] mb-1">Yield %</label>
+            <label className="block text-xs text-[#D4A373] mb-1">Yield %</label>
             <input type="number" value={yieldPercent} onChange={e => setYieldPercent(e.target.value)} className="input w-full text-sm" placeholder="100" min="1" max="100" step="1" />
           </div>
         </div>
         {casePrice && unitsPerCase && (
-          <div className="mt-4 pt-4 border-t border-[#2e271f] grid grid-cols-2 gap-4">
+          <div className="mt-4 pt-4 border-t border-[#2A3A5C] grid grid-cols-2 gap-4">
             <div>
               <div className="text-lg font-semibold text-brand-300">{formatCurrency(costPerUnit)}</div>
-              <div className="text-xs text-[#9c8876]">cost per {caseUnitType || "unit"}</div>
+              <div className="text-xs text-[#D4A373]">cost per {caseUnitType || "unit"}</div>
             </div>
             <div>
               <div className="text-lg font-semibold text-brand-300">{formatCurrency(effectiveCostPerUnit)}</div>
-              <div className="text-xs text-[#9c8876]">effective cost (after yield)</div>
+              <div className="text-xs text-[#D4A373]">effective cost (after yield)</div>
             </div>
           </div>
         )}
@@ -235,15 +235,15 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-semibold text-brand-300">{formatCurrency(costPerServing)}</div>
-            <div className="text-xs text-[#9c8876] mt-0.5">cost per person</div>
+            <div className="text-xs text-[#D4A373] mt-0.5">cost per person</div>
           </div>
           <div>
             <div className="text-lg font-semibold">{formatCurrency(totalCost)}</div>
-            <div className="text-xs text-[#9c8876] mt-0.5">total cost</div>
+            <div className="text-xs text-[#D4A373] mt-0.5">total cost</div>
           </div>
           <div>
             <div className="text-lg font-semibold">{servings || 0}</div>
-            <div className="text-xs text-[#9c8876] mt-0.5">servings</div>
+            <div className="text-xs text-[#D4A373] mt-0.5">servings</div>
           </div>
         </div>
       </div>

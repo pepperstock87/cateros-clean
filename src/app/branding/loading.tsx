@@ -10,7 +10,7 @@ export default function BrandingLoading() {
       </div>
 
       {/* Form card */}
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-4 md:p-6 space-y-6">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-4 md:p-6 space-y-6">
         {/* Logo upload */}
         <div>
           <Skeleton className="h-4 w-10 mb-2" />

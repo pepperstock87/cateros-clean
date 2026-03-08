@@ -13,7 +13,7 @@ export default function ScheduleLoading() {
       </div>
 
       {/* Calendar card */}
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-4 md:p-6">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-4 md:p-6">
         {/* Month navigation */}
         <div className="flex items-center justify-between mb-6">
           <Skeleton className="h-6 w-40" />
@@ -38,7 +38,7 @@ export default function ScheduleLoading() {
           {Array.from({ length: 35 }).map((_, i) => (
             <div
               key={i}
-              className="aspect-square rounded-lg border border-[#2e271f] p-1 md:p-2"
+              className="aspect-square rounded-lg border border-[#2A3A5C] p-1 md:p-2"
             >
               <Skeleton className="h-3 w-4 mb-1" />
               {i % 5 === 0 && <Skeleton className="h-2.5 w-full rounded" />}

@@ -71,13 +71,13 @@ function getColorForType(type: ActivityType): { bg: string; text: string } {
     case "proposal_responded":
       return { bg: "bg-purple-500/15", text: "text-purple-400" };
     case "note_added":
-      return { bg: "bg-[#6b5a4a]/20", text: "text-[#9c8876]" };
+      return { bg: "bg-[#7A8BA8]/20", text: "text-[#D4A373]" };
     case "event_created":
       return { bg: "bg-green-500/15", text: "text-green-400" };
     case "event_updated":
       return { bg: "bg-blue-500/15", text: "text-blue-400" };
     default:
-      return { bg: "bg-[#6b5a4a]/20", text: "text-[#9c8876]" };
+      return { bg: "bg-[#7A8BA8]/20", text: "text-[#D4A373]" };
   }
 }
 
@@ -122,7 +122,7 @@ export function EventActivityLog({ eventId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#2e271f] border-t-[#9c8876]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#2A3A5C] border-t-[#D4A373]" />
       </div>
     );
   }
@@ -130,9 +130,9 @@ export function EventActivityLog({ eventId }: Props) {
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <Activity className="h-8 w-8 text-[#6b5a4a] mb-3" />
-        <p className="text-sm text-[#6b5a4a]">No activity yet</p>
-        <p className="text-xs text-[#6b5a4a]/60 mt-1">
+        <Activity className="h-8 w-8 text-[#7A8BA8] mb-3" />
+        <p className="text-sm text-[#7A8BA8]">No activity yet</p>
+        <p className="text-xs text-[#7A8BA8]/60 mt-1">
           Actions on this event will appear here
         </p>
       </div>
@@ -150,7 +150,7 @@ export function EventActivityLog({ eventId }: Props) {
           <div key={item.id} className="relative flex gap-3 pb-6 last:pb-0">
             {/* Connecting line */}
             {idx < activities.length - 1 && (
-              <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#2e271f]" />
+              <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#2A3A5C]" />
             )}
 
             {/* Icon */}
@@ -163,17 +163,17 @@ export function EventActivityLog({ eventId }: Props) {
             {/* Content */}
             <div className="flex-1 min-w-0 pt-0.5">
               <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-[#f5ede0] leading-snug">
+                <p className="text-sm text-[#F4F1ED] leading-snug">
                   {item.description}
                 </p>
-                <span className="text-xs text-[#6b5a4a] flex-shrink-0 whitespace-nowrap pt-0.5">
+                <span className="text-xs text-[#7A8BA8] flex-shrink-0 whitespace-nowrap pt-0.5">
                   {formatDistanceToNow(new Date(item.created_at), {
                     addSuffix: true,
                   })}
                 </span>
               </div>
               {metaString && (
-                <p className="text-xs text-[#9c8876] mt-1">{metaString}</p>
+                <p className="text-xs text-[#D4A373] mt-1">{metaString}</p>
               )}
             </div>
           </div>

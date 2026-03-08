@@ -77,7 +77,7 @@ export default async function ClientsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Clients</h1>
-          <p className="text-sm text-[#9c8876] mt-1">
+          <p className="text-sm text-[#D4A373] mt-1">
             {clients.length} {clients.length === 1 ? "client" : "clients"}
           </p>
         </div>
@@ -85,9 +85,9 @@ export default async function ClientsPage() {
 
       {clients.length === 0 ? (
         <div className="card p-16 text-center">
-          <Users className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <Users className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No clients yet</h2>
-          <p className="text-sm text-[#9c8876]">
+          <p className="text-sm text-[#D4A373]">
             Clients will appear here once you create events.
           </p>
         </div>

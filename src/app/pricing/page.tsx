@@ -56,18 +56,18 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0d0b] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[#0C1220] flex flex-col items-center justify-center p-6">
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2.5 mb-6">
           <div className="w-10 h-10 rounded-lg bg-brand-500 flex items-center justify-center">
             <ChefHat className="w-5 h-5 text-white" />
           </div>
-          <span className="font-display text-xl font-semibold text-[#f5ede0]">Cateros</span>
+          <span className="font-display text-xl font-semibold text-[#F4F1ED]">Cateros</span>
         </div>
-        <h1 className="font-display text-3xl font-semibold text-[#f5ede0] mb-3">
+        <h1 className="font-display text-3xl font-semibold text-[#F4F1ED] mb-3">
           Choose your plan
         </h1>
-        <p className="text-[#9c8876] text-sm max-w-md mx-auto">
+        <p className="text-[#D4A373] text-sm max-w-md mx-auto">
           Start with a 14-day free trial. No credit card required upfront. Cancel anytime.
         </p>
       </div>
@@ -85,16 +85,16 @@ export default function PricingPage() {
                 Most Popular
               </span>
             )}
-            <h2 className="font-display text-xl font-semibold text-[#f5ede0] mb-1">
+            <h2 className="font-display text-xl font-semibold text-[#F4F1ED] mb-1">
               {p.name}
             </h2>
             <div className="mb-5">
-              <span className="text-3xl font-semibold text-[#f5ede0]">${p.price}</span>
-              <span className="text-[#9c8876] text-sm">/mo</span>
+              <span className="text-3xl font-semibold text-[#F4F1ED]">${p.price}</span>
+              <span className="text-[#D4A373] text-sm">/mo</span>
             </div>
             <ul className="space-y-3 mb-6">
               {p.features.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-[#f5ede0]">
+                <li key={f} className="flex items-center gap-2 text-sm text-[#F4F1ED]">
                   <Check className="w-4 h-4 text-brand-400 shrink-0" />
                   {f}
                 </li>

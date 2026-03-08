@@ -14,7 +14,7 @@ interface DashboardViewToggleProps {
 
 export function DashboardViewToggle({ activeView, onChange }: DashboardViewToggleProps) {
   return (
-    <div className="flex items-center gap-1 bg-[#1a1714] border border-[#2e271f] rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-[#182030] border border-[#2A3A5C] rounded-lg p-1">
       {VIEWS.map(({ key, label }) => (
         <button
           key={key}
@@ -22,7 +22,7 @@ export function DashboardViewToggle({ activeView, onChange }: DashboardViewToggl
           className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
             activeView === key
               ? "bg-brand-600 text-white shadow-sm"
-              : "text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#2e271f]"
+              : "text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#2A3A5C]"
           }`}
         >
           {label}

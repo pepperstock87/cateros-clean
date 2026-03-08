@@ -181,7 +181,7 @@ export function EventVenueSelector({
   if (loadingLinked) {
     return (
       <div className="card p-5">
-        <div className="flex items-center gap-2 text-[#6b5a4a] text-sm">
+        <div className="flex items-center gap-2 text-[#7A8BA8] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading venue...
         </div>
@@ -195,7 +195,7 @@ export function EventVenueSelector({
       <div className="space-y-2">
         <div className="flex items-center gap-2 mb-1">
           <MapPin className="w-4 h-4 text-blue-400" />
-          <span className="text-xs font-medium text-[#9c8876] uppercase tracking-wide">
+          <span className="text-xs font-medium text-[#D4A373] uppercase tracking-wide">
             Event Venue
           </span>
         </div>
@@ -226,8 +226,8 @@ export function EventVenueSelector({
     <div className="card p-5" ref={searchRef}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-[#9c8876]" />
-          <span className="text-sm font-medium text-[#f5ede0]">Venue</span>
+          <MapPin className="w-4 h-4 text-[#D4A373]" />
+          <span className="text-sm font-medium text-[#F4F1ED]">Venue</span>
         </div>
         {!showSearch && (
           <button
@@ -242,19 +242,19 @@ export function EventVenueSelector({
 
       {/* Current venue text (legacy field) */}
       {currentVenue && !showSearch && (
-        <p className="text-xs text-[#9c8876] flex items-center gap-1.5">
+        <p className="text-xs text-[#D4A373] flex items-center gap-1.5">
           <Building2 className="w-3.5 h-3.5" />
           {currentVenue}
-          <span className="text-[10px] text-[#6b5a4a]">(text only)</span>
+          <span className="text-[10px] text-[#7A8BA8]">(text only)</span>
         </p>
       )}
 
       {/* Empty state */}
       {!currentVenue && !showSearch && (
         <div className="text-center py-4">
-          <Building2 className="w-6 h-6 text-[#2e271f] mx-auto mb-1.5" />
-          <p className="text-xs text-[#6b5a4a]">No venue linked</p>
-          <p className="text-[10px] text-[#6b5a4a] mt-0.5">
+          <Building2 className="w-6 h-6 text-[#2A3A5C] mx-auto mb-1.5" />
+          <p className="text-xs text-[#7A8BA8]">No venue linked</p>
+          <p className="text-[10px] text-[#7A8BA8] mt-0.5">
             Link a venue to see capacity, amenities, and more.
           </p>
         </div>
@@ -264,7 +264,7 @@ export function EventVenueSelector({
       {showSearch && (
         <div className="space-y-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8]" />
             <input
               type="text"
               className="input text-sm w-full pl-8 pr-8"
@@ -279,7 +279,7 @@ export function EventVenueSelector({
                 setSearchQuery("");
                 setSearchResults([]);
               }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b5a4a] hover:text-[#9c8876] transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7A8BA8] hover:text-[#D4A373] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -287,7 +287,7 @@ export function EventVenueSelector({
 
           {/* Searching indicator */}
           {searching && (
-            <div className="flex items-center gap-2 text-[#6b5a4a] text-xs py-2">
+            <div className="flex items-center gap-2 text-[#7A8BA8] text-xs py-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Searching venues...
             </div>
@@ -332,7 +332,7 @@ export function EventVenueSelector({
             !searching &&
             searchResults.length === 0 && (
               <div className="text-center py-4">
-                <p className="text-xs text-[#6b5a4a]">
+                <p className="text-xs text-[#7A8BA8]">
                   No venues found for &quot;{searchQuery.trim()}&quot;
                 </p>
               </div>

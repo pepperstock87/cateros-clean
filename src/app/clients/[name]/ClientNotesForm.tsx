@@ -37,10 +37,10 @@ export function ClientNotesForm({
         }}
         placeholder="Add notes about this client (dietary preferences, contact details, special requests...)"
         rows={4}
-        className="w-full bg-[#0f0d0b] border border-[#2e271f] rounded-lg px-3 py-2.5 text-sm text-[#f5ede0] placeholder-[#6b5a4a] focus:outline-none focus:ring-1 focus:ring-[#9c8876] focus:border-[#9c8876] resize-y"
+        className="w-full bg-[#0C1220] border border-[#2A3A5C] rounded-lg px-3 py-2.5 text-sm text-[#F4F1ED] placeholder-[#7A8BA8] focus:outline-none focus:ring-1 focus:ring-[#D4A373] focus:border-[#D4A373] resize-y"
       />
       <div className="flex items-center justify-between mt-3">
-        <div className="text-xs text-[#6b5a4a]">
+        <div className="text-xs text-[#7A8BA8]">
           {saved && <span className="text-emerald-400">Notes saved</span>}
         </div>
         <button

@@ -47,10 +47,10 @@ export default async function PublicProposalPage({ params }: Props) {
   const totalAmount = pricing?.suggestedPrice ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#0f0d0b]">
+    <div className="min-h-screen bg-[#0C1220]">
       <ViewTracker shareToken={token} />
       {/* Header */}
-      <div className="border-b border-[#2e271f]">
+      <div className="border-b border-[#2A3A5C]">
         <div className="max-w-3xl mx-auto px-6 py-8">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -59,12 +59,12 @@ export default async function PublicProposalPage({ params }: Props) {
               )}
               <h1 className="font-display text-xl font-semibold">{companyName}</h1>
               {(settings?.phone || settings?.email) && (
-                <p className="text-xs text-[#9c8876] mt-1">
+                <p className="text-xs text-[#D4A373] mt-1">
                   {[settings?.phone, settings?.email].filter(Boolean).join(" · ")}
                 </p>
               )}
             </div>
-            <div className="text-right text-xs text-[#9c8876]">
+            <div className="text-right text-xs text-[#D4A373]">
               <div className="uppercase tracking-wider font-medium text-brand-400 mb-1">Catering Proposal</div>
               <div>Prepared {format(new Date(proposal.created_at), "MMMM d, yyyy")}</div>
               <div>Valid for 30 days</div>
@@ -78,27 +78,27 @@ export default async function PublicProposalPage({ params }: Props) {
         {event && (
           <div>
             <h2 className="font-display text-2xl font-semibold mb-1">{event.name}</h2>
-            <p className="text-sm text-[#9c8876] mb-4">Prepared for {event.client_name}</p>
+            <p className="text-sm text-[#D4A373] mb-4">Prepared for {event.client_name}</p>
             <div className="grid grid-cols-3 gap-4">
               <div className="card p-4">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
-                  <span className="text-xs text-[#9c8876]">Date</span>
+                  <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
+                  <span className="text-xs text-[#D4A373]">Date</span>
                 </div>
                 <div className="text-sm font-medium">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</div>
               </div>
               <div className="card p-4">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-                  <span className="text-xs text-[#9c8876]">Guests</span>
+                  <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+                  <span className="text-xs text-[#D4A373]">Guests</span>
                 </div>
                 <div className="text-sm font-medium">{event.guest_count}</div>
               </div>
               {event.venue && (
                 <div className="card p-4">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="text-xs text-[#9c8876]">Venue</span>
+                    <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-xs text-[#D4A373]">Venue</span>
                   </div>
                   <div className="text-sm font-medium truncate">{event.venue}</div>
                 </div>
@@ -110,7 +110,7 @@ export default async function PublicProposalPage({ params }: Props) {
         {/* Custom message */}
         {proposal.custom_message && (
           <div className="card p-6">
-            <p className="text-sm italic text-[#9c8876] leading-relaxed">{proposal.custom_message}</p>
+            <p className="text-sm italic text-[#D4A373] leading-relaxed">{proposal.custom_message}</p>
           </div>
         )}
 
@@ -121,19 +121,19 @@ export default async function PublicProposalPage({ params }: Props) {
             <div className="card overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#2e271f]">
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Item</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Qty</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Per Person</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Subtotal</th>
+                  <tr className="border-b border-[#2A3A5C]">
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Item</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Qty</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Per Person</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pricing.menuItems.map((item) => (
-                    <tr key={item.id} className="border-b border-[#1c1814]">
+                    <tr key={item.id} className="border-b border-[#1A2538]">
                       <td className="px-5 py-3 text-sm">{item.name}</td>
-                      <td className="px-5 py-3 text-sm text-right text-[#9c8876]">{item.quantity}</td>
-                      <td className="px-5 py-3 text-sm text-right text-[#9c8876]">{formatCurrency(item.costPerPerson)}</td>
+                      <td className="px-5 py-3 text-sm text-right text-[#D4A373]">{item.quantity}</td>
+                      <td className="px-5 py-3 text-sm text-right text-[#D4A373]">{formatCurrency(item.costPerPerson)}</td>
                       <td className="px-5 py-3 text-sm text-right">{formatCurrency(item.costPerPerson * item.quantity)}</td>
                     </tr>
                   ))}
@@ -150,19 +150,19 @@ export default async function PublicProposalPage({ params }: Props) {
             <div className="card overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#2e271f]">
-                    <th className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Role</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Staff</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Hours</th>
-                    <th className="text-right text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3">Total</th>
+                  <tr className="border-b border-[#2A3A5C]">
+                    <th className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Role</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Staff</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Hours</th>
+                    <th className="text-right text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pricing.staffing.map((s) => (
-                    <tr key={s.id} className="border-b border-[#1c1814]">
+                    <tr key={s.id} className="border-b border-[#1A2538]">
                       <td className="px-5 py-3 text-sm">{s.role}</td>
-                      <td className="px-5 py-3 text-sm text-right text-[#9c8876]">{s.headcount}</td>
-                      <td className="px-5 py-3 text-sm text-right text-[#9c8876]">{s.hours}</td>
+                      <td className="px-5 py-3 text-sm text-right text-[#D4A373]">{s.headcount}</td>
+                      <td className="px-5 py-3 text-sm text-right text-[#D4A373]">{s.hours}</td>
                       <td className="px-5 py-3 text-sm text-right">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</td>
                     </tr>
                   ))}
@@ -184,27 +184,27 @@ export default async function PublicProposalPage({ params }: Props) {
                 ...(pricing.barTotal > 0 ? [{ label: `Bar (${pricing.barPackage?.label || "Bar"})`, value: pricing.barTotal }] : []),
               ].map((row) => (
                 <div key={row.label} className="flex justify-between text-sm">
-                  <span className="text-[#9c8876]">{row.label}</span>
+                  <span className="text-[#D4A373]">{row.label}</span>
                   <span>{formatCurrency(row.value)}</span>
                 </div>
               ))}
-              <div className="border-t border-[#2e271f] pt-2.5 flex justify-between text-sm">
-                <span className="text-[#9c8876]">Subtotal</span>
+              <div className="border-t border-[#2A3A5C] pt-2.5 flex justify-between text-sm">
+                <span className="text-[#D4A373]">Subtotal</span>
                 <span>{formatCurrency(pricing.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Service Fee ({pricing.adminPercent}%)</span>
+                <span className="text-[#D4A373]">Service Fee ({pricing.adminPercent}%)</span>
                 <span>{formatCurrency(pricing.adminFee)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#9c8876]">Tax ({pricing.taxPercent}%)</span>
+                <span className="text-[#D4A373]">Tax ({pricing.taxPercent}%)</span>
                 <span>{formatCurrency(pricing.taxAmount)}</span>
               </div>
-              <div className="border-t border-[#2e271f] pt-3 flex justify-between items-baseline">
+              <div className="border-t border-[#2A3A5C] pt-3 flex justify-between items-baseline">
                 <span className="font-semibold text-brand-300">Total Investment</span>
                 <span className="text-2xl font-semibold text-brand-300">{formatCurrency(pricing.suggestedPrice)}</span>
               </div>
-              <div className="text-xs text-[#9c8876] text-right">
+              <div className="text-xs text-[#D4A373] text-right">
                 {formatCurrency(pricing.suggestedPrice / pricing.guestCount)} per guest
               </div>
             </div>
@@ -216,14 +216,14 @@ export default async function PublicProposalPage({ params }: Props) {
           <div>
             <h3 className="text-xs font-medium text-brand-400 uppercase tracking-wider mb-3">Terms & Conditions</h3>
             <div className="card p-5">
-              <p className="text-sm text-[#9c8876] leading-relaxed whitespace-pre-wrap">{proposal.terms}</p>
+              <p className="text-sm text-[#D4A373] leading-relaxed whitespace-pre-wrap">{proposal.terms}</p>
             </div>
           </div>
         )}
 
         {/* Booking progress */}
         <div className="card p-5">
-          <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-4">Booking Progress</h3>
+          <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-4">Booking Progress</h3>
           <BookingProgress
             status={proposal.status}
             requireContract={bookingConfig?.require_contract ?? false}
@@ -244,7 +244,7 @@ export default async function PublicProposalPage({ params }: Props) {
         />
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#6b5a4a] pt-4 pb-8">
+        <div className="text-center text-xs text-[#7A8BA8] pt-4 pb-8">
           Powered by Cateros
         </div>
       </div>

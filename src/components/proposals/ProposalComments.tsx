@@ -102,7 +102,7 @@ export function ProposalComments({
 
   const inputClass = isClient
     ? "w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-    : "w-full bg-[#0f0d0b] border border-[#2e271f] rounded-lg px-3 py-2 text-sm text-[#f5ede0] placeholder:text-[#6b5a4a] focus:outline-none focus:ring-2 focus:ring-brand-500/40";
+    : "w-full bg-[#0C1220] border border-[#2A3A5C] rounded-lg px-3 py-2 text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:ring-2 focus:ring-brand-500/40";
 
   const buttonClass = isClient
     ? "bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
@@ -112,10 +112,10 @@ export function ProposalComments({
     <div className={cardClass}>
       <div className={isClient ? "p-5" : "p-5"}>
         <h3 className={`font-medium text-sm mb-4 flex items-center gap-2 ${isClient ? "text-gray-900" : ""}`}>
-          <MessageCircle className={`w-4 h-4 ${isClient ? "text-gray-400" : "text-[#9c8876]"}`} />
+          <MessageCircle className={`w-4 h-4 ${isClient ? "text-gray-400" : "text-[#D4A373]"}`} />
           Comments
           {comments.length > 0 && (
-            <span className={`text-xs ${isClient ? "text-gray-400" : "text-[#9c8876]"}`}>
+            <span className={`text-xs ${isClient ? "text-gray-400" : "text-[#D4A373]"}`}>
               ({comments.length})
             </span>
           )}
@@ -124,11 +124,11 @@ export function ProposalComments({
         {/* Comments list */}
         <div className="space-y-3 max-h-80 overflow-y-auto mb-4">
           {loading ? (
-            <div className={`flex items-center justify-center py-6 ${isClient ? "text-gray-400" : "text-[#9c8876]"}`}>
+            <div className={`flex items-center justify-center py-6 ${isClient ? "text-gray-400" : "text-[#D4A373]"}`}>
               <Loader2 className="w-4 h-4 animate-spin" />
             </div>
           ) : comments.length === 0 ? (
-            <p className={`text-sm text-center py-6 ${isClient ? "text-gray-400" : "text-[#6b5a4a]"}`}>
+            <p className={`text-sm text-center py-6 ${isClient ? "text-gray-400" : "text-[#7A8BA8]"}`}>
               No comments yet. Start the conversation below.
             </p>
           ) : (
@@ -139,7 +139,7 @@ export function ProposalComments({
                   ? "bg-amber-50 border border-amber-200/60 rounded-lg p-3"
                   : "bg-gray-50 border border-gray-200 rounded-lg p-3"
                 : isCaterer
-                ? "bg-[#1a1714] border border-[#2e271f] rounded-lg p-3"
+                ? "bg-[#182030] border border-[#2A3A5C] rounded-lg p-3"
                 : "bg-brand-950/50 border border-brand-800/30 rounded-lg p-3";
 
               return (
@@ -152,17 +152,17 @@ export function ProposalComments({
                             ? "text-amber-600"
                             : "text-gray-500"
                           : isCaterer
-                          ? "text-[#9c8876]"
+                          ? "text-[#D4A373]"
                           : "text-brand-400"
                       }`}
                     >
                       {comment.author_name}
                     </span>
-                    <span className={`text-[10px] ${isClient ? "text-gray-400" : "text-[#6b5a4a]"}`}>
+                    <span className={`text-[10px] ${isClient ? "text-gray-400" : "text-[#7A8BA8]"}`}>
                       {format(new Date(comment.created_at), "MMM d 'at' h:mm a")}
                     </span>
                   </div>
-                  <p className={`text-sm ${isClient ? "text-gray-700" : "text-[#f5ede0]"}`}>
+                  <p className={`text-sm ${isClient ? "text-gray-700" : "text-[#F4F1ED]"}`}>
                     {comment.message}
                   </p>
                 </div>

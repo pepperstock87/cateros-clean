@@ -37,7 +37,7 @@ export function DeleteTemplateButton({
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs px-2.5 py-1.5 rounded-lg text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#1c1814] transition-colors"
+          className="text-xs px-2.5 py-1.5 rounded-lg text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-colors"
         >
           Cancel
         </button>
@@ -48,7 +48,7 @@ export function DeleteTemplateButton({
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="p-1.5 rounded-lg text-[#6b5a4a] hover:text-red-400 hover:bg-red-900/20 transition-colors"
+      className="p-1.5 rounded-lg text-[#7A8BA8] hover:text-red-400 hover:bg-red-900/20 transition-colors"
       title={`Delete "${templateName}"`}
     >
       <Trash2 className="w-4 h-4" />

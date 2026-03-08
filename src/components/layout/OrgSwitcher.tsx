@@ -46,7 +46,7 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
         disabled={switching}
         className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
           hasMultiple
-            ? "hover:bg-[#1c1814] cursor-pointer"
+            ? "hover:bg-[#1A2538] cursor-pointer"
             : "cursor-default"
         }`}
       >
@@ -57,11 +57,11 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
             <Building2 className="w-3 h-3 text-brand-400" />
           )}
         </div>
-        <span className="text-xs font-medium text-[#f5ede0] truncate flex-1">
+        <span className="text-xs font-medium text-[#F4F1ED] truncate flex-1">
           {currentOrg.name}
         </span>
         {hasMultiple && (
-          <ChevronDown className={`w-3 h-3 text-[#6b5a4a] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-3 h-3 text-[#7A8BA8] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
         )}
       </button>
 
@@ -69,7 +69,7 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
       {open && hasMultiple && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-lg border border-[#2e271f] bg-[#1a1714] shadow-xl overflow-hidden">
+          <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-lg border border-[#2A3A5C] bg-[#182030] shadow-xl overflow-hidden">
             {allOrgs.map((org) => (
               <button
                 key={org.id}
@@ -77,7 +77,7 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
                 className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
                   org.id === currentOrg.id
                     ? "bg-brand-950/50 text-brand-300"
-                    : "text-[#9c8876] hover:text-[#f5ede0] hover:bg-[#1c1814]"
+                    : "text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538]"
                 }`}
               >
                 <Building2 className="w-3 h-3 flex-shrink-0" />

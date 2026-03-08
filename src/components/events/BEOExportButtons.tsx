@@ -45,7 +45,7 @@ export function BEOExportButtons({ event, staffAssignments, pricingData, recipes
       <button
         onClick={handleDownloadBEO}
         disabled={loadingBEO}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1a1714] text-[#f5ede0] text-sm font-medium hover:bg-[#2e271f] transition-colors border border-[#2e271f] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#182030] text-[#F4F1ED] text-sm font-medium hover:bg-[#2A3A5C] transition-colors border border-[#2A3A5C] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <FileDown className="w-4 h-4" />
         {loadingBEO ? "Generating..." : "Download Production Sheet"}
@@ -53,7 +53,7 @@ export function BEOExportButtons({ event, staffAssignments, pricingData, recipes
       <button
         onClick={handleDownloadPrep}
         disabled={loadingPrep}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1a1714] text-[#f5ede0] text-sm font-medium hover:bg-[#2e271f] transition-colors border border-[#2e271f] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#182030] text-[#F4F1ED] text-sm font-medium hover:bg-[#2A3A5C] transition-colors border border-[#2A3A5C] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <FileDown className="w-4 h-4" />
         {loadingPrep ? "Generating..." : "Download Kitchen Prep"}

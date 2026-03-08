@@ -45,18 +45,18 @@ export function EventLifecycle({ status }: { status: string }) {
                     ? "bg-brand-500 border-brand-500"
                     : isCurrent
                     ? "border-brand-400 bg-brand-950"
-                    : "border-[#2e271f] bg-[#1a1714]"
+                    : "border-[#2A3A5C] bg-[#182030]"
                 }`}
               >
                 {isComplete ? (
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 ) : (
-                  <Icon className={`w-4 h-4 ${isCurrent ? "text-brand-400" : "text-[#6b5a4a]"}`} />
+                  <Icon className={`w-4 h-4 ${isCurrent ? "text-brand-400" : "text-[#7A8BA8]"}`} />
                 )}
               </div>
               <span
                 className={`text-[10px] font-medium whitespace-nowrap ${
-                  isComplete || isCurrent ? "text-brand-300" : "text-[#6b5a4a]"
+                  isComplete || isCurrent ? "text-brand-300" : "text-[#7A8BA8]"
                 }`}
               >
                 {step.label}
@@ -65,7 +65,7 @@ export function EventLifecycle({ status }: { status: string }) {
             {i < STEPS.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-2 mt-[-18px] rounded-full transition-colors ${
-                  i < currentIdx ? "bg-brand-500" : "bg-[#2e271f]"
+                  i < currentIdx ? "bg-brand-500" : "bg-[#2A3A5C]"
                 }`}
               />
             )}

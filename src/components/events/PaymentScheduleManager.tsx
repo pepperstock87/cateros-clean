@@ -518,7 +518,7 @@ export function PaymentScheduleManager({
   if (loading) {
     return (
       <div className="card p-5">
-        <div className="flex items-center justify-center gap-2 py-8 text-[#9c8876]">
+        <div className="flex items-center justify-center gap-2 py-8 text-[#D4A373]">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">Loading payment schedule...</span>
         </div>
@@ -534,8 +534,8 @@ export function PaymentScheduleManager({
     <div className="card p-5 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-sm flex items-center gap-2 text-[#f5ede0]">
-          <CreditCard className="w-4 h-4 text-[#9c8876]" />
+        <h2 className="font-medium text-sm flex items-center gap-2 text-[#F4F1ED]">
+          <CreditCard className="w-4 h-4 text-[#D4A373]" />
           Payment Schedule
         </h2>
         {dirty && (
@@ -561,11 +561,11 @@ export function PaymentScheduleManager({
       <div>
         {/* Progress bar */}
         <div className="mb-3">
-          <div className="flex items-center justify-between text-xs text-[#9c8876] mb-1.5">
+          <div className="flex items-center justify-between text-xs text-[#D4A373] mb-1.5">
             <span>Payment Progress</span>
             <span>{Math.round(progressPercent)}%</span>
           </div>
-          <div className="w-full h-2 bg-[#1a1714] rounded-full overflow-hidden border border-[#2e271f]">
+          <div className="w-full h-2 bg-[#182030] rounded-full overflow-hidden border border-[#2A3A5C]">
             <div
               className="h-full rounded-full transition-all duration-500 bg-green-500"
               style={{ width: `${progressPercent}%` }}
@@ -575,20 +575,20 @@ export function PaymentScheduleManager({
 
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-[#1a1714] rounded-lg p-3 text-center border border-[#2e271f]">
-            <div className="text-xs text-[#9c8876] mb-1">Total Due</div>
-            <div className="text-sm font-semibold text-[#f5ede0]">
+          <div className="bg-[#182030] rounded-lg p-3 text-center border border-[#2A3A5C]">
+            <div className="text-xs text-[#D4A373] mb-1">Total Due</div>
+            <div className="text-sm font-semibold text-[#F4F1ED]">
               {formatCurrency(totalPrice)}
             </div>
           </div>
-          <div className="bg-[#1a1714] rounded-lg p-3 text-center border border-[#2e271f]">
-            <div className="text-xs text-[#9c8876] mb-1">Total Paid</div>
+          <div className="bg-[#182030] rounded-lg p-3 text-center border border-[#2A3A5C]">
+            <div className="text-xs text-[#D4A373] mb-1">Total Paid</div>
             <div className="text-sm font-semibold text-green-400">
               {formatCurrency(totalPaid)}
             </div>
           </div>
-          <div className="bg-[#1a1714] rounded-lg p-3 text-center border border-[#2e271f]">
-            <div className="text-xs text-[#9c8876] mb-1">Balance</div>
+          <div className="bg-[#182030] rounded-lg p-3 text-center border border-[#2A3A5C]">
+            <div className="text-xs text-[#D4A373] mb-1">Balance</div>
             <div
               className={`text-sm font-semibold ${
                 balanceRemaining > 0 ? "text-yellow-400" : "text-green-400"
@@ -607,11 +607,11 @@ export function PaymentScheduleManager({
               <div className="text-xs text-orange-400 font-medium">
                 Next Payment Due
               </div>
-              <div className="text-sm text-[#f5ede0] truncate">
+              <div className="text-sm text-[#F4F1ED] truncate">
                 {nextDue.installment_name} &mdash;{" "}
                 {formatCurrency(nextDue.amount)}
                 {nextDue.due_date && (
-                  <span className="text-[#9c8876]">
+                  <span className="text-[#D4A373]">
                     {" "}
                     &middot; {nextDue.due_date}
                   </span>
@@ -628,7 +628,7 @@ export function PaymentScheduleManager({
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">
+          <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">
             Installments
           </div>
           {totalScheduled !== totalPrice && installments.length > 0 && (
@@ -641,28 +641,28 @@ export function PaymentScheduleManager({
 
         {/* Empty state with quick setup */}
         {installments.length === 0 && (
-          <div className="p-6 rounded-lg border border-dashed border-[#2e271f] text-center">
-            <DollarSign className="w-8 h-8 text-[#6b5a4a] mx-auto mb-2" />
-            <div className="text-sm text-[#9c8876] mb-4">
+          <div className="p-6 rounded-lg border border-dashed border-[#2A3A5C] text-center">
+            <DollarSign className="w-8 h-8 text-[#7A8BA8] mx-auto mb-2" />
+            <div className="text-sm text-[#D4A373] mb-4">
               No payment schedule set up yet
             </div>
-            <div className="text-xs text-[#6b5a4a] mb-3">Quick Setup</div>
+            <div className="text-xs text-[#7A8BA8] mb-3">Quick Setup</div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 onClick={() => applyPreset("50_50")}
-                className="text-xs px-3 py-1.5 rounded-md bg-[#1a1714] border border-[#2e271f] text-[#f5ede0] hover:border-brand-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-md bg-[#182030] border border-[#2A3A5C] text-[#F4F1ED] hover:border-brand-600 transition-colors"
               >
                 50/50 Split
               </button>
               <button
                 onClick={() => applyPreset("deposit_balance")}
-                className="text-xs px-3 py-1.5 rounded-md bg-[#1a1714] border border-[#2e271f] text-[#f5ede0] hover:border-brand-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-md bg-[#182030] border border-[#2A3A5C] text-[#F4F1ED] hover:border-brand-600 transition-colors"
               >
                 Deposit + Balance
               </button>
               <button
                 onClick={() => applyPreset("3_installments")}
-                className="text-xs px-3 py-1.5 rounded-md bg-[#1a1714] border border-[#2e271f] text-[#f5ede0] hover:border-brand-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-md bg-[#182030] border border-[#2A3A5C] text-[#F4F1ED] hover:border-brand-600 transition-colors"
               >
                 3 Installments
               </button>
@@ -675,24 +675,24 @@ export function PaymentScheduleManager({
           <div className="space-y-2">
             {/* Quick setup row (when schedule exists) */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[10px] text-[#6b5a4a] uppercase tracking-wider">
+              <span className="text-[10px] text-[#7A8BA8] uppercase tracking-wider">
                 Quick Setup:
               </span>
               <button
                 onClick={() => applyPreset("50_50")}
-                className="text-[10px] px-2 py-1 rounded bg-[#1c1814] border border-[#2e271f] text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+                className="text-[10px] px-2 py-1 rounded bg-[#1A2538] border border-[#2A3A5C] text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
               >
                 50/50
               </button>
               <button
                 onClick={() => applyPreset("deposit_balance")}
-                className="text-[10px] px-2 py-1 rounded bg-[#1c1814] border border-[#2e271f] text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+                className="text-[10px] px-2 py-1 rounded bg-[#1A2538] border border-[#2A3A5C] text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
               >
                 Deposit + Balance
               </button>
               <button
                 onClick={() => applyPreset("3_installments")}
-                className="text-[10px] px-2 py-1 rounded bg-[#1c1814] border border-[#2e271f] text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+                className="text-[10px] px-2 py-1 rounded bg-[#1A2538] border border-[#2A3A5C] text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
               >
                 3 Installments
               </button>
@@ -701,7 +701,7 @@ export function PaymentScheduleManager({
             {installments.map((item) => (
               <div
                 key={item.localId}
-                className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1714] border border-[#2e271f] group"
+                className="flex items-center gap-3 p-3 rounded-lg bg-[#182030] border border-[#2A3A5C] group"
               >
                 {/* Status badge */}
                 <span
@@ -728,7 +728,7 @@ export function PaymentScheduleManager({
                     placeholder="Installment name"
                   />
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">
                       $
                     </span>
                     <input
@@ -747,7 +747,7 @@ export function PaymentScheduleManager({
                     />
                   </div>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] w-3.5 h-3.5 pointer-events-none" />
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] w-3.5 h-3.5 pointer-events-none" />
                     <input
                       type="date"
                       className="input text-sm pl-8"
@@ -769,7 +769,7 @@ export function PaymentScheduleManager({
                     <>
                       <button
                         onClick={() => openRecordForm(item.dbId)}
-                        className="p-1.5 rounded text-[#6b5a4a] hover:text-green-400 hover:bg-green-500/10 transition-colors"
+                        className="p-1.5 rounded text-[#7A8BA8] hover:text-green-400 hover:bg-green-500/10 transition-colors"
                         title="Record payment"
                       >
                         <DollarSign className="w-3.5 h-3.5" />
@@ -777,7 +777,7 @@ export function PaymentScheduleManager({
                       <button
                         onClick={() => generateStripeLink(item)}
                         disabled={generatingLink === item.localId}
-                        className="p-1.5 rounded text-[#6b5a4a] hover:text-brand-400 hover:bg-brand-500/10 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded text-[#7A8BA8] hover:text-brand-400 hover:bg-brand-500/10 transition-colors disabled:opacity-50"
                         title="Send payment link"
                       >
                         {generatingLink === item.localId ? (
@@ -793,7 +793,7 @@ export function PaymentScheduleManager({
                   )}
                   <button
                     onClick={() => removeInstallment(item.localId)}
-                    className="p-1.5 rounded text-[#6b5a4a] hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1.5 rounded text-[#7A8BA8] hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                     title="Remove installment"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -819,8 +819,8 @@ export function PaymentScheduleManager({
       {/* ------------------------------------------------------------------ */}
 
       {showRecordForm ? (
-        <div className="rounded-lg border border-[#2e271f] bg-[#1c1814] p-4">
-          <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">
+        <div className="rounded-lg border border-[#2A3A5C] bg-[#1A2538] p-4">
+          <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3">
             Record Payment
           </div>
           <form
@@ -835,7 +835,7 @@ export function PaymentScheduleManager({
               <div>
                 <label className="label">Amount *</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">
                     $
                   </span>
                   <input
@@ -893,7 +893,7 @@ export function PaymentScheduleManager({
                   setShowRecordForm(false);
                   setRecordingForId(null);
                 }}
-                className="text-sm py-1.5 px-3 rounded-md border border-[#2e271f] text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+                className="text-sm py-1.5 px-3 rounded-md border border-[#2A3A5C] text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
               >
                 Cancel
               </button>
@@ -916,7 +916,7 @@ export function PaymentScheduleManager({
 
       {payments.length > 0 && (
         <div>
-          <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">
+          <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">
             Payment History
           </div>
           <div className="space-y-2">
@@ -928,15 +928,15 @@ export function PaymentScheduleManager({
               return (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]"
+                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <DollarSign className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-[#f5ede0]">
+                      <div className="text-sm font-medium text-[#F4F1ED]">
                         {formatCurrency(p.amount)}
                       </div>
-                      <div className="text-[10px] text-[#6b5a4a] truncate">
+                      <div className="text-[10px] text-[#7A8BA8] truncate">
                         {p.payment_method_type || "unknown"}
                         {p.paid_at &&
                           ` \u00b7 ${new Date(p.paid_at).toLocaleDateString()}`}

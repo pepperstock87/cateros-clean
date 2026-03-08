@@ -17,7 +17,7 @@ export default function BillingLoading() {
         {Array.from({ length: 2 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-7"
+            className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-7"
           >
             <Skeleton className="h-5 w-16 mb-4" />
             <Skeleton className="h-8 w-28 mb-2" />

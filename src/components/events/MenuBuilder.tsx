@@ -118,26 +118,26 @@ export function MenuBuilder({
     <div className="space-y-6">
       {/* Header info */}
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-[#9c8876]">
+        <div className="flex items-center gap-2 text-sm text-[#D4A373]">
           <Users className="w-4 h-4" />
           <span>{guestCount} guests</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#9c8876]">
+        <div className="flex items-center gap-2 text-sm text-[#D4A373]">
           <ChefHat className="w-4 h-4" />
           <span className="capitalize">{eventType || "Event"}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#9c8876]">
+        <div className="flex items-center gap-2 text-sm text-[#D4A373]">
           <ShoppingCart className="w-4 h-4" />
           <span>{selected.size} items selected</span>
         </div>
 
         {/* Category filter */}
         <div className="ml-auto flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#6b5a4a]" />
+          <Filter className="w-4 h-4 text-[#7A8BA8]" />
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-[#1a1714] border border-[#2e271f] rounded-lg px-3 py-1.5 text-sm text-[#f5ede0] focus:outline-none focus:border-brand-600"
+            className="bg-[#182030] border border-[#2A3A5C] rounded-lg px-3 py-1.5 text-sm text-[#F4F1ED] focus:outline-none focus:border-brand-600"
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
@@ -156,7 +156,7 @@ export function MenuBuilder({
       <div className="space-y-6">
         {groupedRecipes.map(([category, items]) => (
           <div key={category}>
-            <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3">
               {category}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -172,11 +172,11 @@ export function MenuBuilder({
                     className={`text-left p-4 rounded-xl border transition-all duration-150 ${
                       isSelected
                         ? "bg-brand-950 border-brand-800/60"
-                        : "bg-[#1a1714] border-[#2e271f] hover:border-[#3a3228]"
+                        : "bg-[#182030] border-[#2A3A5C] hover:border-[#3a3228]"
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <span className="font-medium text-sm text-[#f5ede0] leading-tight">
+                      <span className="font-medium text-sm text-[#F4F1ED] leading-tight">
                         {recipe.name}
                       </span>
                       <div
@@ -192,16 +192,16 @@ export function MenuBuilder({
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#6b5a4a]">Cost/serving</span>
-                        <span className="text-[#9c8876]">{formatCurrency(recipe.cost_per_serving)}</span>
+                        <span className="text-[#7A8BA8]">Cost/serving</span>
+                        <span className="text-[#D4A373]">{formatCurrency(recipe.cost_per_serving)}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#6b5a4a]">Total ({guestCount} guests)</span>
-                        <span className="text-[#f5ede0]">{formatCurrency(totalCostForGuests)}</span>
+                        <span className="text-[#7A8BA8]">Total ({guestCount} guests)</span>
+                        <span className="text-[#F4F1ED]">{formatCurrency(totalCostForGuests)}</span>
                       </div>
                       {recipe.selling_price > 0 && (
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-[#6b5a4a]">Margin</span>
+                          <span className="text-[#7A8BA8]">Margin</span>
                           <span className={`font-semibold ${marginColor(margin)}`}>
                             {margin.toFixed(0)}%
                           </span>
@@ -218,37 +218,37 @@ export function MenuBuilder({
         {groupedRecipes.length === 0 && (
           <div className="card p-12 text-center">
             <ChefHat className="w-8 h-8 text-[#3a3228] mx-auto mb-3" />
-            <p className="text-sm text-[#6b5a4a]">No recipes match the current filter</p>
+            <p className="text-sm text-[#7A8BA8]">No recipes match the current filter</p>
           </div>
         )}
       </div>
 
       {/* Running Total Footer */}
-      <div className="card p-5 sticky bottom-4 border-brand-800/30 bg-[#1a1714]/95 backdrop-blur-sm">
+      <div className="card p-5 sticky bottom-4 border-brand-800/30 bg-[#182030]/95 backdrop-blur-sm">
         <div className="flex items-center gap-2 mb-3">
           <DollarSign className="w-4 h-4 text-brand-400" />
           <h3 className="font-medium text-sm">Menu Summary</h3>
-          <span className="text-xs text-[#9c8876]">({selected.size} items)</span>
+          <span className="text-xs text-[#D4A373]">({selected.size} items)</span>
         </div>
 
         {selected.size === 0 ? (
-          <p className="text-sm text-[#6b5a4a]">Select recipes to build your menu</p>
+          <p className="text-sm text-[#7A8BA8]">Select recipes to build your menu</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div className="text-xs text-[#6b5a4a] mb-1">Total Food Cost</div>
-              <div className="text-lg font-semibold text-[#f5ede0]">{formatCurrency(totalFoodCost)}</div>
+              <div className="text-xs text-[#7A8BA8] mb-1">Total Food Cost</div>
+              <div className="text-lg font-semibold text-[#F4F1ED]">{formatCurrency(totalFoodCost)}</div>
             </div>
             <div>
-              <div className="text-xs text-[#6b5a4a] mb-1">Cost Per Guest</div>
-              <div className="text-lg font-semibold text-[#9c8876]">{formatCurrency(totalPerGuest)}</div>
+              <div className="text-xs text-[#7A8BA8] mb-1">Cost Per Guest</div>
+              <div className="text-lg font-semibold text-[#D4A373]">{formatCurrency(totalPerGuest)}</div>
             </div>
             <div>
-              <div className="text-xs text-[#6b5a4a] mb-1">Suggested Price</div>
+              <div className="text-xs text-[#7A8BA8] mb-1">Suggested Price</div>
               <div className="text-lg font-semibold text-brand-300">{formatCurrency(suggestedPrice)}</div>
             </div>
             <div>
-              <div className="text-xs text-[#6b5a4a] mb-1">Overall Margin</div>
+              <div className="text-xs text-[#7A8BA8] mb-1">Overall Margin</div>
               <div className={`text-lg font-semibold ${marginColor(overallMargin)}`}>
                 {overallMargin.toFixed(1)}%
               </div>

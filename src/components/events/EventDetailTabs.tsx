@@ -57,7 +57,7 @@ export function EventDetailTabs({ children }: Props) {
       {/* Tab bar */}
       <div
         ref={tabBarRef}
-        className="sticky top-0 z-20 bg-[#110f0c] border-b border-[#2e271f] -mx-4 px-4 md:-mx-8 md:px-8 overflow-x-auto scrollbar-hide"
+        className="sticky top-0 z-20 bg-[#111B2E] border-b border-[#2A3A5C] -mx-4 px-4 md:-mx-8 md:px-8 overflow-x-auto scrollbar-hide"
       >
         <nav className="flex gap-0 min-w-max" role="tablist">
           {tabs.map((tab) => {
@@ -73,7 +73,7 @@ export function EventDetailTabs({ children }: Props) {
                   ${
                     isActive
                       ? "text-brand-400"
-                      : "text-[#9c8876] hover:text-[#f5ede0]"
+                      : "text-[#D4A373] hover:text-[#F4F1ED]"
                   }
                 `}
               >

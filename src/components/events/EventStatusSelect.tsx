@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const STATUSES = ["draft", "proposed", "confirmed", "completed", "canceled"] as const;
 const STATUS_COLORS: Record<string, string> = {
-  draft: "text-[#9c8876]", proposed: "text-blue-400",
+  draft: "text-[#D4A373]", proposed: "text-blue-400",
   confirmed: "text-green-400", completed: "text-brand-400", canceled: "text-red-400",
 };
 const STATUS_LABELS: Record<string, string> = {
@@ -41,8 +41,8 @@ export function EventStatusSelect({ eventId, currentStatus }: { eventId: string;
 
   return (
     <select defaultValue={currentStatus} onChange={handleChange}
-      className={`bg-[#1c1814] border border-[#2e271f] rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:border-brand-500 transition-colors ${STATUS_COLORS[currentStatus] ?? ""}`}>
-      {STATUSES.map(s => <option key={s} value={s} className="text-[#f5ede0]">{STATUS_LABELS[s] ?? s}</option>)}
+      className={`bg-[#1A2538] border border-[#2A3A5C] rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:border-brand-500 transition-colors ${STATUS_COLORS[currentStatus] ?? ""}`}>
+      {STATUSES.map(s => <option key={s} value={s} className="text-[#F4F1ED]">{STATUS_LABELS[s] ?? s}</option>)}
     </select>
   );
 }

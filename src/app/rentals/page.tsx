@@ -22,15 +22,15 @@ export default async function RentalsPage() {
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Rentals & Equipment</h1>
-          <p className="text-sm text-[#9c8876] mt-1">{items.length} item{items.length !== 1 ? "s" : ""} in your library</p>
+          <p className="text-sm text-[#D4A373] mt-1">{items.length} item{items.length !== 1 ? "s" : ""} in your library</p>
         </div>
       </div>
 
       {items.length === 0 ? (
         <div className="card p-16 text-center">
-          <Package className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <Package className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No rental items yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">Save your common rentals and equipment to quickly add them to events.</p>
+          <p className="text-sm text-[#D4A373] mb-6">Save your common rentals and equipment to quickly add them to events.</p>
         </div>
       ) : null}
 

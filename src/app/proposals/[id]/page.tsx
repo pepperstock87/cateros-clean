@@ -49,7 +49,7 @@ export default async function ProposalDetailPage({ params }: Props) {
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      <Link href="/proposals" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-6 transition-colors">
+      <Link href="/proposals" className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> All proposals
       </Link>
 
@@ -64,7 +64,7 @@ export default async function ProposalDetailPage({ params }: Props) {
               </span>
             )}
           </div>
-          <p className="text-sm text-[#9c8876] mt-1">
+          <p className="text-sm text-[#D4A373] mt-1">
             Created {format(new Date(proposal.created_at), "MMMM d, yyyy")}
             {proposal.updated_at !== proposal.created_at && (
               <> · Updated {format(new Date(proposal.updated_at), "MMMM d, yyyy")}</>
@@ -99,22 +99,22 @@ export default async function ProposalDetailPage({ params }: Props) {
                   <div className="text-sm font-medium">{event.client_name}</div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
+                  <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
                   <span className="text-sm">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-[#9c8876]" />
+                  <Users className="w-3.5 h-3.5 text-[#D4A373]" />
                   <span className="text-sm">{event.guest_count} guests</span>
                 </div>
                 {event.venue && (
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
                     <span className="text-sm">{event.venue}</span>
                   </div>
                 )}
                 {event.client_email && (
                   <div className="flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-[#9c8876]" />
+                    <Mail className="w-3.5 h-3.5 text-[#D4A373]" />
                     <span className="text-sm">{event.client_email}</span>
                   </div>
                 )}
@@ -126,7 +126,7 @@ export default async function ProposalDetailPage({ params }: Props) {
           {proposal.custom_message && (
             <div className="card p-5">
               <h2 className="font-medium text-sm mb-3">Client Message</h2>
-              <p className="text-sm text-[#9c8876] italic leading-relaxed">{proposal.custom_message}</p>
+              <p className="text-sm text-[#D4A373] italic leading-relaxed">{proposal.custom_message}</p>
             </div>
           )}
 
@@ -134,16 +134,16 @@ export default async function ProposalDetailPage({ params }: Props) {
           {proposal.client_messages && proposal.client_messages.length > 0 && (
             <div className="card p-5">
               <h2 className="font-medium text-sm mb-3 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#9c8876]" />
+                <MessageSquare className="w-4 h-4 text-[#D4A373]" />
                 Client Messages
-                <span className="text-xs text-[#9c8876]">({proposal.client_messages.length})</span>
+                <span className="text-xs text-[#D4A373]">({proposal.client_messages.length})</span>
               </h2>
               <div className="space-y-3">
                 {proposal.client_messages.map((m: ClientMessage) => (
-                  <div key={m.id} className={`p-3 rounded-lg text-sm ${m.from === "client" ? "bg-brand-950/50 border border-brand-800/30" : "bg-[#1a1714] border border-[#2e271f]"}`}>
+                  <div key={m.id} className={`p-3 rounded-lg text-sm ${m.from === "client" ? "bg-brand-950/50 border border-brand-800/30" : "bg-[#182030] border border-[#2A3A5C]"}`}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-medium text-[#9c8876] uppercase">
+                        <span className="text-[10px] font-medium text-[#D4A373] uppercase">
                           {m.from === "client" ? "Client" : "You"}
                         </span>
                         {m.action === "revision_requested" && (
@@ -157,11 +157,11 @@ export default async function ProposalDetailPage({ params }: Props) {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-[#6b5a4a]">
+                      <span className="text-[10px] text-[#7A8BA8]">
                         {format(new Date(m.created_at), "MMM d 'at' h:mm a")}
                       </span>
                     </div>
-                    <p className="text-[#f5ede0]">{m.message}</p>
+                    <p className="text-[#F4F1ED]">{m.message}</p>
                   </div>
                 ))}
               </div>
@@ -183,12 +183,12 @@ export default async function ProposalDetailPage({ params }: Props) {
 
               {pricing.menuItems.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Menu</h3>
+                  <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">Menu</h3>
                   <div className="space-y-1.5">
                     {pricing.menuItems.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <span>{item.name}</span>
-                        <span className="text-[#9c8876]">{formatCurrency(item.costPerPerson)} x {item.quantity}</span>
+                        <span className="text-[#D4A373]">{formatCurrency(item.costPerPerson)} x {item.quantity}</span>
                       </div>
                     ))}
                   </div>
@@ -197,12 +197,12 @@ export default async function ProposalDetailPage({ params }: Props) {
 
               {pricing.staffing.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Staffing</h3>
+                  <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">Staffing</h3>
                   <div className="space-y-1.5">
                     {pricing.staffing.map((s) => (
                       <div key={s.id} className="flex justify-between text-sm">
                         <span>{s.role} ({s.headcount} x {s.hours}hrs)</span>
-                        <span className="text-[#9c8876]">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</span>
+                        <span className="text-[#D4A373]">{formatCurrency(s.hourlyRate * s.hours * s.headcount)}</span>
                       </div>
                     ))}
                   </div>
@@ -211,32 +211,32 @@ export default async function ProposalDetailPage({ params }: Props) {
 
               {pricing.rentals.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-2">Rentals & Equipment</h3>
+                  <h3 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-2">Rentals & Equipment</h3>
                   <div className="space-y-1.5">
                     {pricing.rentals.map((r) => (
                       <div key={r.id} className="flex justify-between text-sm">
                         <span>{r.item} (x{r.quantity})</span>
-                        <span className="text-[#9c8876]">{formatCurrency(r.unitCost * r.quantity)}</span>
+                        <span className="text-[#D4A373]">{formatCurrency(r.unitCost * r.quantity)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="border-t border-[#2e271f] pt-3 space-y-1.5">
+              <div className="border-t border-[#2A3A5C] pt-3 space-y-1.5">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#9c8876]">Subtotal</span>
+                  <span className="text-[#D4A373]">Subtotal</span>
                   <span>{formatCurrency(pricing.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#9c8876]">Admin ({pricing.adminPercent}%)</span>
+                  <span className="text-[#D4A373]">Admin ({pricing.adminPercent}%)</span>
                   <span>{formatCurrency(pricing.adminFee)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#9c8876]">Tax ({pricing.taxPercent}%)</span>
+                  <span className="text-[#D4A373]">Tax ({pricing.taxPercent}%)</span>
                   <span>{formatCurrency(pricing.taxAmount)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-semibold text-brand-300 pt-2 border-t border-[#2e271f]">
+                <div className="flex justify-between text-sm font-semibold text-brand-300 pt-2 border-t border-[#2A3A5C]">
                   <span>Total Investment</span>
                   <span>{formatCurrency(pricing.suggestedPrice)}</span>
                 </div>
@@ -248,7 +248,7 @@ export default async function ProposalDetailPage({ params }: Props) {
           {proposal.terms && (
             <div className="card p-5">
               <h2 className="font-medium text-sm mb-3">Terms & Conditions</h2>
-              <p className="text-sm text-[#9c8876] leading-relaxed whitespace-pre-wrap">{proposal.terms}</p>
+              <p className="text-sm text-[#D4A373] leading-relaxed whitespace-pre-wrap">{proposal.terms}</p>
             </div>
           )}
         </div>
@@ -286,15 +286,15 @@ export default async function ProposalDetailPage({ params }: Props) {
                 <div className="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
                 <div>
                   <div className="text-xs font-medium">Created</div>
-                  <div className="text-xs text-[#9c8876]">{format(new Date(proposal.created_at), "MMM d, yyyy 'at' h:mm a")}</div>
+                  <div className="text-xs text-[#D4A373]">{format(new Date(proposal.created_at), "MMM d, yyyy 'at' h:mm a")}</div>
                 </div>
               </div>
               {proposal.updated_at !== proposal.created_at && (
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-[#9c8876] mt-1.5 flex-shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-[#D4A373] mt-1.5 flex-shrink-0" />
                   <div>
                     <div className="text-xs font-medium">Last updated</div>
-                    <div className="text-xs text-[#9c8876]">{format(new Date(proposal.updated_at), "MMM d, yyyy 'at' h:mm a")}</div>
+                    <div className="text-xs text-[#D4A373]">{format(new Date(proposal.updated_at), "MMM d, yyyy 'at' h:mm a")}</div>
                   </div>
                 </div>
               )}

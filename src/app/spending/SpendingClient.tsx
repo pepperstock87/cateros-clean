@@ -171,19 +171,19 @@ export function SpendingClient({
   return (
     <>
       {/* Tabs */}
-      <div className="flex items-center gap-1 mb-6 border-b border-[#2e271f]">
+      <div className="flex items-center gap-1 mb-6 border-b border-[#2A3A5C]">
         <button
           onClick={() => setActiveTab("receipts")}
           className={cn(
             "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px",
             activeTab === "receipts"
               ? "border-brand-400 text-brand-300"
-              : "border-transparent text-[#9c8876] hover:text-[#f5ede0]"
+              : "border-transparent text-[#D4A373] hover:text-[#F4F1ED]"
           )}
         >
           <Receipt className="w-4 h-4" />
           Receipts
-          <span className="ml-1 text-xs text-[#6b5a4a]">({receipts.length})</span>
+          <span className="ml-1 text-xs text-[#7A8BA8]">({receipts.length})</span>
         </button>
         <button
           onClick={() => setActiveTab("invoices")}
@@ -191,12 +191,12 @@ export function SpendingClient({
             "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px",
             activeTab === "invoices"
               ? "border-brand-400 text-brand-300"
-              : "border-transparent text-[#9c8876] hover:text-[#f5ede0]"
+              : "border-transparent text-[#D4A373] hover:text-[#F4F1ED]"
           )}
         >
           <FileText className="w-4 h-4" />
           Distributor Invoices
-          <span className="ml-1 text-xs text-[#6b5a4a]">({invoices.length})</span>
+          <span className="ml-1 text-xs text-[#7A8BA8]">({invoices.length})</span>
         </button>
         <div className="ml-auto mb-px">
           <button
@@ -266,7 +266,7 @@ export function SpendingClient({
             </button>
           )}
         </div>
-        <p className="text-xs text-[#6b5a4a] mt-2">
+        <p className="text-xs text-[#7A8BA8] mt-2">
           {activeTab === "receipts"
             ? "Upload a photo of a receipt (JPG, PNG). AI will extract the details."
             : "Upload an invoice (PDF, JPG, PNG). AI will extract distributor info and line items."}
@@ -280,7 +280,7 @@ export function SpendingClient({
           <form onSubmit={handleQuickAddSave} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-[#9c8876] mb-1">Vendor *</label>
+                <label className="block text-xs text-[#D4A373] mb-1">Vendor *</label>
                 <input
                   name="vendor"
                   className="input w-full"
@@ -289,7 +289,7 @@ export function SpendingClient({
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#9c8876] mb-1">Date *</label>
+                <label className="block text-xs text-[#D4A373] mb-1">Date *</label>
                 <input
                   name="date"
                   type="date"
@@ -299,7 +299,7 @@ export function SpendingClient({
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#9c8876] mb-1">Amount *</label>
+                <label className="block text-xs text-[#D4A373] mb-1">Amount *</label>
                 <input
                   name="amount"
                   type="number"
@@ -311,7 +311,7 @@ export function SpendingClient({
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#9c8876] mb-1">Category</label>
+                <label className="block text-xs text-[#D4A373] mb-1">Category</label>
                 <input
                   name="category"
                   className="input w-full"
@@ -321,7 +321,7 @@ export function SpendingClient({
             </div>
             {events.length > 0 && (
               <div>
-                <label className="block text-xs text-[#9c8876] mb-1">Link to Event (optional)</label>
+                <label className="block text-xs text-[#D4A373] mb-1">Link to Event (optional)</label>
                 <select name="event_id" className="input w-full">
                   <option value="">No event</option>
                   {events.map((ev) => (
@@ -380,16 +380,16 @@ export function SpendingClient({
               </h3>
               <button
                 onClick={() => setReviewData(null)}
-                className="p-1 hover:bg-[#1c1814] rounded-lg transition-colors"
+                className="p-1 hover:bg-[#1A2538] rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-[#9c8876]" />
+                <X className="w-5 h-5 text-[#D4A373]" />
               </button>
             </div>
 
             {reviewType === "receipts" ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Vendor</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Vendor</label>
                   <input
                     className="input w-full"
                     value={(reviewData as ExtractedReceipt).vendor}
@@ -397,7 +397,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Date</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Date</label>
                   <input
                     type="date"
                     className="input w-full"
@@ -406,7 +406,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Amount</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Amount</label>
                   <input
                     type="number"
                     step="0.01"
@@ -416,7 +416,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Category</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Category</label>
                   <input
                     className="input w-full"
                     value={(reviewData as ExtractedReceipt).category}
@@ -426,7 +426,7 @@ export function SpendingClient({
                 </div>
                 {events.length > 0 && (
                   <div>
-                    <label className="block text-xs text-[#9c8876] mb-1">Link to Event (optional)</label>
+                    <label className="block text-xs text-[#D4A373] mb-1">Link to Event (optional)</label>
                     <select
                       className="input w-full"
                       value={(reviewData as ExtractedReceipt).event_id ?? ""}
@@ -443,7 +443,7 @@ export function SpendingClient({
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Distributor</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Distributor</label>
                   <input
                     className="input w-full"
                     value={(reviewData as ExtractedInvoice).distributor}
@@ -451,7 +451,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Invoice Date</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Invoice Date</label>
                   <input
                     type="date"
                     className="input w-full"
@@ -460,7 +460,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Invoice #</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Invoice #</label>
                   <input
                     className="input w-full"
                     value={(reviewData as ExtractedInvoice).invoice_number}
@@ -468,7 +468,7 @@ export function SpendingClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9c8876] mb-1">Total</label>
+                  <label className="block text-xs text-[#D4A373] mb-1">Total</label>
                   <input
                     type="number"
                     step="0.01"
@@ -479,15 +479,15 @@ export function SpendingClient({
                 </div>
                 {(reviewData as ExtractedInvoice).line_items?.length > 0 && (
                   <div>
-                    <label className="block text-xs text-[#9c8876] mb-2">Line Items</label>
+                    <label className="block text-xs text-[#D4A373] mb-2">Line Items</label>
                     <div className="space-y-2">
                       {(reviewData as ExtractedInvoice).line_items.map((item, i) => (
-                        <div key={i} className="p-2 rounded-lg bg-[#1c1814] border border-[#2e271f] text-xs">
+                        <div key={i} className="p-2 rounded-lg bg-[#1A2538] border border-[#2A3A5C] text-xs">
                           <div className="flex justify-between">
-                            <span className="text-[#f5ede0]">{item.description}</span>
-                            <span className="text-[#9c8876]">${item.total.toFixed(2)}</span>
+                            <span className="text-[#F4F1ED]">{item.description}</span>
+                            <span className="text-[#D4A373]">${item.total.toFixed(2)}</span>
                           </div>
-                          <div className="text-[#6b5a4a] mt-0.5">
+                          <div className="text-[#7A8BA8] mt-0.5">
                             Qty: {item.quantity} x ${item.unit_price.toFixed(2)}
                           </div>
                         </div>
@@ -530,18 +530,18 @@ export function SpendingClient({
       {/* Content */}
       {activeTab === "receipts" ? (
         <div className="card p-4 md:p-5">
-          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
+          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#D4A373] uppercase tracking-wider">
             Receipts
           </h2>
           {receipts.length === 0 ? (
-            <p className="text-sm text-[#6b5a4a] text-center py-8">
+            <p className="text-sm text-[#7A8BA8] text-center py-8">
               No receipts yet. Upload your first receipt to start tracking spending.
             </p>
           ) : (
             <div className="overflow-x-auto -mx-4 md:mx-0">
               <div className="inline-block min-w-full align-middle px-4 md:px-0">
                 <table className="w-full text-xs md:text-sm">
-                  <thead className="text-[#6b5a4a] border-b border-[#2e271f]">
+                  <thead className="text-[#7A8BA8] border-b border-[#2A3A5C]">
                     <tr>
                       <th className="text-left py-2 font-medium">Date</th>
                       <th className="text-left py-2 font-medium">Vendor</th>
@@ -551,10 +551,10 @@ export function SpendingClient({
                       <th className="w-10 py-2"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2e271f]">
+                  <tbody className="divide-y divide-[#2A3A5C]">
                     {receipts.map((r) => (
-                      <tr key={r.id} className="hover:bg-[#1c1814] transition-colors">
-                        <td className="py-3 text-[#9c8876] whitespace-nowrap">
+                      <tr key={r.id} className="hover:bg-[#1A2538] transition-colors">
+                        <td className="py-3 text-[#D4A373] whitespace-nowrap">
                           {new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className="py-3 font-medium truncate max-w-[150px]">{r.vendor}</td>
@@ -565,17 +565,17 @@ export function SpendingClient({
                           {r.category ? (
                             <span className="badge">{r.category}</span>
                           ) : (
-                            <span className="text-[#6b5a4a]">--</span>
+                            <span className="text-[#7A8BA8]">--</span>
                           )}
                         </td>
-                        <td className="py-3 text-[#6b5a4a] hidden md:table-cell">
+                        <td className="py-3 text-[#7A8BA8] hidden md:table-cell">
                           {r.week_label ?? "--"}
                         </td>
                         <td className="py-3">
                           <button
                             onClick={() => handleDeleteReceipt(r.id)}
                             disabled={deleting === r.id}
-                            className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                            className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -590,18 +590,18 @@ export function SpendingClient({
         </div>
       ) : (
         <div className="card p-4 md:p-5">
-          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
+          <h2 className="font-medium text-xs md:text-sm mb-4 text-[#D4A373] uppercase tracking-wider">
             Distributor Invoices
           </h2>
           {invoices.length === 0 ? (
-            <p className="text-sm text-[#6b5a4a] text-center py-8">
+            <p className="text-sm text-[#7A8BA8] text-center py-8">
               No invoices yet. Upload your first distributor invoice to start tracking.
             </p>
           ) : (
             <div className="overflow-x-auto -mx-4 md:mx-0">
               <div className="inline-block min-w-full align-middle px-4 md:px-0">
                 <table className="w-full text-xs md:text-sm">
-                  <thead className="text-[#6b5a4a] border-b border-[#2e271f]">
+                  <thead className="text-[#7A8BA8] border-b border-[#2A3A5C]">
                     <tr>
                       <th className="text-left py-2 font-medium">Distributor</th>
                       <th className="text-left py-2 font-medium">Date</th>
@@ -611,14 +611,14 @@ export function SpendingClient({
                       <th className="w-10 py-2"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2e271f]">
+                  <tbody className="divide-y divide-[#2A3A5C]">
                     {invoices.map((inv) => (
-                      <tr key={inv.id} className="hover:bg-[#1c1814] transition-colors">
+                      <tr key={inv.id} className="hover:bg-[#1A2538] transition-colors">
                         <td className="py-3 font-medium truncate max-w-[150px]">{inv.distributor}</td>
-                        <td className="py-3 text-[#9c8876] whitespace-nowrap">
+                        <td className="py-3 text-[#D4A373] whitespace-nowrap">
                           {new Date(inv.invoice_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
-                        <td className="py-3 text-[#6b5a4a] hidden sm:table-cell">
+                        <td className="py-3 text-[#7A8BA8] hidden sm:table-cell">
                           {inv.invoice_number ?? "--"}
                         </td>
                         <td className="py-3 text-right font-medium">
@@ -633,7 +633,7 @@ export function SpendingClient({
                           <button
                             onClick={() => handleDeleteInvoice(inv.id)}
                             disabled={deleting === inv.id}
-                            className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                            className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

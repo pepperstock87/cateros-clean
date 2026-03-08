@@ -46,7 +46,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
   };
 
   const statusColors: Record<string, string> = {
-    draft: "bg-[#3a3228] text-[#9c8876]",
+    draft: "bg-[#3a3228] text-[#D4A373]",
     proposed: "bg-blue-900/30 text-blue-400",
     confirmed: "bg-green-900/30 text-green-400",
     completed: "bg-brand-900/30 text-brand-300",
@@ -56,7 +56,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <Link href="/recipes" className="flex items-center gap-2 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors">
+        <Link href="/recipes" className="flex items-center gap-2 text-sm text-[#D4A373] hover:text-[#F4F1ED] transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to library
         </Link>
@@ -74,11 +74,11 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl font-semibold">{recipe.name}</h1>
-            {recipe.description && <p className="text-sm text-[#9c8876] mt-1">{recipe.description}</p>}
+            {recipe.description && <p className="text-sm text-[#D4A373] mt-1">{recipe.description}</p>}
           </div>
           <div className="flex items-center gap-2">
             {recipe.category && (
-              <span className="text-xs px-2 py-1 rounded-full bg-[#251f19] text-[#9c8876]">
+              <span className="text-xs px-2 py-1 rounded-full bg-[#1F2A44] text-[#D4A373]">
                 {recipe.category}
               </span>
             )}
@@ -95,15 +95,15 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="card p-4 text-center">
           <div className="text-xl font-semibold text-brand-300">{formatCurrency(recipe.cost_per_serving)}</div>
-          <div className="text-xs text-[#9c8876] mt-1">cost per serving</div>
+          <div className="text-xs text-[#D4A373] mt-1">cost per serving</div>
         </div>
         <div className="card p-4 text-center">
           <div className="text-xl font-semibold">{formatCurrency(recipe.total_cost)}</div>
-          <div className="text-xs text-[#9c8876] mt-1">total cost</div>
+          <div className="text-xs text-[#D4A373] mt-1">total cost</div>
         </div>
         <div className="card p-4 text-center">
           <div className="text-xl font-semibold">{recipe.servings}</div>
-          <div className="text-xs text-[#9c8876] mt-1">servings</div>
+          <div className="text-xs text-[#D4A373] mt-1">servings</div>
         </div>
       </div>
 
@@ -113,14 +113,14 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         return (
           <div className="card p-5 mb-4">
             <div className="flex items-center gap-1.5 mb-4">
-              <PieChart className="w-4 h-4 text-[#9c8876]" />
+              <PieChart className="w-4 h-4 text-[#D4A373]" />
               <h2 className="font-medium text-sm">Margin Analysis</h2>
             </div>
 
             {/* Food cost indicator */}
-            <div className="bg-[#251f19] rounded-lg p-4 mb-4">
+            <div className="bg-[#1F2A44] rounded-lg p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-[#9c8876]">Food Cost % (at 30% target margin)</span>
+                <span className="text-xs text-[#D4A373]">Food Cost % (at 30% target margin)</span>
                 <span className={`text-xs font-semibold ${indicator.color}`}>{indicator.label}</span>
               </div>
               <div className="flex items-center gap-3">
@@ -134,12 +134,12 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                   {foodCostPercent.toFixed(1)}%
                 </span>
               </div>
-              <p className="text-[10px] text-[#6b5a4a] mt-2">Industry standard food cost is 28-35%. Lower is more profitable.</p>
+              <p className="text-[10px] text-[#7A8BA8] mt-2">Industry standard food cost is 28-35%. Lower is more profitable.</p>
             </div>
 
             {/* Cost breakdown bars */}
             <div className="mb-4">
-              <h3 className="text-xs text-[#9c8876] mb-2">Cost Breakdown per Serving</h3>
+              <h3 className="text-xs text-[#D4A373] mb-2">Cost Breakdown per Serving</h3>
               <div className="space-y-2">
                 {recipe.ingredients.length > 0 && (() => {
                   const sortedIngs = [...recipe.ingredients].sort((a, b) => b.total_cost - a.total_cost).slice(0, 5);
@@ -149,11 +149,11 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                     const pctOfMax = (ing.total_cost / maxCost) * 100;
                     return (
                       <div key={ing.id} className="flex items-center gap-2">
-                        <span className="text-[11px] text-[#9c8876] w-24 truncate" title={ing.name}>{ing.name}</span>
+                        <span className="text-[11px] text-[#D4A373] w-24 truncate" title={ing.name}>{ing.name}</span>
                         <div className="flex-1 h-2 bg-[#1a1510] rounded-full overflow-hidden">
                           <div className="h-full rounded-full bg-brand-500/60" style={{ width: `${pctOfMax}%` }} />
                         </div>
-                        <span className="text-[11px] text-[#f5ede0] min-w-[3rem] text-right">{formatCurrency(perServing)}</span>
+                        <span className="text-[11px] text-[#F4F1ED] min-w-[3rem] text-right">{formatCurrency(perServing)}</span>
                       </div>
                     );
                   });
@@ -164,8 +164,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
             {/* Suggested sell prices */}
             <div>
               <div className="flex items-center gap-1.5 mb-3">
-                <TrendingUp className="w-4 h-4 text-[#9c8876]" />
-                <h3 className="text-xs text-[#9c8876]">Suggested Sell Prices</h3>
+                <TrendingUp className="w-4 h-4 text-[#D4A373]" />
+                <h3 className="text-xs text-[#D4A373]">Suggested Sell Prices</h3>
               </div>
               <div className="grid grid-cols-4 gap-3">
                 {margins.map(m => {
@@ -173,9 +173,9 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                   const costPct = (recipe.cost_per_serving / sellPrice) * 100;
                   const cIndicator = getFoodCostColor(costPct);
                   return (
-                    <div key={m} className="bg-[#251f19] rounded-lg p-3 text-center">
+                    <div key={m} className="bg-[#1F2A44] rounded-lg p-3 text-center">
                       <div className="text-sm font-semibold text-brand-300">{formatCurrency(sellPrice)}</div>
-                      <div className="text-[10px] text-[#9c8876] mt-0.5">{m}% margin</div>
+                      <div className="text-[10px] text-[#D4A373] mt-0.5">{m}% margin</div>
                       <div className={`text-[9px] mt-1 ${cIndicator.color}`}>{costPct.toFixed(0)}% food cost</div>
                     </div>
                   );
@@ -189,16 +189,16 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
       {/* Events Using This Recipe */}
       <div className="card p-5 mb-4">
         <div className="flex items-center gap-1.5 mb-3">
-          <CalendarDays className="w-4 h-4 text-[#9c8876]" />
+          <CalendarDays className="w-4 h-4 text-[#D4A373]" />
           <h2 className="font-medium text-sm">Events Using This Recipe</h2>
           {relatedEvents.length > 0 && (
-            <span className="text-xs text-[#9c8876] ml-1">({relatedEvents.length})</span>
+            <span className="text-xs text-[#D4A373] ml-1">({relatedEvents.length})</span>
           )}
         </div>
         {relatedEvents.length === 0 ? (
           <div className="text-center py-6">
             <CalendarDays className="w-8 h-8 text-[#3a3228] mx-auto mb-2" />
-            <p className="text-sm text-[#6b5a4a]">Not used in any events yet</p>
+            <p className="text-sm text-[#7A8BA8]">Not used in any events yet</p>
             <p className="text-xs text-[#4a3f34] mt-1">
               Add this recipe as a menu item when pricing an event.
             </p>
@@ -209,13 +209,13 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="flex items-center justify-between bg-[#251f19] rounded-lg p-3 hover:bg-[#2e271f] transition-colors group"
+                className="flex items-center justify-between bg-[#1F2A44] rounded-lg p-3 hover:bg-[#2A3A5C] transition-colors group"
               >
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-[#f5ede0] group-hover:text-brand-300 transition-colors truncate">
+                  <div className="text-sm font-medium text-[#F4F1ED] group-hover:text-brand-300 transition-colors truncate">
                     {event.name}
                   </div>
-                  <div className="text-xs text-[#9c8876] mt-0.5">
+                  <div className="text-xs text-[#D4A373] mt-0.5">
                     {event.client_name}
                     {event.event_date && (
                       <> &middot; {new Date(event.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
@@ -224,9 +224,9 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   {event.guest_count > 0 && (
-                    <span className="text-[10px] text-[#9c8876]">{event.guest_count} guests</span>
+                    <span className="text-[10px] text-[#D4A373]">{event.guest_count} guests</span>
                   )}
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[event.status] || "bg-[#3a3228] text-[#9c8876]"}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[event.status] || "bg-[#3a3228] text-[#D4A373]"}`}>
                     {event.status}
                   </span>
                 </div>
@@ -240,10 +240,10 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
       {recipe.ingredients.length > 0 && (
         <div className="card p-6 mb-4">
           <h2 className="font-medium text-sm mb-4">
-            Ingredients <span className="text-[#9c8876]">({recipe.ingredients.length})</span>
+            Ingredients <span className="text-[#D4A373]">({recipe.ingredients.length})</span>
           </h2>
           <div className="space-y-2">
-            <div className="grid grid-cols-12 gap-4 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider pb-2 border-b border-[#2a2118]">
+            <div className="grid grid-cols-12 gap-4 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider pb-2 border-b border-[#2a2118]">
               <span className="col-span-5">Ingredient</span>
               <span className="col-span-2 text-right">Quantity</span>
               <span className="col-span-2 text-right">Unit Cost</span>
@@ -251,9 +251,9 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
             </div>
             {recipe.ingredients.map((ing) => (
               <div key={ing.id} className="grid grid-cols-12 gap-4 text-sm py-1.5 border-b border-[#1e1a14] last:border-0">
-                <span className="col-span-5 text-[#f5ede0]">{ing.name}</span>
-                <span className="col-span-2 text-right text-[#9c8876]">{ing.quantity} {ing.unit}</span>
-                <span className="col-span-2 text-right text-[#9c8876]">{formatCurrency(ing.cost_per_unit)}/{ing.unit}</span>
+                <span className="col-span-5 text-[#F4F1ED]">{ing.name}</span>
+                <span className="col-span-2 text-right text-[#D4A373]">{ing.quantity} {ing.unit}</span>
+                <span className="col-span-2 text-right text-[#D4A373]">{formatCurrency(ing.cost_per_unit)}/{ing.unit}</span>
                 <span className="col-span-3 text-right">{formatCurrency(ing.total_cost)}</span>
               </div>
             ))}
@@ -269,39 +269,39 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
       {recipe.case_price && recipe.units_per_case && (
         <div className="card p-6 mb-4">
           <div className="flex items-center gap-1.5 mb-4">
-            <Package className="w-4 h-4 text-[#9c8876]" />
+            <Package className="w-4 h-4 text-[#D4A373]" />
             <h2 className="font-medium text-sm">Case Pricing</h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
               <div className="text-lg font-semibold">{formatCurrency(recipe.case_price)}</div>
-              <div className="text-xs text-[#9c8876]">case price</div>
+              <div className="text-xs text-[#D4A373]">case price</div>
             </div>
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
               <div className="text-lg font-semibold">{recipe.units_per_case}</div>
-              <div className="text-xs text-[#9c8876]">{recipe.case_unit_type || "units"}/case</div>
+              <div className="text-xs text-[#D4A373]">{recipe.case_unit_type || "units"}/case</div>
             </div>
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
               <div className="text-lg font-semibold text-brand-300">{formatCurrency(recipe.case_price / recipe.units_per_case)}</div>
-              <div className="text-xs text-[#9c8876]">cost per {recipe.case_unit_type || "unit"}</div>
+              <div className="text-xs text-[#D4A373]">cost per {recipe.case_unit_type || "unit"}</div>
             </div>
-            <div className="bg-[#251f19] rounded-lg p-3 text-center">
+            <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
               <div className="text-lg font-semibold">{recipe.yield_percent ?? 100}%</div>
-              <div className="text-xs text-[#9c8876]">yield</div>
+              <div className="text-xs text-[#D4A373]">yield</div>
             </div>
           </div>
           {recipe.yield_percent && recipe.yield_percent < 100 && (
-            <div className="mt-3 pt-3 border-t border-[#2e271f] text-center">
+            <div className="mt-3 pt-3 border-t border-[#2A3A5C] text-center">
               <div className="text-sm font-semibold text-brand-300">
                 {formatCurrency((recipe.case_price / recipe.units_per_case) / (recipe.yield_percent / 100))}
               </div>
-              <div className="text-xs text-[#9c8876]">effective cost per {recipe.case_unit_type || "unit"} (after {recipe.yield_percent}% yield)</div>
+              <div className="text-xs text-[#D4A373]">effective cost per {recipe.case_unit_type || "unit"} (after {recipe.yield_percent}% yield)</div>
             </div>
           )}
         </div>
       )}
 
-      <p className="text-xs text-[#6b5a4a] mt-6 text-center">
+      <p className="text-xs text-[#7A8BA8] mt-6 text-center">
         Created {new Date(recipe.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
         {recipe.updated_at !== recipe.created_at && (
           <> · Updated {new Date(recipe.updated_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</>

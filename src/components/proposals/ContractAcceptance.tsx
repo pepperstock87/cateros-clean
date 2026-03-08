@@ -49,10 +49,10 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
       <div className="card p-8 text-center border-green-900/50">
         <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
         <h3 className="font-display text-xl font-semibold mb-1">Contract Signed</h3>
-        <p className="text-sm text-[#f5ede0] mb-2">
+        <p className="text-sm text-[#F4F1ED] mb-2">
           Thank you, {signerName}! Your contract for {eventName} has been signed.
         </p>
-        <p className="text-sm text-[#9c8876]">
+        <p className="text-sm text-[#D4A373]">
           The catering team has been notified and will follow up with next steps.
         </p>
       </div>
@@ -62,7 +62,7 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
   return (
     <div className="space-y-4">
       {/* Contract terms */}
-      <div className="card p-6 border-[#2e271f] bg-[#1a1714]">
+      <div className="card p-6 border-[#2A3A5C] bg-[#182030]">
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-4 h-4 text-brand-400" />
           <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-brand-300">
@@ -70,23 +70,23 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
           </h3>
         </div>
 
-        <p className="text-sm text-[#9c8876] mb-3">
+        <p className="text-sm text-[#D4A373] mb-3">
           Please review the terms and conditions below for your event with {companyName}.
         </p>
 
         {terms ? (
-          <div className="max-h-60 overflow-y-auto bg-[#0f0d0b] rounded-lg p-4 border border-[#2e271f]">
-            <p className="text-sm text-[#9c8876] whitespace-pre-wrap">{terms}</p>
+          <div className="max-h-60 overflow-y-auto bg-[#0C1220] rounded-lg p-4 border border-[#2A3A5C]">
+            <p className="text-sm text-[#D4A373] whitespace-pre-wrap">{terms}</p>
           </div>
         ) : (
-          <div className="bg-[#0f0d0b] rounded-lg p-4 border border-[#2e271f]">
-            <p className="text-sm text-[#6b5a4a] italic">No additional terms provided.</p>
+          <div className="bg-[#0C1220] rounded-lg p-4 border border-[#2A3A5C]">
+            <p className="text-sm text-[#7A8BA8] italic">No additional terms provided.</p>
           </div>
         )}
       </div>
 
       {/* Acceptance form */}
-      <div className="card p-6 border-[#2e271f] bg-[#1a1714]">
+      <div className="card p-6 border-[#2A3A5C] bg-[#182030]">
         <div className="space-y-4">
           {/* Agreement checkbox */}
           <label className="flex items-start gap-3 cursor-pointer group">
@@ -95,17 +95,17 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="w-4 h-4 rounded border-[#2e271f] bg-[#0f0d0b] text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer"
+                className="w-4 h-4 rounded border-[#2A3A5C] bg-[#0C1220] text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer"
               />
             </div>
-            <span className="text-sm text-[#f5ede0] group-hover:text-white transition-colors">
+            <span className="text-sm text-[#F4F1ED] group-hover:text-white transition-colors">
               I have read and agree to the terms and conditions above
             </span>
           </label>
 
           {/* Signer name */}
           <div>
-            <label className="block text-xs text-[#9c8876] uppercase tracking-wider font-medium mb-1.5">
+            <label className="block text-xs text-[#D4A373] uppercase tracking-wider font-medium mb-1.5">
               Full Legal Name <span className="text-red-400">*</span>
             </label>
             <input
@@ -113,21 +113,21 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
               value={signerName}
               onChange={(e) => setSignerName(e.target.value)}
               placeholder="Enter your full name"
-              className="w-full bg-[#0f0d0b] border border-[#2e271f] rounded-lg px-3 py-2.5 text-sm text-[#f5ede0] placeholder-[#6b5a4a] focus:outline-none focus:border-brand-500 transition-colors"
+              className="w-full bg-[#0C1220] border border-[#2A3A5C] rounded-lg px-3 py-2.5 text-sm text-[#F4F1ED] placeholder-[#7A8BA8] focus:outline-none focus:border-brand-500 transition-colors"
             />
           </div>
 
           {/* Signer email */}
           <div>
-            <label className="block text-xs text-[#9c8876] uppercase tracking-wider font-medium mb-1.5">
-              Email Address <span className="text-[#6b5a4a]">(optional)</span>
+            <label className="block text-xs text-[#D4A373] uppercase tracking-wider font-medium mb-1.5">
+              Email Address <span className="text-[#7A8BA8]">(optional)</span>
             </label>
             <input
               type="email"
               value={signerEmail}
               onChange={(e) => setSignerEmail(e.target.value)}
               placeholder="your@email.com"
-              className="w-full bg-[#0f0d0b] border border-[#2e271f] rounded-lg px-3 py-2.5 text-sm text-[#f5ede0] placeholder-[#6b5a4a] focus:outline-none focus:border-brand-500 transition-colors"
+              className="w-full bg-[#0C1220] border border-[#2A3A5C] rounded-lg px-3 py-2.5 text-sm text-[#F4F1ED] placeholder-[#7A8BA8] focus:outline-none focus:border-brand-500 transition-colors"
             />
           </div>
 
@@ -145,7 +145,7 @@ export function ContractAcceptance({ shareToken, terms, companyName, eventName, 
             Sign & Accept
           </button>
 
-          <p className="text-[10px] text-[#6b5a4a] text-center">
+          <p className="text-[10px] text-[#7A8BA8] text-center">
             By signing, you agree to the terms above and confirm the total of ${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.
           </p>
         </div>

@@ -98,7 +98,7 @@ export default async function SpendingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Spending</h1>
-          <p className="text-xs md:text-sm text-[#9c8876] mt-1">Track receipts and distributor invoices</p>
+          <p className="text-xs md:text-sm text-[#D4A373] mt-1">Track receipts and distributor invoices</p>
         </div>
         <div className="flex items-center gap-3">
           {allReceipts.length > 0 && <SpendingExport receipts={allReceipts} />}
@@ -136,7 +136,7 @@ export default async function SpendingPage() {
 
       {/* Spending Analytics */}
       <div className="mt-6 md:mt-8">
-        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">Spending Analytics</h2>
+        <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">Spending Analytics</h2>
         <CostAnalytics receipts={allReceipts} invoices={allInvoices} isPro={isPro} />
       </div>
     </div>

@@ -53,7 +53,7 @@ export function PortalVendors({ eventId }: Props) {
     return (
       <div className="card p-8 text-center">
         <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm text-[#6b5a4a]">Loading vendors...</p>
+        <p className="text-sm text-[#7A8BA8]">Loading vendors...</p>
       </div>
     );
   }
@@ -61,8 +61,8 @@ export function PortalVendors({ eventId }: Props) {
   if (vendors.length === 0) {
     return (
       <div className="card p-8 text-center">
-        <Building2 className="w-10 h-10 text-[#3d3428] mx-auto mb-3" />
-        <p className="text-sm text-[#6b5a4a]">No vendors have been assigned to this event yet.</p>
+        <Building2 className="w-10 h-10 text-[#344570] mx-auto mb-3" />
+        <p className="text-sm text-[#7A8BA8]">No vendors have been assigned to this event yet.</p>
       </div>
     );
   }
@@ -82,8 +82,8 @@ export function PortalVendors({ eventId }: Props) {
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#9c8876]" />
-                <span className="text-sm font-medium text-[#f5ede0]">{orgName}</span>
+                <Building2 className="w-4 h-4 text-[#D4A373]" />
+                <span className="text-sm font-medium text-[#F4F1ED]">{orgName}</span>
               </div>
               <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded border ${badgeColor}`}>
                 {label}
@@ -92,23 +92,23 @@ export function PortalVendors({ eventId }: Props) {
 
             <div className="space-y-1 ml-6">
               {vendor.contact_name && (
-                <div className="flex items-center gap-2 text-xs text-[#9c8876]">
+                <div className="flex items-center gap-2 text-xs text-[#D4A373]">
                   <User className="w-3 h-3" />
                   <span>{vendor.contact_name}</span>
                 </div>
               )}
               {vendor.contact_email && (
-                <div className="flex items-center gap-2 text-xs text-[#9c8876]">
+                <div className="flex items-center gap-2 text-xs text-[#D4A373]">
                   <Mail className="w-3 h-3" />
-                  <a href={`mailto:${vendor.contact_email}`} className="hover:text-[#f5ede0] transition-colors">
+                  <a href={`mailto:${vendor.contact_email}`} className="hover:text-[#F4F1ED] transition-colors">
                     {vendor.contact_email}
                   </a>
                 </div>
               )}
               {vendor.contact_phone && (
-                <div className="flex items-center gap-2 text-xs text-[#9c8876]">
+                <div className="flex items-center gap-2 text-xs text-[#D4A373]">
                   <Phone className="w-3 h-3" />
-                  <a href={`tel:${vendor.contact_phone}`} className="hover:text-[#f5ede0] transition-colors">
+                  <a href={`tel:${vendor.contact_phone}`} className="hover:text-[#F4F1ED] transition-colors">
                     {vendor.contact_phone}
                   </a>
                 </div>

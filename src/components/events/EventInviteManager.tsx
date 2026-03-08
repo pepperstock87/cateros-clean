@@ -36,8 +36,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "bg-yellow-950 text-yellow-300 border-yellow-800/60" },
   accepted: { label: "Accepted", color: "bg-green-950 text-green-300 border-green-800/60" },
   declined: { label: "Declined", color: "bg-red-950 text-red-300 border-red-800/60" },
-  expired: { label: "Expired", color: "bg-[#1c1814] text-[#6b5a4a] border-[#2e271f]" },
-  revoked: { label: "Revoked", color: "bg-[#1c1814] text-[#6b5a4a] border-[#2e271f]" },
+  expired: { label: "Expired", color: "bg-[#1A2538] text-[#7A8BA8] border-[#2A3A5C]" },
+  revoked: { label: "Revoked", color: "bg-[#1A2538] text-[#7A8BA8] border-[#2A3A5C]" },
 };
 
 type Props = {
@@ -150,7 +150,7 @@ export function EventInviteManager({ eventId }: Props) {
   if (loading) {
     return (
       <div className="card p-5 mt-4">
-        <div className="flex items-center justify-center gap-2 py-6 text-[#6b5a4a] text-sm">
+        <div className="flex items-center justify-center gap-2 py-6 text-[#7A8BA8] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading invites...
         </div>
@@ -163,9 +163,9 @@ export function EventInviteManager({ eventId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-sm flex items-center gap-2">
-          <Send className="w-4 h-4 text-[#9c8876]" />
+          <Send className="w-4 h-4 text-[#D4A373]" />
           Vendor Invites
-          <span className="text-xs text-[#6b5a4a]">({invites.length})</span>
+          <span className="text-xs text-[#7A8BA8]">({invites.length})</span>
         </h3>
         <button
           onClick={() => {
@@ -182,14 +182,14 @@ export function EventInviteManager({ eventId }: Props) {
 
       {/* Create invite form */}
       {showForm && (
-        <div className="p-4 rounded-xl border border-[#2e271f] bg-[#1a1714] space-y-4 mb-4">
+        <div className="p-4 rounded-xl border border-[#2A3A5C] bg-[#182030] space-y-4 mb-4">
           {newInviteUrl ? (
             /* Show generated link */
             <div className="space-y-3">
               <div className="text-center">
                 <Check className="w-8 h-8 text-green-400 mx-auto mb-2" />
                 <h4 className="text-sm font-medium mb-1">Invite Created</h4>
-                <p className="text-xs text-[#9c8876]">Share this link with the vendor</p>
+                <p className="text-xs text-[#D4A373]">Share this link with the vendor</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ export function EventInviteManager({ eventId }: Props) {
                     resetForm();
                     setShowForm(false);
                   }}
-                  className="text-xs text-[#6b5a4a] hover:text-[#9c8876] transition-colors"
+                  className="text-xs text-[#7A8BA8] hover:text-[#D4A373] transition-colors"
                 >
                   Done
                 </button>
@@ -330,7 +330,7 @@ export function EventInviteManager({ eventId }: Props) {
             return (
               <div
                 key={invite.id}
-                className="bg-[#1a1714] border border-[#2e271f] rounded-xl p-4"
+                className="bg-[#182030] border border-[#2A3A5C] rounded-xl p-4"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -339,13 +339,13 @@ export function EventInviteManager({ eventId }: Props) {
                     >
                       {effectiveCfg.label}
                     </span>
-                    <span className="text-xs text-[#9c8876]">
+                    <span className="text-xs text-[#D4A373]">
                       {RELATIONSHIP_OPTIONS.find(
                         (o) => o.value === invite.relationship_type
                       )?.label ?? invite.relationship_type}
                     </span>
                     {invite.role_label && (
-                      <span className="text-xs text-[#6b5a4a]">
+                      <span className="text-xs text-[#7A8BA8]">
                         &middot; {invite.role_label}
                       </span>
                     )}
@@ -358,7 +358,7 @@ export function EventInviteManager({ eventId }: Props) {
                           onClick={() =>
                             copyToClipboard(url, invite.invite_token)
                           }
-                          className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1"
+                          className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1"
                           title="Copy invite link"
                         >
                           {isCopied ? (
@@ -370,7 +370,7 @@ export function EventInviteManager({ eventId }: Props) {
                         <button
                           onClick={() => handleRevoke(invite.id)}
                           disabled={revokingId === invite.id}
-                          className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                          className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                           title="Revoke invite"
                         >
                           {revokingId === invite.id ? (
@@ -385,7 +385,7 @@ export function EventInviteManager({ eventId }: Props) {
                 </div>
 
                 {/* Invite details */}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#6b5a4a]">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#7A8BA8]">
                   {invite.invited_name && (
                     <span className="flex items-center gap-1">
                       <User className="w-3 h-3" />
@@ -408,7 +408,7 @@ export function EventInviteManager({ eventId }: Props) {
                 </div>
 
                 {invite.notes && (
-                  <p className="text-[11px] text-[#6b5a4a] mt-1.5 italic">
+                  <p className="text-[11px] text-[#7A8BA8] mt-1.5 italic">
                     {invite.notes}
                   </p>
                 )}
@@ -420,7 +420,7 @@ export function EventInviteManager({ eventId }: Props) {
                       type="text"
                       readOnly
                       value={url}
-                      className="input text-[10px] font-mono w-full py-1.5 bg-[#141210] text-[#6b5a4a]"
+                      className="input text-[10px] font-mono w-full py-1.5 bg-[#141210] text-[#7A8BA8]"
                     />
                   </div>
                 )}
@@ -439,9 +439,9 @@ export function EventInviteManager({ eventId }: Props) {
       ) : (
         !showForm && (
           <div className="text-center py-6">
-            <Link2 className="w-8 h-8 text-[#2e271f] mx-auto mb-2" />
-            <p className="text-xs text-[#6b5a4a]">No invites created yet</p>
-            <p className="text-[10px] text-[#6b5a4a] mt-1">
+            <Link2 className="w-8 h-8 text-[#2A3A5C] mx-auto mb-2" />
+            <p className="text-xs text-[#7A8BA8]">No invites created yet</p>
+            <p className="text-[10px] text-[#7A8BA8] mt-1">
               Create invite links to bring vendors into this event workspace.
             </p>
           </div>

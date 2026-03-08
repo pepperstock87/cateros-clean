@@ -29,7 +29,7 @@ export default async function EventsListPage() {
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-2xl font-semibold">Events</h1>
-          <p className="text-sm text-[#9c8876] mt-1">{events.length} total events</p>
+          <p className="text-sm text-[#D4A373] mt-1">{events.length} total events</p>
         </div>
         <div className="flex items-center gap-3">
           {events.length > 0 && <EventsExport events={events} companyName={companyName} isPro={isPro} />}
@@ -39,9 +39,9 @@ export default async function EventsListPage() {
 
       {events.length === 0 ? (
         <div className="card p-16 text-center">
-          <CalendarDays className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <CalendarDays className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No events yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">Create your first event to start pricing.</p>
+          <p className="text-sm text-[#D4A373] mb-6">Create your first event to start pricing.</p>
           <Link href="/events/new" className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" />Create first event</Link>
         </div>
       ) : (

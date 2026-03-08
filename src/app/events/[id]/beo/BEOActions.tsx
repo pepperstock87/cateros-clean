@@ -218,14 +218,14 @@ export function BEOActions({ event }: { event: Event }) {
     <div className="print:hidden flex items-center gap-3 mb-6">
       <Link
         href={`/events/${event.id}`}
-        className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to event
       </Link>
       <div className="ml-auto flex items-center gap-2">
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1c1814] text-[#f5ede0] text-sm font-medium hover:bg-[#2e271f] transition-colors border border-[#2e271f]"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1A2538] text-[#F4F1ED] text-sm font-medium hover:bg-[#2A3A5C] transition-colors border border-[#2A3A5C]"
         >
           <Printer className="w-4 h-4" /> Print
         </button>

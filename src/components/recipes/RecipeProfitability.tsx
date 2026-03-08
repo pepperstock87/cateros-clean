@@ -89,44 +89,44 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-2">
-            <BarChart3 className="w-4 h-4 text-[#9c8876]" />
-            <span className="text-xs text-[#9c8876] uppercase tracking-wider">Average Margin</span>
+            <BarChart3 className="w-4 h-4 text-[#D4A373]" />
+            <span className="text-xs text-[#D4A373] uppercase tracking-wider">Average Margin</span>
           </div>
           <div className={`text-2xl font-semibold ${marginColor(avgMargin)}`}>
             {avgMargin.toFixed(1)}%
           </div>
-          <p className="text-xs text-[#6b5a4a] mt-1">{validRecipes.length} recipes with pricing</p>
+          <p className="text-xs text-[#7A8BA8] mt-1">{validRecipes.length} recipes with pricing</p>
         </div>
 
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-[#9c8876] uppercase tracking-wider">Best Margin</span>
+            <span className="text-xs text-[#D4A373] uppercase tracking-wider">Best Margin</span>
           </div>
           {bestRecipe ? (
             <>
               <div className="text-2xl font-semibold text-green-400">{bestRecipe.margin.toFixed(1)}%</div>
-              <p className="text-xs text-[#9c8876] mt-1 truncate">{bestRecipe.name}</p>
+              <p className="text-xs text-[#D4A373] mt-1 truncate">{bestRecipe.name}</p>
             </>
           ) : (
-            <div className="text-sm text-[#6b5a4a]">No data</div>
+            <div className="text-sm text-[#7A8BA8]">No data</div>
           )}
         </div>
 
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-4 h-4 text-red-400" />
-            <span className="text-xs text-[#9c8876] uppercase tracking-wider">Worst Margin</span>
+            <span className="text-xs text-[#D4A373] uppercase tracking-wider">Worst Margin</span>
           </div>
           {worstRecipe ? (
             <>
               <div className={`text-2xl font-semibold ${marginColor(worstRecipe.margin)}`}>
                 {worstRecipe.margin.toFixed(1)}%
               </div>
-              <p className="text-xs text-[#9c8876] mt-1 truncate">{worstRecipe.name}</p>
+              <p className="text-xs text-[#D4A373] mt-1 truncate">{worstRecipe.name}</p>
             </>
           ) : (
-            <div className="text-sm text-[#6b5a4a]">No data</div>
+            <div className="text-sm text-[#7A8BA8]">No data</div>
           )}
         </div>
       </div>
@@ -136,9 +136,9 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#2e271f]">
+              <tr className="border-b border-[#2A3A5C]">
                 <th
-                  className="text-left px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider cursor-pointer hover:text-[#f5ede0] transition-colors"
+                  className="text-left px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider cursor-pointer hover:text-[#F4F1ED] transition-colors"
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
@@ -146,11 +146,11 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                     <ArrowUpDown className="w-3 h-3" />
                   </span>
                 </th>
-                <th className="text-left px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider">
+                <th className="text-left px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider">
                   Category
                 </th>
                 <th
-                  className="text-right px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider cursor-pointer hover:text-[#f5ede0] transition-colors"
+                  className="text-right px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider cursor-pointer hover:text-[#F4F1ED] transition-colors"
                   onClick={() => toggleSort("cost")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -158,11 +158,11 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                     <ArrowUpDown className="w-3 h-3" />
                   </span>
                 </th>
-                <th className="text-right px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider">
+                <th className="text-right px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider">
                   Price/Serving
                 </th>
                 <th
-                  className="text-right px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider cursor-pointer hover:text-[#f5ede0] transition-colors"
+                  className="text-right px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider cursor-pointer hover:text-[#F4F1ED] transition-colors"
                   onClick={() => toggleSort("margin")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -171,7 +171,7 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                   </span>
                 </th>
                 <th
-                  className="text-right px-5 py-3 text-[10px] font-medium text-[#9c8876] uppercase tracking-wider cursor-pointer hover:text-[#f5ede0] transition-colors"
+                  className="text-right px-5 py-3 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider cursor-pointer hover:text-[#F4F1ED] transition-colors"
                   onClick={() => toggleSort("profit")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -184,7 +184,7 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
             <tbody>
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-[#6b5a4a]">
+                  <td colSpan={6} className="px-5 py-12 text-center text-[#7A8BA8]">
                     No recipes found
                   </td>
                 </tr>
@@ -192,19 +192,19 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                 sorted.map((recipe) => (
                   <tr
                     key={recipe.id}
-                    className="border-b border-[#1e1a14] last:border-0 hover:bg-[#1c1814] transition-colors"
+                    className="border-b border-[#1e1a14] last:border-0 hover:bg-[#1A2538] transition-colors"
                   >
-                    <td className="px-5 py-3 font-medium text-[#f5ede0]">{recipe.name}</td>
-                    <td className="px-5 py-3 text-[#9c8876]">
-                      {recipe.category || <span className="text-[#6b5a4a]">--</span>}
+                    <td className="px-5 py-3 font-medium text-[#F4F1ED]">{recipe.name}</td>
+                    <td className="px-5 py-3 text-[#D4A373]">
+                      {recipe.category || <span className="text-[#7A8BA8]">--</span>}
                     </td>
-                    <td className="px-5 py-3 text-right text-[#9c8876]">
+                    <td className="px-5 py-3 text-right text-[#D4A373]">
                       {formatCurrency(recipe.cost_per_serving)}
                     </td>
-                    <td className="px-5 py-3 text-right text-[#f5ede0]">
+                    <td className="px-5 py-3 text-right text-[#F4F1ED]">
                       {recipe.selling_price > 0
                         ? formatCurrency(recipe.selling_price)
-                        : <span className="text-[#6b5a4a]">Not set</span>}
+                        : <span className="text-[#7A8BA8]">Not set</span>}
                     </td>
                     <td className="px-5 py-3 text-right">
                       {recipe.selling_price > 0 ? (
@@ -212,7 +212,7 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                           {recipe.margin.toFixed(1)}%
                         </span>
                       ) : (
-                        <span className="text-[#6b5a4a]">--</span>
+                        <span className="text-[#7A8BA8]">--</span>
                       )}
                     </td>
                     <td className="px-5 py-3 text-right">
@@ -221,7 +221,7 @@ export function RecipeProfitability({ recipes }: { recipes: RecipeRow[] }) {
                           {formatCurrency(recipe.profit)}
                         </span>
                       ) : (
-                        <span className="text-[#6b5a4a]">--</span>
+                        <span className="text-[#7A8BA8]">--</span>
                       )}
                     </td>
                   </tr>

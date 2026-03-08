@@ -24,7 +24,7 @@ export default async function VenuesPage() {
         <h1 className="font-display text-xl md:text-2xl font-semibold">
           Venue Profile
         </h1>
-        <p className="text-sm text-[#9c8876] mt-1">
+        <p className="text-sm text-[#D4A373] mt-1">
           Manage your venue details, capacity, and amenities.
         </p>
       </div>

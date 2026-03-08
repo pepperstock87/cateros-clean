@@ -137,7 +137,7 @@ export function GenerateProposalButton({ event }: { event: Event }) {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
           <div className="card p-6 max-w-lg w-full" onClick={e => e.stopPropagation()}>
             <h2 className="font-display text-lg font-semibold mb-1">Generate Proposal PDF</h2>
-            <p className="text-sm text-[#9c8876] mb-5">Customize before generating the PDF for your client.</p>
+            <p className="text-sm text-[#D4A373] mb-5">Customize before generating the PDF for your client.</p>
             <div className="space-y-4">
               <div>
                 <label className="label">Custom message to client (optional)</label>
@@ -164,8 +164,8 @@ export function GenerateProposalButton({ event }: { event: Event }) {
       )}
 
       {showPreview && previewUrl && (
-        <div className="fixed inset-0 z-50 bg-[#0f0d0b] flex flex-col">
-          <div className="bg-[#1a1714] border-b border-[#2e271f] px-6 py-3 flex justify-between items-center">
+        <div className="fixed inset-0 z-50 bg-[#0C1220] flex flex-col">
+          <div className="bg-[#182030] border-b border-[#2A3A5C] px-6 py-3 flex justify-between items-center">
             <h2 className="font-display text-lg font-semibold text-white">Proposal Preview</h2>
             <div className="flex items-center gap-3">
               <button onClick={handlePreviewDownload} className="btn-primary flex items-center gap-2">

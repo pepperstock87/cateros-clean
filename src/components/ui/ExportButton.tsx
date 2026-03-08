@@ -33,13 +33,13 @@ export function ExportButton({ onExportCSV, onExportPDF }: ExportButtonProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[150px] rounded-lg border border-[#2e271f] bg-[#1a1714] shadow-xl py-1">
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[150px] rounded-lg border border-[#2A3A5C] bg-[#182030] shadow-xl py-1">
           <button
             onClick={() => {
               onExportCSV();
               setOpen(false);
             }}
-            className="w-full text-left px-4 py-2 text-sm text-[#f5ede0] hover:bg-[#2e271f] transition-colors"
+            className="w-full text-left px-4 py-2 text-sm text-[#F4F1ED] hover:bg-[#2A3A5C] transition-colors"
           >
             Export CSV
           </button>
@@ -49,7 +49,7 @@ export function ExportButton({ onExportCSV, onExportPDF }: ExportButtonProps) {
                 onExportPDF();
                 setOpen(false);
               }}
-              className="w-full text-left px-4 py-2 text-sm text-[#f5ede0] hover:bg-[#2e271f] transition-colors"
+              className="w-full text-left px-4 py-2 text-sm text-[#F4F1ED] hover:bg-[#2A3A5C] transition-colors"
             >
               Export PDF
             </button>

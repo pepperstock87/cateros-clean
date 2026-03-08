@@ -7,16 +7,16 @@ export function renderMarkdown(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     // Code blocks (must be before inline code)
-    .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="bg-[#0f0d0b] rounded-lg p-3 my-2 text-xs overflow-x-auto"><code>$2</code></pre>')
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="bg-[#0C1220] rounded-lg p-3 my-2 text-xs overflow-x-auto"><code>$2</code></pre>')
     // Inline code
-    .replace(/`([^`]+)`/g, '<code class="bg-[#0f0d0b] px-1.5 py-0.5 rounded text-xs text-brand-300">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-[#0C1220] px-1.5 py-0.5 rounded text-xs text-brand-300">$1</code>')
     // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-[#f5ede0]">$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-[#F4F1ED]">$1</strong>')
     // Italic
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     // Headers
-    .replace(/^### (.+)$/gm, '<h3 class="font-semibold text-sm mt-3 mb-1 text-[#f5ede0]">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="font-semibold text-base mt-3 mb-1 text-[#f5ede0]">$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3 class="font-semibold text-sm mt-3 mb-1 text-[#F4F1ED]">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="font-semibold text-base mt-3 mb-1 text-[#F4F1ED]">$1</h2>')
     // Unordered lists
     .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
     .replace(/^• (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')

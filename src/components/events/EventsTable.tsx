@@ -15,7 +15,7 @@ const STATUS_CLASSES: Record<string, string> = {
 };
 
 function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payment: PaymentData | null }) {
-  if (!pricing) return <span className="text-[#6b5a4a]">&mdash;</span>;
+  if (!pricing) return <span className="text-[#7A8BA8]">&mdash;</span>;
   const paid = payment?.totalPaid ?? 0;
   const total = pricing.suggestedPrice;
   if (paid >= total)
@@ -31,7 +31,7 @@ function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payme
       </span>
     );
   return (
-    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#251f19] text-[#6b5a4a] border border-[#2e271f]">
+    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1F2A44] text-[#7A8BA8] border border-[#2A3A5C]">
       Unpaid
     </span>
   );
@@ -48,17 +48,17 @@ export function EventsTable({ events }: { events: Event[] }) {
                 <Link
                   key={event.id}
                   href={`/events/${event.id}`}
-                  className="card block p-4 hover:bg-[#1c1814] transition-colors"
+                  className="card block p-4 hover:bg-[#1A2538] transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span className="font-medium text-sm truncate">{event.name}</span>
                     <span className={`${STATUS_CLASSES[event.status] ?? "badge-draft"} flex-shrink-0`}>{event.status}</span>
                   </div>
-                  <div className="text-xs text-[#9c8876] mb-1">{event.client_name}</div>
-                  <div className="flex items-center gap-3 text-xs text-[#6b5a4a]">
+                  <div className="text-xs text-[#D4A373] mb-1">{event.client_name}</div>
+                  <div className="flex items-center gap-3 text-xs text-[#7A8BA8]">
                     <span>{format(new Date(event.event_date), "MMM d, yyyy")}</span>
                     <span>{event.guest_count} guests</span>
-                    {p && <span className="text-[#9c8876]">{formatCurrency(p.suggestedPrice)}</span>}
+                    {p && <span className="text-[#D4A373]">{formatCurrency(p.suggestedPrice)}</span>}
                   </div>
                 </Link>
               );
@@ -69,11 +69,11 @@ export function EventsTable({ events }: { events: Event[] }) {
           <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#2e271f]">
+                <tr className="border-b border-[#2A3A5C]">
                   {["Event", "Client", "Date", "Guests", "Revenue", "Margin", "Payment", "Status", "Readiness", ""].map((h) => (
                     <th
                       key={h}
-                      className="text-left text-xs text-[#6b5a4a] uppercase tracking-wider font-medium px-5 py-3"
+                      className="text-left text-xs text-[#7A8BA8] uppercase tracking-wider font-medium px-5 py-3"
                     >
                       {h}
                     </th>
@@ -85,7 +85,7 @@ export function EventsTable({ events }: { events: Event[] }) {
                   const p = event.pricing_data as PricingData | null;
                   const pay = event.payment_data as PaymentData | null;
                   return (
-                    <tr key={event.id} className="border-b border-[#1c1814] hover:bg-[#1c1814] transition-colors">
+                    <tr key={event.id} className="border-b border-[#1A2538] hover:bg-[#1A2538] transition-colors">
                       <td className="px-5 py-3.5 font-medium text-sm max-w-[180px]">
                         <Link
                           href={`/events/${event.id}`}
@@ -94,16 +94,16 @@ export function EventsTable({ events }: { events: Event[] }) {
                           {event.name}
                         </Link>
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-[#9c8876]">{event.client_name}</td>
-                      <td className="px-5 py-3.5 text-sm text-[#9c8876] whitespace-nowrap">
+                      <td className="px-5 py-3.5 text-sm text-[#D4A373]">{event.client_name}</td>
+                      <td className="px-5 py-3.5 text-sm text-[#D4A373] whitespace-nowrap">
                         {format(new Date(event.event_date), "MMM d, yyyy")}
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-[#9c8876]">{event.guest_count}</td>
+                      <td className="px-5 py-3.5 text-sm text-[#D4A373]">{event.guest_count}</td>
                       <td className="px-5 py-3.5 text-sm">
-                        {p ? formatCurrency(p.suggestedPrice) : <span className="text-[#6b5a4a]">&mdash;</span>}
+                        {p ? formatCurrency(p.suggestedPrice) : <span className="text-[#7A8BA8]">&mdash;</span>}
                       </td>
                       <td className="px-5 py-3.5 text-sm">
-                        {p ? formatPercent(p.projectedMargin) : <span className="text-[#6b5a4a]">&mdash;</span>}
+                        {p ? formatPercent(p.projectedMargin) : <span className="text-[#7A8BA8]">&mdash;</span>}
                       </td>
                       <td className="px-5 py-3.5">
                         <PaymentBadge pricing={p} payment={pay} />

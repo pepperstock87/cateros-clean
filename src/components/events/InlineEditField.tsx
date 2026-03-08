@@ -75,7 +75,7 @@ export function InlineEditField({ value, onSave, label, type = "text" }: Props) 
     return (
       <div className="group">
         {label && (
-          <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876] block mb-1">
+          <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373] block mb-1">
             {label}
           </span>
         )}
@@ -87,7 +87,7 @@ export function InlineEditField({ value, onSave, label, type = "text" }: Props) 
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={3}
-              className="flex-1 bg-[#0f0d0b] border border-[#2e271f] focus:border-brand-600 rounded-md px-2.5 py-1.5 text-sm text-[#f5ede0] outline-none transition-colors resize-y min-h-[60px]"
+              className="flex-1 bg-[#0C1220] border border-[#2A3A5C] focus:border-brand-600 rounded-md px-2.5 py-1.5 text-sm text-[#F4F1ED] outline-none transition-colors resize-y min-h-[60px]"
             />
           ) : (
             <input
@@ -96,7 +96,7 @@ export function InlineEditField({ value, onSave, label, type = "text" }: Props) 
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 bg-[#0f0d0b] border border-[#2e271f] focus:border-brand-600 rounded-md px-2.5 py-1.5 text-sm text-[#f5ede0] outline-none transition-colors min-w-0"
+              className="flex-1 bg-[#0C1220] border border-[#2A3A5C] focus:border-brand-600 rounded-md px-2.5 py-1.5 text-sm text-[#F4F1ED] outline-none transition-colors min-w-0"
             />
           )}
           <button
@@ -110,7 +110,7 @@ export function InlineEditField({ value, onSave, label, type = "text" }: Props) 
           <button
             onClick={cancel}
             disabled={saving}
-            className="p-1.5 rounded-md bg-[#1a1714] hover:bg-[#2e271f] text-[#9c8876] transition-colors disabled:opacity-50 flex-shrink-0"
+            className="p-1.5 rounded-md bg-[#182030] hover:bg-[#2A3A5C] text-[#D4A373] transition-colors disabled:opacity-50 flex-shrink-0"
             title="Cancel"
           >
             <X className="w-3.5 h-3.5" />
@@ -123,20 +123,20 @@ export function InlineEditField({ value, onSave, label, type = "text" }: Props) 
   return (
     <div className="group">
       {label && (
-        <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876] block mb-1">
+        <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373] block mb-1">
           {label}
         </span>
       )}
       <button
         onClick={startEditing}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#f5ede0] hover:text-brand-300 transition-colors text-left w-full min-h-[28px]"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#F4F1ED] hover:text-brand-300 transition-colors text-left w-full min-h-[28px]"
         title="Click to edit"
       >
         <span className={`${saving ? "opacity-50" : ""} break-words`}>
-          {displayValue || <span className="text-[#6b5a4a] italic">Empty</span>}
+          {displayValue || <span className="text-[#7A8BA8] italic">Empty</span>}
         </span>
-        <Pencil className="w-3 h-3 text-[#6b5a4a] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-        {saving && <Loader2 className="w-3 h-3 animate-spin text-[#9c8876] flex-shrink-0" />}
+        <Pencil className="w-3 h-3 text-[#7A8BA8] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        {saving && <Loader2 className="w-3 h-3 animate-spin text-[#D4A373] flex-shrink-0" />}
       </button>
     </div>
   );

@@ -77,11 +77,11 @@ export function EventChecklist({ event, hasProposal, hasStaff, depositPaid }: Pr
 
       {/* Progress bar */}
       <div className="mb-3">
-        <div className="flex items-center justify-between text-xs text-[#9c8876] mb-1">
+        <div className="flex items-center justify-between text-xs text-[#D4A373] mb-1">
           <span>{completed} of {total} complete</span>
           <span>{pct}%</span>
         </div>
-        <div className="w-full h-1.5 rounded-full bg-[#2e271f] overflow-hidden">
+        <div className="w-full h-1.5 rounded-full bg-[#2A3A5C] overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${allComplete ? "bg-green-400" : "bg-brand-600"}`}
             style={{ width: `${pct}%` }}
@@ -96,13 +96,13 @@ export function EventChecklist({ event, hasProposal, hasStaff, depositPaid }: Pr
             {item.complete ? (
               <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
             ) : (
-              <Circle className="w-4 h-4 text-[#6b5a4a] mt-0.5 flex-shrink-0" />
+              <Circle className="w-4 h-4 text-[#7A8BA8] mt-0.5 flex-shrink-0" />
             )}
             <div className="min-w-0">
-              <div className={`text-sm ${item.complete ? "text-[#f5ede0]" : "text-[#9c8876]"}`}>
+              <div className={`text-sm ${item.complete ? "text-[#F4F1ED]" : "text-[#D4A373]"}`}>
                 {item.label}
               </div>
-              <div className="text-xs text-[#6b5a4a]">{item.status}</div>
+              <div className="text-xs text-[#7A8BA8]">{item.status}</div>
             </div>
           </div>
         ))}

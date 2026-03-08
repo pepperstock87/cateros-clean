@@ -10,7 +10,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar companyName={profile?.company_name ?? undefined} />
-      <main className="flex-1 overflow-y-auto bg-[#0f0d0b]">{children}</main>
+      <main className="flex-1 overflow-y-auto bg-[#0C1220]">{children}</main>
     </div>
   );
 }

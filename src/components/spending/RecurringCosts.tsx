@@ -71,12 +71,12 @@ export function RecurringCosts({ costs }: { costs: RecurringCost[] }) {
   return (
     <div className="card p-4 md:p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider flex items-center gap-2">
+        <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider flex items-center gap-2">
           <RefreshCw className="w-4 h-4" />
           Recurring Costs
         </h2>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-[#6b5a4a]">{formatCurrency(monthlyTotal)}/mo</span>
+          <span className="text-xs text-[#7A8BA8]">{formatCurrency(monthlyTotal)}/mo</span>
           <button onClick={() => setShowAdd(!showAdd)} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
             {showAdd ? "Cancel" : "+ Add"}
           </button>
@@ -84,7 +84,7 @@ export function RecurringCosts({ costs }: { costs: RecurringCost[] }) {
       </div>
 
       {showAdd && (
-        <form onSubmit={handleAdd} className="p-3 rounded-lg border border-[#2e271f] mb-4 space-y-3">
+        <form onSubmit={handleAdd} className="p-3 rounded-lg border border-[#2A3A5C] mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Name</label>
@@ -117,26 +117,26 @@ export function RecurringCosts({ costs }: { costs: RecurringCost[] }) {
       )}
 
       {activeCosts.length === 0 && !showAdd ? (
-        <p className="text-xs text-[#6b5a4a] text-center py-6">
+        <p className="text-xs text-[#7A8BA8] text-center py-6">
           No recurring costs tracked. Add fixed expenses like rent, insurance, or subscriptions.
         </p>
       ) : (
         <div className="space-y-2">
           {activeCosts.map(c => (
-            <div key={c.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+            <div key={c.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
               <div className="min-w-0">
                 <div className="text-sm font-medium truncate">{c.name}</div>
-                <div className="text-[10px] text-[#6b5a4a]">
+                <div className="text-[10px] text-[#7A8BA8]">
                   {c.category ?? "Uncategorized"}
-                  <span className="ml-2 text-[#9c8876]">{formatCurrency(toMonthly(c.amount, c.frequency))}/mo equiv</span>
+                  <span className="ml-2 text-[#D4A373]">{formatCurrency(toMonthly(c.amount, c.frequency))}/mo equiv</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <span className="text-sm font-medium">{formatCurrency(c.amount)}<span className="text-[10px] text-[#6b5a4a]">{FREQ_LABELS[c.frequency]}</span></span>
+                <span className="text-sm font-medium">{formatCurrency(c.amount)}<span className="text-[10px] text-[#7A8BA8]">{FREQ_LABELS[c.frequency]}</span></span>
                 <button
                   onClick={() => handleDelete(c.id)}
                   disabled={deleting === c.id}
-                  className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                  className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

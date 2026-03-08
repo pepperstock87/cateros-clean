@@ -76,9 +76,9 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-sm flex items-center gap-2">
-          <UserPlus className="w-4 h-4 text-[#9c8876]" />
+          <UserPlus className="w-4 h-4 text-[#D4A373]" />
           Staff Assignments
-          <span className="text-xs text-[#6b5a4a]">({assignments.length})</span>
+          <span className="text-xs text-[#7A8BA8]">({assignments.length})</span>
         </h2>
         {availableStaff.length > 0 && (
           <button onClick={() => setShowAdd(!showAdd)} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
@@ -91,12 +91,12 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
       {assignments.length > 0 ? (
         <div className="space-y-2 mb-4">
           {assignments.map(a => (
-            <div key={a.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+            <div key={a.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   onClick={() => toggleConfirmed(a.id, a.confirmed)}
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                    a.confirmed ? "bg-green-500 border-green-500" : "border-[#6b5a4a] hover:border-brand-400"
+                    a.confirmed ? "bg-green-500 border-green-500" : "border-[#7A8BA8] hover:border-brand-400"
                   }`}
                   title={a.confirmed ? "Confirmed" : "Click to confirm"}
                 >
@@ -104,7 +104,7 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
                 </button>
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{a.staff_members?.name ?? "Unknown"}</div>
-                  <div className="text-[10px] text-[#6b5a4a]">
+                  <div className="text-[10px] text-[#7A8BA8]">
                     {a.role ?? a.staff_members?.role ?? ""}
                     {a.start_time && a.end_time && (
                       <> · {a.start_time} – {a.end_time}</>
@@ -116,7 +116,7 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
               <button
                 onClick={() => handleRemove(a.id)}
                 disabled={removing === a.id}
-                className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1 flex-shrink-0"
+                className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1 flex-shrink-0"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -124,14 +124,14 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
           ))}
         </div>
       ) : (
-        <p className="text-xs text-[#6b5a4a] text-center py-4 mb-4">
+        <p className="text-xs text-[#7A8BA8] text-center py-4 mb-4">
           No staff assigned yet. Add staff from your library.
         </p>
       )}
 
       {/* Quick add form */}
       {showAdd && (
-        <form action={handleAssign} className="p-3 rounded-lg border border-[#2e271f] space-y-3">
+        <form action={handleAssign} className="p-3 rounded-lg border border-[#2A3A5C] space-y-3">
           <div>
             <label className="label">Staff Member</label>
             <select name="staff_id" className="input text-sm w-full" required>
@@ -159,7 +159,7 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
       )}
 
       {availableStaff.length === 0 && assignments.length > 0 && (
-        <p className="text-[10px] text-[#6b5a4a] text-center">All staff members assigned</p>
+        <p className="text-[10px] text-[#7A8BA8] text-center">All staff members assigned</p>
       )}
     </div>
   );

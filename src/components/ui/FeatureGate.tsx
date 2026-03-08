@@ -75,8 +75,8 @@ export function FeatureGate({
           .replace(/_/g, " ")
           .replace(/\b\w/g, (c) => c.toUpperCase())}
       </h3>
-      <p className="text-sm text-[#9c8876] mb-5">
-        This feature requires the <span className="text-[#f5ede0] font-medium">{label}</span> plan or higher.
+      <p className="text-sm text-[#D4A373] mb-5">
+        This feature requires the <span className="text-[#F4F1ED] font-medium">{label}</span> plan or higher.
       </p>
       <Link
         href="/billing/plans"
@@ -116,7 +116,7 @@ export function FeatureGateInline({
     <div className="bg-brand-950 border border-brand-800 rounded-lg p-4 flex items-start gap-3">
       <Lock className="w-5 h-5 text-brand-400 flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-[#f5ede0] mb-1">
+        <p className="text-sm text-[#F4F1ED] mb-1">
           {feature.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} requires a {PLAN_INFO[minPlan].label} plan.
         </p>
         <Link

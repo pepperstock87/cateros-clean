@@ -61,20 +61,20 @@ export function StaffPickerModal({ open, onClose, onSelect }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative bg-[#1a1714] border border-[#2e271f] rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
-        <div className="flex items-center justify-between p-4 border-b border-[#2e271f]">
+      <div className="relative bg-[#182030] border border-[#2A3A5C] rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
+        <div className="flex items-center justify-between p-4 border-b border-[#2A3A5C]">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-brand-400" />
             <h2 className="font-medium text-sm">Import from Staff</h2>
           </div>
-          <button onClick={onClose} className="text-[#6b5a4a] hover:text-[#f5ede0] transition-colors">
+          <button onClick={onClose} className="text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-3 border-b border-[#2e271f]">
+        <div className="p-3 border-b border-[#2A3A5C]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8]" />
             <input
               className="input pl-9 text-sm w-full"
               placeholder="Search by name or role..."
@@ -87,9 +87,9 @@ export function StaffPickerModal({ open, onClose, onSelect }: Props) {
 
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
-            <p className="text-xs text-[#6b5a4a] text-center py-8">Loading staff...</p>
+            <p className="text-xs text-[#7A8BA8] text-center py-8">Loading staff...</p>
           ) : filtered.length === 0 ? (
-            <p className="text-xs text-[#6b5a4a] text-center py-8">
+            <p className="text-xs text-[#7A8BA8] text-center py-8">
               {staff.length === 0 ? "No staff members yet. Add them in the Staff page." : "No matches found."}
             </p>
           ) : (
@@ -103,19 +103,19 @@ export function StaffPickerModal({ open, onClose, onSelect }: Props) {
                   className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all mb-1 ${
                     isSelected
                       ? "bg-brand-950 border border-brand-700"
-                      : "hover:bg-[#251f19] border border-transparent"
+                      : "hover:bg-[#1F2A44] border border-transparent"
                   }`}
                 >
                   <div
                     className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-                      isSelected ? "bg-brand-600 border-brand-500" : "border-[#3d3028]"
+                      isSelected ? "bg-brand-600 border-brand-500" : "border-[#344570]"
                     }`}
                   >
                     {isSelected && <Check className="w-3 h-3 text-white" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{s.name}</div>
-                    <div className="text-xs text-[#9c8876]">{s.role}</div>
+                    <div className="text-xs text-[#D4A373]">{s.role}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-sm font-semibold text-brand-300">
@@ -128,8 +128,8 @@ export function StaffPickerModal({ open, onClose, onSelect }: Props) {
           )}
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-[#2e271f]">
-          <span className="text-xs text-[#6b5a4a]">
+        <div className="flex items-center justify-between p-4 border-t border-[#2A3A5C]">
+          <span className="text-xs text-[#7A8BA8]">
             {selected.size} selected
           </span>
           <button

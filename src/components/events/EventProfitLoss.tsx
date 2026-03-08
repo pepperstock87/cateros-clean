@@ -19,34 +19,34 @@ export function EventProfitLoss({ revenue, estimatedCost, actualSpending, receip
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-sm flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-[#9c8876]" />
+          <DollarSign className="w-4 h-4 text-[#D4A373]" />
           Profit & Loss
         </h2>
         {isProjected && (
-          <span className="text-[10px] px-2 py-0.5 rounded bg-[#251f19] text-[#9c8876] border border-[#2e271f]">
+          <span className="text-[10px] px-2 py-0.5 rounded bg-[#1F2A44] text-[#D4A373] border border-[#2A3A5C]">
             Estimated costs
           </span>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">Revenue</div>
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">Revenue</div>
           <div className="text-sm font-semibold text-brand-300">{formatCurrency(revenue)}</div>
         </div>
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">
             {isProjected ? "Est. Cost" : "Actual Cost"}
           </div>
           <div className="text-sm font-semibold">{formatCurrency(cost)}</div>
           {hasActualData && (
-            <div className="text-[10px] text-[#6b5a4a] mt-0.5 flex items-center justify-center gap-1">
+            <div className="text-[10px] text-[#7A8BA8] mt-0.5 flex items-center justify-center gap-1">
               <Receipt className="w-2.5 h-2.5" />{receiptCount} receipt{receiptCount !== 1 ? "s" : ""}
             </div>
           )}
         </div>
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">Profit</div>
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">Profit</div>
           <div className={`text-sm font-semibold flex items-center justify-center gap-1 ${profit >= 0 ? "text-green-400" : "text-red-400"}`}>
             {profit >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
             {formatCurrency(Math.abs(profit))}
@@ -56,7 +56,7 @@ export function EventProfitLoss({ revenue, estimatedCost, actualSpending, receip
 
       {/* Margin bar */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 rounded-full bg-[#2e271f] overflow-hidden">
+        <div className="flex-1 h-2 rounded-full bg-[#2A3A5C] overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
               margin >= 25 ? "bg-green-500" : margin >= 15 ? "bg-yellow-500" : "bg-red-500"
@@ -72,8 +72,8 @@ export function EventProfitLoss({ revenue, estimatedCost, actualSpending, receip
       </div>
 
       {hasActualData && estimatedCost > 0 && (
-        <div className="mt-3 pt-3 border-t border-[#2e271f]">
-          <div className="flex justify-between text-xs text-[#6b5a4a]">
+        <div className="mt-3 pt-3 border-t border-[#2A3A5C]">
+          <div className="flex justify-between text-xs text-[#7A8BA8]">
             <span>Estimated cost was {formatCurrency(estimatedCost)}</span>
             <span className={actualSpending <= estimatedCost ? "text-green-400" : "text-red-400"}>
               {actualSpending <= estimatedCost ? "Under" : "Over"} by {formatCurrency(Math.abs(actualSpending - estimatedCost))}

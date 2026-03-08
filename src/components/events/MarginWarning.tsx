@@ -36,7 +36,7 @@ export function MarginWarning({ margin, totalCost, totalPrice }: Props) {
       </div>
       <button
         onClick={() => setDismissed(true)}
-        className="text-[#6b5a4a] hover:text-[#9c8876] transition-colors flex-shrink-0"
+        className="text-[#7A8BA8] hover:text-[#D4A373] transition-colors flex-shrink-0"
         aria-label="Dismiss"
       >
         <X className="w-4 h-4" />

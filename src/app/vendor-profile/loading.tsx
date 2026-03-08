@@ -10,7 +10,7 @@ export default function VendorProfileLoading() {
       </div>
 
       {/* Form skeleton */}
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-6 space-y-6">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-6 space-y-6">
         {/* Business name & category */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

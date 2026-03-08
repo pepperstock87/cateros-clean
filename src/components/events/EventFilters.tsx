@@ -74,13 +74,13 @@ export function EventFilters({ onFilterChange, initialSearch = "" }: Props) {
   };
 
   const selectClass =
-    "appearance-none bg-[#1a1714] border border-[#2e271f] rounded-lg text-sm text-[#f5ede0] pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600/40 focus:border-brand-600 cursor-pointer";
+    "appearance-none bg-[#182030] border border-[#2A3A5C] rounded-lg text-sm text-[#F4F1ED] pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600/40 focus:border-brand-600 cursor-pointer";
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
       {/* Search */}
       <div className="relative flex-1 w-full sm:max-w-xs">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b5a4a]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8BA8]" />
         <input
           type="text"
           placeholder="Search events or clients..."
@@ -103,7 +103,7 @@ export function EventFilters({ onFilterChange, initialSearch = "" }: Props) {
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a] pointer-events-none" />
+        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8] pointer-events-none" />
       </div>
 
       {/* Date range filter */}
@@ -119,7 +119,7 @@ export function EventFilters({ onFilterChange, initialSearch = "" }: Props) {
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b5a4a] pointer-events-none" />
+        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8BA8] pointer-events-none" />
       </div>
     </div>
   );

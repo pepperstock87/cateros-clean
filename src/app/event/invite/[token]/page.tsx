@@ -64,7 +64,7 @@ export default async function EventInvitePage({ params }: Props) {
   // Non-pending statuses get a simple status page
   if (effectiveStatus !== "pending") {
     return (
-      <div className="min-h-screen bg-[#0f0d0b] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#0C1220] flex items-center justify-center p-6">
         <div className="w-full max-w-md text-center">
           <div className="inline-flex items-center gap-2.5 mb-6">
             <div className="w-10 h-10 rounded-lg bg-brand-500 flex items-center justify-center">
@@ -78,7 +78,7 @@ export default async function EventInvitePage({ params }: Props) {
               <>
                 <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-4" />
                 <h1 className="font-display text-xl font-semibold mb-2">Invite Accepted</h1>
-                <p className="text-sm text-[#9c8876]">
+                <p className="text-sm text-[#D4A373]">
                   This invite has already been accepted. You can access the event from your dashboard.
                 </p>
               </>
@@ -87,39 +87,39 @@ export default async function EventInvitePage({ params }: Props) {
               <>
                 <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
                 <h1 className="font-display text-xl font-semibold mb-2">Invite Declined</h1>
-                <p className="text-sm text-[#9c8876]">This invite was declined.</p>
+                <p className="text-sm text-[#D4A373]">This invite was declined.</p>
               </>
             )}
             {effectiveStatus === "expired" && (
               <>
-                <Clock className="w-12 h-12 text-[#6b5a4a] mx-auto mb-4" />
+                <Clock className="w-12 h-12 text-[#7A8BA8] mx-auto mb-4" />
                 <h1 className="font-display text-xl font-semibold mb-2">Invite Expired</h1>
-                <p className="text-sm text-[#9c8876]">
+                <p className="text-sm text-[#D4A373]">
                   This invite has expired. Please contact the event organizer for a new invite.
                 </p>
               </>
             )}
             {effectiveStatus === "revoked" && (
               <>
-                <AlertTriangle className="w-12 h-12 text-[#6b5a4a] mx-auto mb-4" />
+                <AlertTriangle className="w-12 h-12 text-[#7A8BA8] mx-auto mb-4" />
                 <h1 className="font-display text-xl font-semibold mb-2">Invite Revoked</h1>
-                <p className="text-sm text-[#9c8876]">
+                <p className="text-sm text-[#D4A373]">
                   This invite has been revoked by the event organizer.
                 </p>
               </>
             )}
           </div>
 
-          <p className="text-xs text-[#6b5a4a] mt-6">Powered by Cateros</p>
+          <p className="text-xs text-[#7A8BA8] mt-6">Powered by Cateros</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0d0b]">
+    <div className="min-h-screen bg-[#0C1220]">
       {/* Header */}
-      <div className="border-b border-[#2e271f]">
+      <div className="border-b border-[#2A3A5C]">
         <div className="max-w-2xl mx-auto px-6 py-8">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -128,7 +128,7 @@ export default async function EventInvitePage({ params }: Props) {
               )}
               <h1 className="font-display text-xl font-semibold">{companyName}</h1>
               {(settings?.phone || settings?.email) && (
-                <p className="text-xs text-[#9c8876] mt-1">
+                <p className="text-xs text-[#D4A373] mt-1">
                   {[settings?.phone, settings?.email].filter(Boolean).join(" · ")}
                 </p>
               )}
@@ -137,7 +137,7 @@ export default async function EventInvitePage({ params }: Props) {
               <div className="text-xs font-medium text-brand-400 uppercase tracking-wider mb-1">
                 Event Invite
               </div>
-              <div className="text-xs text-[#9c8876]">
+              <div className="text-xs text-[#D4A373]">
                 {invite.expires_at && (
                   <>Expires {format(new Date(invite.expires_at), "MMM d, yyyy")}</>
                 )}
@@ -153,23 +153,23 @@ export default async function EventInvitePage({ params }: Props) {
           <h2 className="font-display text-2xl font-semibold mb-2">
             You&apos;re Invited
           </h2>
-          <p className="text-sm text-[#9c8876]">
-            <span className="text-[#f5ede0] font-medium">{inviterName}</span> has invited you to join
+          <p className="text-sm text-[#D4A373]">
+            <span className="text-[#F4F1ED] font-medium">{inviterName}</span> has invited you to join
             {event ? (
-              <> the event <span className="text-[#f5ede0] font-medium">&ldquo;{event.name}&rdquo;</span></>
+              <> the event <span className="text-[#F4F1ED] font-medium">&ldquo;{event.name}&rdquo;</span></>
             ) : (
               " an event"
             )} as a <span className="text-brand-300 font-medium">{invite.role_label || roleLabel}</span>.
           </p>
           {invite.invited_name && (
-            <p className="text-xs text-[#6b5a4a] mt-2">
+            <p className="text-xs text-[#7A8BA8] mt-2">
               Invited: {invite.invited_name}
               {invite.invited_email && ` (${invite.invited_email})`}
             </p>
           )}
           {invite.notes && (
-            <div className="mt-4 p-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
-              <p className="text-xs text-[#9c8876] italic">&ldquo;{invite.notes}&rdquo;</p>
+            <div className="mt-4 p-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
+              <p className="text-xs text-[#D4A373] italic">&ldquo;{invite.notes}&rdquo;</p>
             </div>
           )}
         </div>
@@ -182,19 +182,19 @@ export default async function EventInvitePage({ params }: Props) {
             </h3>
             <div className="card p-5">
               <h4 className="font-display text-lg font-semibold mb-1">{event.name}</h4>
-              <p className="text-sm text-[#9c8876] mb-4">Client: {event.client_name}</p>
+              <p className="text-sm text-[#D4A373] mb-4">Client: {event.client_name}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-[#1a1714] border border-[#2e271f] rounded-lg p-3">
+                <div className="bg-[#182030] border border-[#2A3A5C] rounded-lg p-3">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="text-xs text-[#9c8876]">Date</span>
+                    <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-xs text-[#D4A373]">Date</span>
                   </div>
                   <div className="text-sm font-medium">
                     {format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}
                   </div>
                   {(event.start_time || event.end_time) && (
-                    <div className="text-xs text-[#6b5a4a] mt-0.5">
+                    <div className="text-xs text-[#7A8BA8] mt-0.5">
                       {event.start_time && event.start_time}
                       {event.start_time && event.end_time && " - "}
                       {event.end_time && event.end_time}
@@ -202,19 +202,19 @@ export default async function EventInvitePage({ params }: Props) {
                   )}
                 </div>
 
-                <div className="bg-[#1a1714] border border-[#2e271f] rounded-lg p-3">
+                <div className="bg-[#182030] border border-[#2A3A5C] rounded-lg p-3">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-                    <span className="text-xs text-[#9c8876]">Guests</span>
+                    <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-xs text-[#D4A373]">Guests</span>
                   </div>
                   <div className="text-sm font-medium">{event.guest_count}</div>
                 </div>
 
                 {event.venue && (
-                  <div className="bg-[#1a1714] border border-[#2e271f] rounded-lg p-3">
+                  <div className="bg-[#182030] border border-[#2A3A5C] rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
-                      <span className="text-xs text-[#9c8876]">Venue</span>
+                      <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
+                      <span className="text-xs text-[#D4A373]">Venue</span>
                     </div>
                     <div className="text-sm font-medium truncate">{event.venue}</div>
                   </div>
@@ -228,7 +228,7 @@ export default async function EventInvitePage({ params }: Props) {
         <InviteResponseClient inviteToken={token} eventId={event?.id ?? null} />
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#6b5a4a] pt-4 pb-8">
+        <div className="text-center text-xs text-[#7A8BA8] pt-4 pb-8">
           Powered by Cateros
         </div>
       </div>

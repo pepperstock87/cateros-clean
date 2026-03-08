@@ -54,13 +54,13 @@ export function BookingProgress({ status, requireContract, requireDeposit }: Pro
                     ? "bg-green-600 border-green-600"
                     : isCurrent
                     ? "border-brand-400 bg-brand-950"
-                    : "border-[#2e271f] bg-[#1a1714]"
+                    : "border-[#2A3A5C] bg-[#182030]"
                 }`}
               >
                 {isComplete ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                 ) : (
-                  <Icon className={`w-3.5 h-3.5 ${isCurrent ? "text-brand-400" : "text-[#6b5a4a]"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isCurrent ? "text-brand-400" : "text-[#7A8BA8]"}`} />
                 )}
               </div>
               <span
@@ -69,7 +69,7 @@ export function BookingProgress({ status, requireContract, requireDeposit }: Pro
                     ? "text-green-400"
                     : isCurrent
                     ? "text-brand-300"
-                    : "text-[#6b5a4a]"
+                    : "text-[#7A8BA8]"
                 }`}
               >
                 {step.label}
@@ -78,7 +78,7 @@ export function BookingProgress({ status, requireContract, requireDeposit }: Pro
             {i < allSteps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-1.5 mt-[-18px] rounded-full transition-colors min-w-[12px] ${
-                  i < currentIdx ? "bg-green-600" : "bg-[#2e271f]"
+                  i < currentIdx ? "bg-green-600" : "bg-[#2A3A5C]"
                 }`}
               />
             )}

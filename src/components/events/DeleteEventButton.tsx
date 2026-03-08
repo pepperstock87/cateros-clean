@@ -27,7 +27,7 @@ export function DeleteEventButton({ eventId, eventName }: { eventId: string; eve
     <button
       onClick={handleDelete}
       disabled={deleting}
-      className="text-[#6b5a4a] hover:text-red-400 transition-colors p-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="text-[#7A8BA8] hover:text-red-400 transition-colors p-2 disabled:opacity-50 disabled:cursor-not-allowed"
       title="Delete event"
     >
       {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

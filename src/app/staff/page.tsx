@@ -42,7 +42,7 @@ export default async function StaffPage() {
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Staff</h1>
-          <p className="text-sm text-[#9c8876] mt-1">{staff.length} team member{staff.length !== 1 ? "s" : ""}</p>
+          <p className="text-sm text-[#D4A373] mt-1">{staff.length} team member{staff.length !== 1 ? "s" : ""}</p>
         </div>
       </div>
 
@@ -50,30 +50,30 @@ export default async function StaffPage() {
       {upcomingByStaff.size > 0 && (
         <div className="card p-5 mb-6">
           <h2 className="font-medium text-sm mb-3 flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-[#9c8876]" />
+            <CalendarDays className="w-4 h-4 text-[#D4A373]" />
             Upcoming Assignments
           </h2>
           <div className="space-y-2">
             {staff.filter(s => upcomingByStaff.has(s.id)).map(s => {
               const upcoming = upcomingByStaff.get(s.id)!;
               return (
-                <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+                <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
                   <div>
                     <span className="text-sm font-medium">{s.name}</span>
-                    <span className="text-xs text-[#6b5a4a] ml-2">{s.role}</span>
+                    <span className="text-xs text-[#7A8BA8] ml-2">{s.role}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     {upcoming.slice(0, 2).map((a: any) => (
                       <Link
                         key={a.id}
                         href={`/events/${a.event.id}`}
-                        className="text-[10px] px-2 py-1 rounded bg-[#251f19] text-[#9c8876] hover:text-brand-300 transition-colors"
+                        className="text-[10px] px-2 py-1 rounded bg-[#1F2A44] text-[#D4A373] hover:text-brand-300 transition-colors"
                       >
                         {a.event.name} · {format(new Date(a.event.event_date), "MMM d")}
                       </Link>
                     ))}
                     {upcoming.length > 2 && (
-                      <span className="text-[10px] text-[#6b5a4a]">+{upcoming.length - 2} more</span>
+                      <span className="text-[10px] text-[#7A8BA8]">+{upcoming.length - 2} more</span>
                     )}
                   </div>
                 </div>
@@ -85,9 +85,9 @@ export default async function StaffPage() {
 
       {staff.length === 0 ? (
         <div className="card p-16 text-center">
-          <Users className="w-10 h-10 text-[#6b5a4a] mx-auto mb-4" />
+          <Users className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">No staff members yet</h2>
-          <p className="text-sm text-[#9c8876] mb-6">Add your team to quickly assign them to events.</p>
+          <p className="text-sm text-[#D4A373] mb-6">Add your team to quickly assign them to events.</p>
         </div>
       ) : null}
 

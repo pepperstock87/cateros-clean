@@ -34,16 +34,16 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     }
   }, [state, markClean]);
 
-  if (loading) return <div className="p-8 text-sm text-[#6b5a4a]">Loading...</div>;
+  if (loading) return <div className="p-8 text-sm text-[#7A8BA8]">Loading...</div>;
   if (!event) return <div className="p-8 text-sm text-red-400">Event not found</div>;
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <Link href={`/events/${id}`} className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-6 transition-colors">
+      <Link href={`/events/${id}`} className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to event
       </Link>
       <h1 className="font-display text-2xl font-semibold mb-2">Edit Event</h1>
-      <p className="text-sm text-[#9c8876] mb-8">Update event details below.</p>
+      <p className="text-sm text-[#D4A373] mb-8">Update event details below.</p>
 
       <UnsavedBanner show={isDirty} />
 
@@ -53,7 +53,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
       <form action={action} onChange={markDirty} className="space-y-6">
         <div className="card p-6 space-y-4">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Event Details</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Event Details</h2>
           <div>
             <label className="label">Event name *</label>
             <input name="name" className="input" defaultValue={event.name} required />
@@ -85,7 +85,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div className="card p-6 space-y-4">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider">Client Information</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Client Information</h2>
           <div>
             <label className="label">Client name *</label>
             <input name="client_name" className="input" defaultValue={event.client_name} required />
@@ -103,7 +103,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div className="card p-6">
-          <h2 className="font-medium text-sm text-[#9c8876] uppercase tracking-wider mb-4">Notes</h2>
+          <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider mb-4">Notes</h2>
           <textarea name="notes" className="input resize-none" rows={3} defaultValue={event.notes ?? ""} />
         </div>
 

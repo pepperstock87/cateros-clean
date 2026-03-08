@@ -49,34 +49,34 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-medium text-sm">{s.name}</h3>
-                  <p className="text-xs text-[#9c8876]">{s.role}</p>
+                  <p className="text-xs text-[#D4A373]">{s.role}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-brand-300">{formatCurrency(Number(s.hourly_rate))}/hr</span>
                   <button
                     onClick={() => handleDelete(s.id, s.name)}
                     disabled={deleting === s.id}
-                    className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                    className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
               {(s.phone || s.email) && (
-                <div className="flex items-center gap-3 text-xs text-[#9c8876] mt-2">
+                <div className="flex items-center gap-3 text-xs text-[#D4A373] mt-2">
                   {s.phone && (
-                    <a href={`tel:${s.phone}`} className="flex items-center gap-1 hover:text-[#f5ede0] transition-colors">
+                    <a href={`tel:${s.phone}`} className="flex items-center gap-1 hover:text-[#F4F1ED] transition-colors">
                       <Phone className="w-3 h-3" />{s.phone}
                     </a>
                   )}
                   {s.email && (
-                    <a href={`mailto:${s.email}`} className="flex items-center gap-1 hover:text-[#f5ede0] transition-colors">
+                    <a href={`mailto:${s.email}`} className="flex items-center gap-1 hover:text-[#F4F1ED] transition-colors">
                       <Mail className="w-3 h-3" />{s.email}
                     </a>
                   )}
                 </div>
               )}
-              {s.notes && <p className="text-xs text-[#6b5a4a] mt-2">{s.notes}</p>}
+              {s.notes && <p className="text-xs text-[#7A8BA8] mt-2">{s.notes}</p>}
             </div>
           ))}
         </div>
@@ -100,7 +100,7 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
             <div>
               <label className="label">Hourly rate</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                 <input name="hourly_rate" type="number" className="input pl-6" placeholder="25" min={0} step={0.5} defaultValue={25} />
               </div>
             </div>

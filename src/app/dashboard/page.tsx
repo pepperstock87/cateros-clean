@@ -304,7 +304,7 @@ export default async function DashboardPage() {
           <h1 className="font-display text-xl md:text-2xl font-semibold">
             Good {greeting}, {profile?.full_name?.split(" ")[0] ?? "there"} 👋
           </h1>
-          <p className="text-xs md:text-sm text-[#9c8876] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
+          <p className="text-xs md:text-sm text-[#D4A373] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="How's my business?" />
@@ -347,8 +347,8 @@ export default async function DashboardPage() {
               <div className="flex items-center gap-1 mt-1.5">
                 {isEqual ? (
                   <>
-                    <Minus className="w-3 h-3 text-[#6b5a4a]" />
-                    <span className="text-[10px] md:text-xs text-[#6b5a4a]">No change</span>
+                    <Minus className="w-3 h-3 text-[#7A8BA8]" />
+                    <span className="text-[10px] md:text-xs text-[#7A8BA8]">No change</span>
                   </>
                 ) : isUp ? (
                   <>
@@ -380,8 +380,8 @@ export default async function DashboardPage() {
           return (
             <div className="card p-4 md:p-5 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-2">
-                <CalendarDays className="w-4 h-4 text-[#9c8876]" />
-                <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Next Event</span>
+                <CalendarDays className="w-4 h-4 text-[#D4A373]" />
+                <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Next Event</span>
               </div>
               <div className="text-lg md:text-xl font-semibold font-display">
                 {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
@@ -398,21 +398,21 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
         <div className="card p-4 md:p-5">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-[#9c8876]" />
-            <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Proposed Pipeline</span>
+            <DollarSign className="w-4 h-4 text-[#D4A373]" />
+            <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Proposed Pipeline</span>
           </div>
           <div className="text-lg md:text-2xl font-semibold font-display">{formatCurrency(stats.proposedPipeline.total)}</div>
-          <div className="text-[10px] md:text-xs text-[#6b5a4a] mt-1">
+          <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
             {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? "event" : "events"}
           </div>
         </div>
         <div className="card p-4 md:p-5">
           <div className="flex items-center gap-2 mb-2">
             <DollarSign className="w-4 h-4 text-green-400" />
-            <span className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Confirmed Pipeline</span>
+            <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Confirmed Pipeline</span>
           </div>
           <div className="text-lg md:text-2xl font-semibold font-display text-green-400">{formatCurrency(stats.confirmedPipeline.total)}</div>
-          <div className="text-[10px] md:text-xs text-[#6b5a4a] mt-1">
+          <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
             {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? "event" : "events"}
           </div>
         </div>
@@ -430,7 +430,7 @@ export default async function DashboardPage() {
 
       {/* Revenue Chart */}
       <div className="card p-4 md:p-5 mb-6 md:mb-8">
-        <h2 className="font-medium text-xs md:text-sm mb-4 text-[#9c8876] uppercase tracking-wider">
+        <h2 className="font-medium text-xs md:text-sm mb-4 text-[#D4A373] uppercase tracking-wider">
           <span className="hidden sm:inline">Revenue vs Profit — 6 months</span>
           <span className="sm:hidden">6 Month Overview</span>
         </h2>
@@ -439,7 +439,7 @@ export default async function DashboardPage() {
 
       {/* Revenue Forecast */}
       <div className="mb-6 md:mb-8">
-        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider mb-4">Revenue Forecast</h2>
+        <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider mb-4">Revenue Forecast</h2>
         <RevenueForecasting
           events={stats.allEvents.map((e: Event) => ({
             date: e.event_date,
@@ -453,7 +453,7 @@ export default async function DashboardPage() {
       {stats.eventsWithBalances.length > 0 && (
         <div className="card p-4 md:p-5 mb-6 md:mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Outstanding Payments</h2>
+            <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Outstanding Payments</h2>
             <span className="text-sm font-semibold text-yellow-400">{formatCurrency(stats.totalOutstanding)}</span>
           </div>
           <div className="space-y-2">
@@ -464,16 +464,16 @@ export default async function DashboardPage() {
               const balance = pricing.suggestedPrice - paid;
               const pctPaid = (paid / pricing.suggestedPrice) * 100;
               return (
-                <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#1c1814] transition-colors border border-[#2e271f]">
+                <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#1A2538] transition-colors border border-[#2A3A5C]">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{e.name}</div>
-                    <div className="text-[10px] text-[#6b5a4a]">{e.client_name} · {format(new Date(e.event_date), "MMM d")}</div>
+                    <div className="text-[10px] text-[#7A8BA8]">{e.client_name} · {format(new Date(e.event_date), "MMM d")}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-sm font-medium text-yellow-400">{formatCurrency(balance)}</div>
-                    <div className="text-[10px] text-[#6b5a4a]">{formatCurrency(paid)} of {formatCurrency(pricing.suggestedPrice)} paid</div>
+                    <div className="text-[10px] text-[#7A8BA8]">{formatCurrency(paid)} of {formatCurrency(pricing.suggestedPrice)} paid</div>
                   </div>
-                  <div className="w-12 h-1.5 rounded-full bg-[#2e271f] flex-shrink-0 overflow-hidden">
+                  <div className="w-12 h-1.5 rounded-full bg-[#2A3A5C] flex-shrink-0 overflow-hidden">
                     <div className="h-full rounded-full bg-green-400" style={{ width: `${Math.min(pctPaid, 100)}%` }} />
                   </div>
                 </Link>
@@ -486,13 +486,13 @@ export default async function DashboardPage() {
       {/* Recent Events - Mobile scrollable */}
       <div className="card p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider">Recent Events</h2>
+          <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Recent Events</h2>
           <Link href="/events" className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
             View all<ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         {stats.recentEvents.length === 0 ? (
-          <p className="text-sm text-[#6b5a4a] text-center py-8">
+          <p className="text-sm text-[#7A8BA8] text-center py-8">
             No events yet.{" "}
             <Link href="/events/new" className="text-brand-400 hover:text-brand-300 underline">Create your first event</Link>
           </p>
@@ -500,7 +500,7 @@ export default async function DashboardPage() {
           <div className="overflow-x-auto -mx-4 md:mx-0">
             <div className="inline-block min-w-full align-middle px-4 md:px-0">
               <table className="w-full text-xs md:text-sm">
-                <thead className="text-[#6b5a4a] border-b border-[#2e271f]">
+                <thead className="text-[#7A8BA8] border-b border-[#2A3A5C]">
                   <tr>
                     <th className="text-left py-2 font-medium">Event</th>
                     <th className="text-left py-2 font-medium hidden sm:table-cell">Client</th>
@@ -509,19 +509,19 @@ export default async function DashboardPage() {
                     <th className="text-right py-2 font-medium">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#2e271f]">
+                <tbody className="divide-y divide-[#2A3A5C]">
                   {stats.recentEvents.map(e => (
-                    <tr key={e.id} className="hover:bg-[#1c1814] transition-colors">
+                    <tr key={e.id} className="hover:bg-[#1A2538] transition-colors">
                       <td className="py-3">
                         <Link href={`/events/${e.id}`} className="font-medium hover:text-brand-300 block truncate max-w-[120px] sm:max-w-none">
                           {e.name}
                         </Link>
                       </td>
                       <td className="py-3 hidden sm:table-cell">
-                        <span className="text-[#9c8876] truncate block max-w-[150px]">{e.client_name}</span>
+                        <span className="text-[#D4A373] truncate block max-w-[150px]">{e.client_name}</span>
                       </td>
                       <td className="py-3">
-                        <span className="text-[#9c8876] whitespace-nowrap">{format(new Date(e.event_date), "MMM d")}</span>
+                        <span className="text-[#D4A373] whitespace-nowrap">{format(new Date(e.event_date), "MMM d")}</span>
                       </td>
                       <td className="py-3 text-right hidden md:table-cell">
                         {e.pricing_data ? formatCurrency((e.pricing_data as PricingData).suggestedPrice) : "—"}

@@ -33,13 +33,13 @@ export function RevenueGoal({ currentRevenue, defaultGoal = 10000 }: Props) {
   return (
     <div className="card p-4 md:p-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-medium text-xs md:text-sm text-[#9c8876] uppercase tracking-wider flex items-center gap-2">
+        <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider flex items-center gap-2">
           <Target className="w-4 h-4" />
           Monthly Goal
         </h2>
         {editing ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#6b5a4a]">$</span>
+            <span className="text-xs text-[#7A8BA8]">$</span>
             <input
               type="number"
               value={editValue}
@@ -53,7 +53,7 @@ export function RevenueGoal({ currentRevenue, defaultGoal = 10000 }: Props) {
             </button>
           </div>
         ) : (
-          <button onClick={() => { setEditValue(goal.toString()); setEditing(true); }} className="flex items-center gap-1 text-xs text-[#6b5a4a] hover:text-[#9c8876] transition-colors">
+          <button onClick={() => { setEditValue(goal.toString()); setEditing(true); }} className="flex items-center gap-1 text-xs text-[#7A8BA8] hover:text-[#D4A373] transition-colors">
             {formatCurrency(goal)} goal
             <Pencil className="w-3 h-3" />
           </button>
@@ -65,7 +65,7 @@ export function RevenueGoal({ currentRevenue, defaultGoal = 10000 }: Props) {
           {pct.toFixed(0)}%
         </span>
       </div>
-      <div className="w-full h-2 rounded-full bg-[#2e271f] overflow-hidden">
+      <div className="w-full h-2 rounded-full bg-[#2A3A5C] overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-400" : onTrack ? "bg-brand-400" : "bg-yellow-400"}`}
           style={{ width: `${pct}%` }}

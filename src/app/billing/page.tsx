@@ -75,7 +75,7 @@ export default function BillingPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="font-display text-xl md:text-2xl font-semibold">Billing</h1>
-        <p className="text-sm text-[#9c8876] mt-1">Manage your Cateros subscription</p>
+        <p className="text-sm text-[#D4A373] mt-1">Manage your Cateros subscription</p>
         <Link
           href="/billing/plans"
           className="inline-flex items-center gap-2 mt-3 text-sm text-brand-400 hover:text-brand-300 transition-colors"
@@ -99,7 +99,7 @@ export default function BillingPage() {
             </div>
             <div>
               <div className="font-semibold">Cateros {currentPlan === "pro" ? "Pro" : "Basic"} — Active</div>
-              <div className="text-sm text-[#9c8876] capitalize">Status: {profile?.subscription_status}</div>
+              <div className="text-sm text-[#D4A373] capitalize">Status: {profile?.subscription_status}</div>
             </div>
           </div>
           <div className="flex gap-3">
@@ -130,8 +130,8 @@ export default function BillingPage() {
               <span className="text-xs px-2 py-1 rounded bg-brand-900 text-brand-300 border border-brand-800">Current</span>
             )}
           </div>
-          <div className="font-display text-3xl font-semibold mb-1">$65<span className="text-lg text-[#9c8876] font-normal">/mo</span></div>
-          <p className="text-sm text-[#9c8876] mb-5">14-day free trial</p>
+          <div className="font-display text-3xl font-semibold mb-1">$65<span className="text-lg text-[#D4A373] font-normal">/mo</span></div>
+          <p className="text-sm text-[#D4A373] mb-5">14-day free trial</p>
           <ul className="space-y-2 mb-6">
             {BASIC_FEATURES.map(f => (
               <li key={f} className="flex items-center gap-2 text-sm">
@@ -159,8 +159,8 @@ export default function BillingPage() {
               <span className="text-xs px-2 py-1 rounded bg-brand-900 text-brand-300 border border-brand-800">Current</span>
             )}
           </div>
-          <div className="font-display text-3xl font-semibold mb-1 text-brand-300">$149<span className="text-lg text-[#9c8876] font-normal">/mo</span></div>
-          <p className="text-sm text-[#9c8876] mb-5">14-day free trial</p>
+          <div className="font-display text-3xl font-semibold mb-1 text-brand-300">$149<span className="text-lg text-[#D4A373] font-normal">/mo</span></div>
+          <p className="text-sm text-[#D4A373] mb-5">14-day free trial</p>
           <ul className="space-y-2 mb-6">
             {PRO_FEATURES.map(f => (
               <li key={f} className="flex items-center gap-2 text-sm">
@@ -180,7 +180,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      <p className="text-xs text-center text-[#6b5a4a] mt-6">
+      <p className="text-xs text-center text-[#7A8BA8] mt-6">
         All plans secured by Stripe. Cancel anytime with no questions asked.
       </p>
     </div>

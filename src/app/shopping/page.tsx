@@ -79,7 +79,7 @@ export default async function ShoppingPage() {
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Shopping List</h1>
-          <p className="text-xs md:text-sm text-[#9c8876] mt-1">
+          <p className="text-xs md:text-sm text-[#D4A373] mt-1">
             Consolidated ingredients for {events.length} confirmed event{events.length !== 1 ? "s" : ""} in the next 7 days
           </p>
         </div>
@@ -88,12 +88,12 @@ export default async function ShoppingPage() {
       {/* Events covered */}
       {events.length > 0 && (
         <div className="card p-4 mb-6">
-          <h2 className="text-xs font-medium text-[#9c8876] uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h2 className="text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-3 flex items-center gap-2">
             <CalendarDays className="w-3.5 h-3.5" /> Events Included
           </h2>
           <div className="flex flex-wrap gap-2">
             {events.map(e => (
-              <span key={e.id} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+              <span key={e.id} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#182030] border border-[#2A3A5C]">
                 {e.name} — {format(new Date(e.event_date), "MMM d")} ({e.guest_count} guests)
               </span>
             ))}

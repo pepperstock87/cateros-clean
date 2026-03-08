@@ -48,12 +48,12 @@ export function InlineEventEditor({ event }: Props) {
     <div className="space-y-6">
       {/* Event Details */}
       <div>
-        <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Event Details</h2>
+        <h2 className="font-medium text-sm mb-3 text-[#D4A373]">Event Details</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <CalendarDays className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Date</span>
+              <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Date</span>
             </div>
             <InlineEditField
               value={event.event_date}
@@ -64,8 +64,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Clock className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Start Time</span>
+              <Clock className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Start Time</span>
             </div>
             <InlineEditField
               value={event.start_time || ""}
@@ -76,8 +76,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Clock className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">End Time</span>
+              <Clock className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">End Time</span>
             </div>
             <InlineEditField
               value={event.end_time || ""}
@@ -88,8 +88,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Guests</span>
+              <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Guests</span>
             </div>
             <InlineEditField
               value={String(event.guest_count)}
@@ -100,8 +100,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4 col-span-2">
             <div className="flex items-center gap-1.5 mb-2">
-              <MapPin className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Venue</span>
+              <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Venue</span>
             </div>
             <InlineEditField
               value={event.venue || ""}
@@ -114,12 +114,12 @@ export function InlineEventEditor({ event }: Props) {
 
       {/* Client Info */}
       <div>
-        <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Client Info</h2>
+        <h2 className="font-medium text-sm mb-3 text-[#D4A373]">Client Info</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Users className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Client Name</span>
+              <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Client Name</span>
             </div>
             <InlineEditField
               value={event.client_name}
@@ -130,8 +130,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Mail className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Email</span>
+              <Mail className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Email</span>
             </div>
             <InlineEditField
               value={event.client_email || ""}
@@ -142,8 +142,8 @@ export function InlineEventEditor({ event }: Props) {
 
           <div className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Phone className="w-3.5 h-3.5 text-[#9c8876]" />
-              <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Phone</span>
+              <Phone className="w-3.5 h-3.5 text-[#D4A373]" />
+              <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Phone</span>
             </div>
             <InlineEditField
               value={event.client_phone || ""}
@@ -156,11 +156,11 @@ export function InlineEventEditor({ event }: Props) {
 
       {/* Notes */}
       <div>
-        <h2 className="font-medium text-sm mb-3 text-[#9c8876]">Notes</h2>
+        <h2 className="font-medium text-sm mb-3 text-[#D4A373]">Notes</h2>
         <div className="card p-4">
           <div className="flex items-center gap-1.5 mb-2">
-            <FileText className="w-3.5 h-3.5 text-[#9c8876]" />
-            <span className="stat-label text-[10px] uppercase tracking-wider text-[#9c8876]">Event Notes</span>
+            <FileText className="w-3.5 h-3.5 text-[#D4A373]" />
+            <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Event Notes</span>
           </div>
           <InlineEditField
             value={event.notes || ""}

@@ -226,7 +226,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
       {/* Delete */}
       <button
         onClick={handleDelete}
-        className="text-[#6b5a4a] hover:text-red-400 transition-colors p-2"
+        className="text-[#7A8BA8] hover:text-red-400 transition-colors p-2"
         title="Delete proposal"
       >
         <Trash2 className="w-4 h-4" />

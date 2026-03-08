@@ -79,7 +79,7 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
         <div className="space-y-6">
           {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([category, items]) => (
             <div key={category}>
-              <h3 className="text-xs font-medium text-[#6b5a4a] uppercase tracking-wider mb-3">{category}</h3>
+              <h3 className="text-xs font-medium text-[#7A8BA8] uppercase tracking-wider mb-3">{category}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {items.map((item) => (
                   <div key={item.id} className="card p-4">
@@ -102,7 +102,7 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
                           <div>
                             <label className="label">Unit cost</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                               <input name="unit_cost" type="number" className="input pl-6" defaultValue={Number(item.unit_cost)} min={0} step={0.01} />
                             </div>
                           </div>
@@ -130,26 +130,26 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
                         <div className="flex items-start justify-between mb-1">
                           <div className="min-w-0">
                             <h3 className="font-medium text-sm truncate">{item.name}</h3>
-                            {item.vendor && <p className="text-xs text-[#9c8876]">{item.vendor}</p>}
+                            {item.vendor && <p className="text-xs text-[#D4A373]">{item.vendor}</p>}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <span className="text-sm font-semibold text-brand-300">{formatCurrency(Number(item.unit_cost))}</span>
                             <button
                               onClick={() => setEditingId(item.id)}
-                              className="text-[#6b5a4a] hover:text-brand-300 transition-colors p-1"
+                              className="text-[#7A8BA8] hover:text-brand-300 transition-colors p-1"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDelete(item.id, item.name)}
                               disabled={deleting === item.id}
-                              className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                              className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
-                        {item.notes && <p className="text-xs text-[#6b5a4a] mt-1">{item.notes}</p>}
+                        {item.notes && <p className="text-xs text-[#7A8BA8] mt-1">{item.notes}</p>}
                       </>
                     )}
                   </div>
@@ -180,7 +180,7 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
             <div>
               <label className="label">Unit cost</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                 <input name="unit_cost" type="number" className="input pl-6" placeholder="0.00" min={0} step={0.01} defaultValue={0} />
               </div>
             </div>

@@ -51,7 +51,7 @@ export function PortalTabs({ children }: Props) {
   return (
     <div>
       {/* Tab bar */}
-      <div className="border-b border-[#2e271f] -mx-6 px-6 overflow-x-auto scrollbar-hide">
+      <div className="border-b border-[#2A3A5C] -mx-6 px-6 overflow-x-auto scrollbar-hide">
         <nav className="flex gap-0 min-w-max" role="tablist">
           {tabs.map((tab) => {
             const isActive = active === tab.key;
@@ -66,7 +66,7 @@ export function PortalTabs({ children }: Props) {
                   ${
                     isActive
                       ? "text-brand-400"
-                      : "text-[#9c8876] hover:text-[#f5ede0]"
+                      : "text-[#D4A373] hover:text-[#F4F1ED]"
                   }
                 `}
               >

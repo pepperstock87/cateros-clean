@@ -73,7 +73,7 @@ export default async function PlansPage() {
         <h1 className="font-display text-3xl font-semibold mb-2">
           Choose Your Plan
         </h1>
-        <p className="text-[#9c8876] max-w-xl mx-auto">
+        <p className="text-[#D4A373] max-w-xl mx-auto">
           Scale your catering business with the right tools. All plans include a
           14-day free trial.
         </p>
@@ -97,10 +97,10 @@ export default async function PlansPage() {
                 detail.highlight
                   ? "border-2 border-brand-500 relative"
                   : ""
-              } ${isCurrent ? "ring-2 ring-brand-400 ring-offset-2 ring-offset-[#0f0d0b]" : ""}`}
+              } ${isCurrent ? "ring-2 ring-brand-400 ring-offset-2 ring-offset-[#0C1220]" : ""}`}
             >
               {detail.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-[#0f0d0b] text-xs font-semibold px-3 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-[#0C1220] text-xs font-semibold px-3 py-1 rounded-full">
                   Most Popular
                 </div>
               )}
@@ -110,12 +110,12 @@ export default async function PlansPage() {
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     detail.highlight
                       ? "bg-brand-900/60 border border-brand-700"
-                      : "bg-[#1c1814] border border-[#2e271f]"
+                      : "bg-[#1A2538] border border-[#2A3A5C]"
                   }`}
                 >
                   <Icon
                     className={`w-5 h-5 ${
-                      detail.highlight ? "text-brand-400" : "text-[#9c8876]"
+                      detail.highlight ? "text-brand-400" : "text-[#D4A373]"
                     }`}
                   />
                 </div>
@@ -138,13 +138,13 @@ export default async function PlansPage() {
                   {detail.price}
                 </span>
                 {detail.period && (
-                  <span className="text-[#9c8876] text-lg">
+                  <span className="text-[#D4A373] text-lg">
                     {detail.period}
                   </span>
                 )}
               </div>
 
-              <p className="text-sm text-[#9c8876] mb-5">
+              <p className="text-sm text-[#D4A373] mb-5">
                 {detail.description}
               </p>
 
@@ -167,7 +167,7 @@ export default async function PlansPage() {
                       <li
                         key={flag.id}
                         className={`flex items-center gap-2 text-sm ${
-                          !included ? "text-[#6b5a4a]" : ""
+                          !included ? "text-[#7A8BA8]" : ""
                         }`}
                       >
                         {included ? (
@@ -201,7 +201,7 @@ export default async function PlansPage() {
               ) : isDowngrade ? (
                 <Link
                   href="/billing"
-                  className="btn-secondary w-full text-center text-[#9c8876]"
+                  className="btn-secondary w-full text-center text-[#D4A373]"
                 >
                   Downgrade
                 </Link>
@@ -213,26 +213,26 @@ export default async function PlansPage() {
 
       {/* Feature Comparison Table */}
       <div className="card overflow-hidden">
-        <div className="p-6 border-b border-[#2e271f]">
+        <div className="p-6 border-b border-[#2A3A5C]">
           <h2 className="font-display text-lg font-semibold">
             Feature Comparison
           </h2>
-          <p className="text-sm text-[#9c8876] mt-1">
+          <p className="text-sm text-[#D4A373] mt-1">
             Detailed breakdown of what each plan includes
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#2e271f]">
-                <th className="text-left text-sm font-medium text-[#9c8876] p-4 w-[40%]">
+              <tr className="border-b border-[#2A3A5C]">
+                <th className="text-left text-sm font-medium text-[#D4A373] p-4 w-[40%]">
                   Feature
                 </th>
                 {PLAN_ORDER.map((p) => (
                   <th
                     key={p}
                     className={`text-center text-sm font-medium p-4 w-[20%] ${
-                      currentPlan === p ? "text-brand-400" : "text-[#9c8876]"
+                      currentPlan === p ? "text-brand-400" : "text-[#D4A373]"
                     }`}
                   >
                     {PLAN_DETAILS[p].name}
@@ -251,7 +251,7 @@ export default async function PlansPage() {
                   key={flag.id}
                   className={
                     i < featureFlags.length - 1
-                      ? "border-b border-[#1c1814]"
+                      ? "border-b border-[#1A2538]"
                       : ""
                   }
                 >
@@ -260,7 +260,7 @@ export default async function PlansPage() {
                       {flag.feature_name}
                     </div>
                     {flag.description && (
-                      <div className="text-xs text-[#6b5a4a] mt-0.5">
+                      <div className="text-xs text-[#7A8BA8] mt-0.5">
                         {flag.description}
                       </div>
                     )}
@@ -281,7 +281,7 @@ export default async function PlansPage() {
         </div>
       </div>
 
-      <p className="text-xs text-center text-[#6b5a4a] mt-6">
+      <p className="text-xs text-center text-[#7A8BA8] mt-6">
         All plans secured by Stripe. Cancel anytime with no questions asked.
       </p>
     </div>

@@ -60,7 +60,7 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-sm flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-[#9c8876]" />Payments
+          <CreditCard className="w-4 h-4 text-[#D4A373]" />Payments
         </h2>
         <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
           <Save className="w-3 h-3" />{saving ? "Saving..." : "Save"}
@@ -69,16 +69,16 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">Total Due</div>
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">Total Due</div>
           <div className="text-sm font-semibold">{formatCurrency(suggestedPrice)}</div>
         </div>
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">Paid</div>
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">Paid</div>
           <div className="text-sm font-semibold text-green-400">{formatCurrency(totalPaid)}</div>
         </div>
-        <div className="bg-[#251f19] rounded-lg p-3 text-center">
-          <div className="text-xs text-[#9c8876] mb-1">Balance</div>
+        <div className="bg-[#1F2A44] rounded-lg p-3 text-center">
+          <div className="text-xs text-[#D4A373] mb-1">Balance</div>
           <div className={`text-sm font-semibold ${balanceDue > 0 ? "text-yellow-400" : "text-green-400"}`}>
             {formatCurrency(balanceDue)}
           </div>
@@ -86,12 +86,12 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
       </div>
 
       {/* Deposit */}
-      <div className="flex items-center gap-3 mb-4 p-3 rounded-lg border border-[#2e271f]">
+      <div className="flex items-center gap-3 mb-4 p-3 rounded-lg border border-[#2A3A5C]">
         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${depositPaid ? "bg-green-400" : "bg-yellow-400"}`} />
         <div className="flex-1">
-          <div className="text-xs text-[#9c8876]">Deposit {depositPaid ? "received" : "pending"}</div>
+          <div className="text-xs text-[#D4A373]">Deposit {depositPaid ? "received" : "pending"}</div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-[#6b5a4a]">$</span>
+            <span className="text-xs text-[#7A8BA8]">$</span>
             <input
               type="number"
               className="input text-sm w-28"
@@ -100,7 +100,7 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
               min={0}
               step={0.01}
             />
-            <span className="text-xs text-[#6b5a4a]">required</span>
+            <span className="text-xs text-[#7A8BA8]">required</span>
           </div>
         </div>
       </div>
@@ -108,21 +108,21 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
       {/* Payment history */}
       {payments.length > 0 && (
         <div className="space-y-2 mb-4">
-          <div className="text-xs font-medium text-[#9c8876] uppercase tracking-wider">Payment History</div>
+          <div className="text-xs font-medium text-[#D4A373] uppercase tracking-wider">Payment History</div>
           {payments.map(p => (
-            <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#1a1714] border border-[#2e271f]">
+            <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#182030] border border-[#2A3A5C]">
               <div className="flex items-center gap-3">
                 <DollarSign className="w-3.5 h-3.5 text-green-400" />
                 <div>
                   <div className="text-sm font-medium">{formatCurrency(p.amount)}</div>
-                  <div className="text-[10px] text-[#6b5a4a]">
+                  <div className="text-[10px] text-[#7A8BA8]">
                     {p.method} · {p.date}{p.note ? ` · ${p.note}` : ""}
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setPayments(prev => prev.filter(x => x.id !== p.id))}
-                className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1"
+                className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -133,12 +133,12 @@ export function PaymentTracker({ eventId, suggestedPrice, initialPayment }: Prop
 
       {/* Add payment form */}
       {showAdd ? (
-        <form action={addPayment} className="space-y-3 p-3 rounded-lg border border-[#2e271f]">
+        <form action={addPayment} className="space-y-3 p-3 rounded-lg border border-[#2A3A5C]">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Amount *</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b5a4a] text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
                 <input name="amount" type="number" className="input pl-6 text-sm" placeholder="0.00" min={0} step={0.01} required autoFocus />
               </div>
             </div>

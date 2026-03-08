@@ -107,8 +107,8 @@ export function VenueProfileEditor({ venueProfile, organizationId }: Props) {
   }
 
   const inputClass =
-    "w-full rounded-lg border border-[#2e271f] bg-[#0f0d0b] px-3 py-2.5 text-sm text-[#f5ede0] placeholder:text-[#6b5a4a] focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors";
-  const labelClass = "block text-sm font-medium text-[#c4b5a4] mb-1.5";
+    "w-full rounded-lg border border-[#2A3A5C] bg-[#0C1220] px-3 py-2.5 text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors";
+  const labelClass = "block text-sm font-medium text-[#B8C4D8] mb-1.5";
 
   return (
     <div className="relative">
@@ -125,7 +125,7 @@ export function VenueProfileEditor({ venueProfile, organizationId }: Props) {
         </div>
       )}
 
-      <div className="rounded-xl border border-[#2e271f] bg-[#1a1714] p-6 space-y-6">
+      <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-6 space-y-6">
         {/* Venue Name */}
         <div>
           <label className={labelClass}>Venue Name *</label>
@@ -307,7 +307,7 @@ export function VenueProfileEditor({ venueProfile, organizationId }: Props) {
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                   amenities.includes(amenity)
                     ? "bg-brand-950 text-brand-300 border-brand-800/60"
-                    : "bg-[#0f0d0b] text-[#9c8876] border-[#2e271f] hover:border-[#4a3f33] hover:text-[#c4b5a4]"
+                    : "bg-[#0C1220] text-[#D4A373] border-[#2A3A5C] hover:border-[#344570] hover:text-[#B8C4D8]"
                 }`}
               >
                 {amenity}
@@ -352,7 +352,7 @@ export function VenueProfileEditor({ venueProfile, organizationId }: Props) {
             <button
               type="button"
               onClick={addCustomAmenity}
-              className="flex items-center gap-1 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#0f0d0b] text-[#9c8876] border border-[#2e271f] hover:border-[#4a3f33] hover:text-[#c4b5a4] transition-colors"
+              className="flex items-center gap-1 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#0C1220] text-[#D4A373] border border-[#2A3A5C] hover:border-[#344570] hover:text-[#B8C4D8] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Add
