@@ -14,7 +14,6 @@ export default async function VendorProfilePage() {
   if (!user) redirect("/login");
 
   const org = await getCurrentOrg();
-  if (!org) redirect("/dashboard");
 
   const { plan } = await getOrgEntitlements();
   const { data: vendorProfile } = await getVendorProfileAction();
@@ -33,7 +32,7 @@ export default async function VendorProfilePage() {
       <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
         <VendorProfileEditor
           vendorProfile={vendorProfile}
-          organizationId={org.orgId}
+          organizationId={org?.orgId ?? null}
         />
       </FeatureGate>
     </div>

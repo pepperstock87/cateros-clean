@@ -35,7 +35,7 @@ const COMMON_SPECIALTIES = [
 
 type Props = {
   vendorProfile: VendorProfile | null;
-  organizationId: string;
+  organizationId: string | null;
 };
 
 export function VendorProfileEditor({ vendorProfile, organizationId }: Props) {

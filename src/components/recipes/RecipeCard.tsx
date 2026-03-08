@@ -22,22 +22,22 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   }
 
   return (
-    <div className="card card-hover p-5">
+    <Link href={`/recipes/${recipe.id}`} className="card card-hover p-5 block cursor-pointer">
       <div className="flex items-start justify-between mb-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Link href={`/recipes/${recipe.id}`} className="font-medium text-sm truncate hover:text-brand-300 transition-colors">{recipe.name}</Link>
+            <span className="font-medium text-sm truncate">{recipe.name}</span>
             {recipe.case_price && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800/40">Case pricing</span>
             )}
           </div>
           {recipe.description && <p className="text-xs text-[#9c8876] mt-0.5 truncate">{recipe.description}</p>}
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-          <Link href={`/recipes/${recipe.id}/edit`} className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1">
+        <div className="flex items-center gap-1.5 flex-shrink-0 ml-2" onClick={(e) => e.preventDefault()}>
+          <Link href={`/recipes/${recipe.id}/edit`} className="text-[#6b5a4a] hover:text-brand-400 transition-colors p-1" onClick={(e) => e.stopPropagation()}>
             <Edit className="w-3.5 h-3.5" />
           </Link>
-          <button onClick={handleDelete} disabled={deleting} className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1">
+          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }} disabled={deleting} className="text-[#6b5a4a] hover:text-red-400 transition-colors p-1">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -75,6 +75,6 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           ))}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

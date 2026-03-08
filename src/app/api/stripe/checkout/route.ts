@@ -13,8 +13,12 @@ export async function POST(req: NextRequest) {
   const plan = body.plan || "pro";
 
   const priceId = plan === "basic"
-    ? process.env.STRIPE_PRICE_ID_BASIC
-    : process.env.STRIPE_PRICE_ID_PRO;
+    ? (process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY)
+    : (process.env.STRIPE_PRICE_ID_PRO || process.env.STRIPE_PRICE_ID_MONTHLY);
+
+  if (!priceId) {
+    return NextResponse.json({ error: "Stripe price not configured. Please contact support." }, { status: 500 });
+  }
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     customer: customerId,
     mode: "subscription",
     payment_method_types: ["card"],
-    line_items: [{ price: priceId!, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?success=1`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?canceled=1`,
     client_reference_id: user.id,

@@ -14,7 +14,6 @@ export default async function VenuesPage() {
   if (!user) redirect("/login");
 
   const org = await getCurrentOrg();
-  if (!org) redirect("/dashboard");
 
   const { plan } = await getOrgEntitlements();
   const { data: venueProfile } = await getVenueProfileAction();
@@ -33,7 +32,7 @@ export default async function VenuesPage() {
       <FeatureGate feature="venue_management" plan={plan} requiredPlans={["pro", "enterprise"]}>
         <VenueProfileEditor
           venueProfile={venueProfile}
-          organizationId={org.orgId}
+          organizationId={org?.orgId ?? null}
         />
       </FeatureGate>
     </div>

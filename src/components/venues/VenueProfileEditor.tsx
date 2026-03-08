@@ -26,7 +26,7 @@ const COMMON_AMENITIES = [
 
 type Props = {
   venueProfile: VenueProfile | null;
-  organizationId: string;
+  organizationId: string | null;
 };
 
 export function VenueProfileEditor({ venueProfile, organizationId }: Props) {

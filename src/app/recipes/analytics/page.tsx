@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import { RecipeProfitability } from "@/components/recipes/RecipeProfitability";
-import { getUserEntitlements } from "@/lib/entitlements";
-import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 import { getCurrentOrg } from "@/lib/organizations";
 import type { Recipe } from "@/types";
 
@@ -13,8 +11,6 @@ export default async function RecipeAnalyticsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
-
-  const { isPro } = await getUserEntitlements();
 
   let recipesQuery = supabase.from("recipes").select("id, name, category, cost_per_serving, selling_price, servings").eq("user_id", user.id);
   if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
@@ -52,14 +48,7 @@ export default async function RecipeAnalyticsPage() {
         </div>
       </div>
 
-      {isPro ? (
-        <RecipeProfitability recipes={recipes} />
-      ) : (
-        <UpgradePrompt
-          message="Recipe analytics is a Pro feature. Upgrade to see profitability insights."
-          plan="pro"
-        />
-      )}
+      <RecipeProfitability recipes={recipes} />
     </div>
   );
 }
