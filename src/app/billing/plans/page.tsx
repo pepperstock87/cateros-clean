@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentOrg } from "@/lib/organizations";
 import { getOrgEntitlements } from "@/lib/orgEntitlements";
-import { Check, X, Zap, Crown, Building2 } from "lucide-react";
+import { Check, X, Zap, CreditCard } from "lucide-react";
 import Link from "next/link";
 import type { PlanType, FeatureFlag } from "@/types";
 
@@ -16,12 +15,12 @@ const PLAN_DETAILS: Record<
     highlight: boolean;
   }
 > = {
-  starter: {
-    name: "Starter",
-    price: "Free",
-    period: "",
-    description: "Get started with essential catering management tools.",
-    icon: Building2,
+  basic: {
+    name: "Basic",
+    price: "$65",
+    period: "/mo",
+    description: "Essential tools for managing your catering business.",
+    icon: CreditCard,
     highlight: false,
   },
   pro: {
@@ -32,17 +31,9 @@ const PLAN_DETAILS: Record<
     icon: Zap,
     highlight: true,
   },
-  enterprise: {
-    name: "Enterprise",
-    price: "$349",
-    period: "/mo",
-    description: "Full platform access for large-scale operations.",
-    icon: Crown,
-    highlight: false,
-  },
 };
 
-const PLAN_ORDER: PlanType[] = ["starter", "pro", "enterprise"];
+const PLAN_ORDER: PlanType[] = ["basic", "pro"];
 
 export default async function PlansPage() {
   const supabase = await createClient();
@@ -58,16 +49,15 @@ export default async function PlansPage() {
 
   const featureFlags: FeatureFlag[] = (features ?? []) as FeatureFlag[];
 
-  // Starter always includes some base features
-  const starterFeatures = [
-    "Up to 3 team members",
-    "Up to 25 events/month",
-    "Basic recipe library",
-    "Simple proposals",
+  const basicFeatures = [
+    "Unlimited events",
+    "PDF proposal generation",
+    "Recipe cost library",
+    "Profit dashboard",
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-10 text-center">
         <h1 className="font-display text-3xl font-semibold mb-2">
@@ -80,15 +70,13 @@ export default async function PlansPage() {
       </div>
 
       {/* Plan Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
+      <div className="grid md:grid-cols-2 gap-6 mb-12">
         {PLAN_ORDER.map((planKey) => {
           const detail = PLAN_DETAILS[planKey];
           const Icon = detail.icon;
           const isCurrent = currentPlan === planKey;
           const isUpgrade =
             PLAN_ORDER.indexOf(planKey) > PLAN_ORDER.indexOf(currentPlan);
-          const isDowngrade =
-            PLAN_ORDER.indexOf(planKey) < PLAN_ORDER.indexOf(currentPlan);
 
           return (
             <div
@@ -137,26 +125,28 @@ export default async function PlansPage() {
                 >
                   {detail.price}
                 </span>
-                {detail.period && (
-                  <span className="text-[#D4A373] text-lg">
-                    {detail.period}
-                  </span>
-                )}
+                <span className="text-[#D4A373] text-lg">
+                  {detail.period}
+                </span>
               </div>
 
               <p className="text-sm text-[#D4A373] mb-5">
                 {detail.description}
               </p>
 
-              {/* Feature list for this plan */}
+              {/* Feature list */}
               <div className="flex-1">
                 <ul className="space-y-2 mb-6">
-                  {planKey === "starter" &&
-                    starterFeatures.map((f) => (
-                      <li
-                        key={f}
-                        className="flex items-center gap-2 text-sm"
-                      >
+                  {planKey === "basic" &&
+                    basicFeatures.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm">
+                        <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  {planKey === "pro" &&
+                    basicFeatures.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm">
                         <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />
                         {f}
                       </li>
@@ -173,7 +163,7 @@ export default async function PlansPage() {
                         {included ? (
                           <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />
                         ) : (
-                          <X className="w-4 h-4 text-[#3d3429] flex-shrink-0" />
+                          <X className="w-4 h-4 text-[#344570] flex-shrink-0" />
                         )}
                         {flag.feature_name}
                       </li>
@@ -198,13 +188,6 @@ export default async function PlansPage() {
                   <Zap className="w-4 h-4" />
                   Upgrade to {detail.name}
                 </Link>
-              ) : isDowngrade ? (
-                <Link
-                  href="/billing"
-                  className="btn-secondary w-full text-center text-[#D4A373]"
-                >
-                  Downgrade
-                </Link>
               ) : null}
             </div>
           );
@@ -225,13 +208,13 @@ export default async function PlansPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#2A3A5C]">
-                <th className="text-left text-sm font-medium text-[#D4A373] p-4 w-[40%]">
+                <th className="text-left text-sm font-medium text-[#D4A373] p-4 w-[50%]">
                   Feature
                 </th>
                 {PLAN_ORDER.map((p) => (
                   <th
                     key={p}
-                    className={`text-center text-sm font-medium p-4 w-[20%] ${
+                    className={`text-center text-sm font-medium p-4 w-[25%] ${
                       currentPlan === p ? "text-brand-400" : "text-[#D4A373]"
                     }`}
                   >
@@ -270,7 +253,7 @@ export default async function PlansPage() {
                       {flag.plans.includes(p) ? (
                         <Check className="w-5 h-5 text-brand-400 mx-auto" />
                       ) : (
-                        <X className="w-5 h-5 text-[#3d3429] mx-auto" />
+                        <X className="w-5 h-5 text-[#344570] mx-auto" />
                       )}
                     </td>
                   ))}

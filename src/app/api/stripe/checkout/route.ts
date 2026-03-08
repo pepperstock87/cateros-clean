@@ -51,7 +51,9 @@ export async function POST(req: NextRequest) {
     await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || `https://${req.headers.get("host")}`;
+  const host = req.headers.get("host") || "cateros-clean.vercel.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || req.headers.get("origin") || `https://${host}`;
+  console.log("Checkout appUrl:", appUrl);
 
   try {
     const session = await stripe.checkout.sessions.create({

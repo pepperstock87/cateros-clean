@@ -5,9 +5,8 @@ import type { PlanType, OrganizationSubscription } from "@/types";
 export type OrgEntitlements = {
   plan: PlanType;
   features: string[];
-  isStarter: boolean;
+  isBasic: boolean;
   isPro: boolean;
-  isEnterprise: boolean;
   hasFeature: (key: string) => boolean;
   subscription: OrganizationSubscription | null;
 };
@@ -21,11 +20,10 @@ export async function getOrgEntitlements(): Promise<OrgEntitlements> {
 
   if (!org) {
     return {
-      plan: "starter",
+      plan: "basic",
       features: [],
-      isStarter: true,
+      isBasic: true,
       isPro: false,
-      isEnterprise: false,
       hasFeature: () => false,
       subscription: null,
     };
@@ -40,7 +38,7 @@ export async function getOrgEntitlements(): Promise<OrgEntitlements> {
     .eq("organization_id", org.orgId)
     .single();
 
-  const plan: PlanType = (sub?.plan_type as PlanType) ?? "starter";
+  const plan: PlanType = (sub?.plan_type as PlanType) ?? "basic";
   const isActive =
     !sub || sub.status === "active" || sub.status === "trialing";
 
@@ -50,7 +48,7 @@ export async function getOrgEntitlements(): Promise<OrgEntitlements> {
     .select("feature_key, plans")
     .eq("is_active", true);
 
-  const activePlan = isActive ? plan : "starter";
+  const activePlan = isActive ? plan : "basic";
 
   const features = (flags ?? [])
     .filter((f) => (f.plans as string[]).includes(activePlan))
@@ -59,9 +57,8 @@ export async function getOrgEntitlements(): Promise<OrgEntitlements> {
   return {
     plan: activePlan,
     features,
-    isStarter: activePlan === "starter",
-    isPro: activePlan === "pro" || activePlan === "enterprise",
-    isEnterprise: activePlan === "enterprise",
+    isBasic: activePlan === "basic",
+    isPro: activePlan === "pro",
     hasFeature: (key: string) => features.includes(key),
     subscription: sub as OrganizationSubscription | null,
   };

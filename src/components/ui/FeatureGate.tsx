@@ -6,16 +6,14 @@ import type { PlanType } from "@/types";
 
 // Plan hierarchy for comparison
 const PLAN_RANK: Record<PlanType, number> = {
-  starter: 0,
+  basic: 0,
   pro: 1,
-  enterprise: 2,
 };
 
 // Human-friendly plan info
 const PLAN_INFO: Record<PlanType, { label: string; price: string }> = {
-  starter: { label: "Starter", price: "Free" },
+  basic: { label: "Basic", price: "$65/mo" },
   pro: { label: "Pro", price: "$149/mo" },
-  enterprise: { label: "Enterprise", price: "$349/mo" },
 };
 
 type FeatureGateProps = {
@@ -43,7 +41,7 @@ export function FeatureGate({
   fallback,
 }: FeatureGateProps) {
   // If requiredPlans provided, check if current plan is included
-  // Otherwise, just check plan rank (pro and enterprise get most features)
+  // Otherwise, just check plan rank (pro gets all features)
   const hasAccess = requiredPlans
     ? requiredPlans.includes(plan)
     : PLAN_RANK[plan] >= PLAN_RANK.pro;

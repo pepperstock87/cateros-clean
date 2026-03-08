@@ -6,7 +6,7 @@ export default async function AssistantPage() {
   const { plan } = await getOrgEntitlements();
 
   return (
-    <FeatureGate feature="ai_assistant" plan={plan} requiredPlans={["pro", "enterprise"]}>
+    <FeatureGate feature="ai_assistant" plan={plan} requiredPlans={["pro"]}>
       <AssistantPageClient />
     </FeatureGate>
   );

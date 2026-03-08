@@ -407,7 +407,7 @@ export type ContractAcceptance = {
 };
 
 // Organization subscription types (Phase 10 - Feature Gating)
-export type PlanType = 'starter' | 'pro' | 'enterprise';
+export type PlanType = 'basic' | 'pro';
 
 export type OrganizationSubscription = {
   id: string;

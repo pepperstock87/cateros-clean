@@ -29,7 +29,7 @@ export default async function VendorProfilePage() {
         </p>
       </div>
 
-      <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
+      <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro"]}>
         <VendorProfileEditor
           vendorProfile={vendorProfile}
           organizationId={org?.orgId ?? null}

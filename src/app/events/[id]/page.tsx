@@ -341,7 +341,7 @@ export default async function EventDetailPage({ params }: Props) {
             <div>
               {pricing ? (
                 <>
-                  <FeatureGate feature="payment_processing" plan={plan} requiredPlans={["enterprise"]}>
+                  <FeatureGate feature="payment_processing" plan={plan} requiredPlans={["pro"]}>
                     <PaymentScheduleManager
                       eventId={e.id}
                       proposalId={proposals[0]?.id}
@@ -392,7 +392,7 @@ export default async function EventDetailPage({ params }: Props) {
                 currentVenue={e.venue}
                 eventOrganizations={eventOrganizations}
               />
-              <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
+              <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro"]}>
                 <div className="mt-6">
                   <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
                   <p className="text-sm text-[#D4A373] mb-4">Organizations collaborating on this event</p>

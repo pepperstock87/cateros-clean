@@ -29,7 +29,7 @@ export default async function VenuesPage() {
         </p>
       </div>
 
-      <FeatureGate feature="venue_management" plan={plan} requiredPlans={["pro", "enterprise"]}>
+      <FeatureGate feature="venue_management" plan={plan} requiredPlans={["pro"]}>
         <VenueProfileEditor
           venueProfile={venueProfile}
           organizationId={org?.orgId ?? null}
