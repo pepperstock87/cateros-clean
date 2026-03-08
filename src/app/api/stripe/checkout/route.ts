@@ -12,15 +12,29 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const plan = body.plan || "pro";
 
+  // Log all Stripe env vars present (names only, not values) for debugging
+  const envCheck = {
+    STRIPE_PRICE_ID_BASIC: !!process.env.STRIPE_PRICE_ID_BASIC,
+    STRIPE_PRICE_ID_PRO: !!process.env.STRIPE_PRICE_ID_PRO,
+    STRIPE_PRICE_ID_MONTHLY: !!process.env.STRIPE_PRICE_ID_MONTHLY,
+    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+  };
+  console.log("Stripe env check:", envCheck, "| requested plan:", plan);
+
   const rawPriceId = plan === "basic"
     ? (process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY)
     : (process.env.STRIPE_PRICE_ID_PRO || process.env.STRIPE_PRICE_ID_MONTHLY);
 
   const priceId = rawPriceId?.trim();
 
-  if (!priceId || !priceId.startsWith("price_")) {
-    console.error("Invalid Stripe price ID:", JSON.stringify(rawPriceId), "for plan:", plan);
-    return NextResponse.json({ error: "Stripe price not configured. Please contact support." }, { status: 500 });
+  if (!priceId) {
+    console.error("No Stripe price ID found for plan:", plan);
+    return NextResponse.json({ error: `No Stripe price configured for "${plan}" plan. Check STRIPE_PRICE_ID_${plan.toUpperCase()} env var.` }, { status: 500 });
+  }
+
+  if (!priceId.startsWith("price_")) {
+    console.error("Invalid Stripe price ID format:", JSON.stringify(priceId), "for plan:", plan);
+    return NextResponse.json({ error: `Invalid price ID format for "${plan}" plan. Expected "price_..." but got "${priceId.substring(0, 10)}..."` }, { status: 500 });
   }
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
