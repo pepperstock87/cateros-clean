@@ -5,8 +5,8 @@ import { Suspense } from "react";
 import { AssistantProvider } from "@/components/assistant/AssistantProvider";
 
 export const metadata: Metadata = {
-  title: "Cateros – Catering Pricing & Proposal Software",
-  description: "Professional pricing engine and proposal generator for catering companies.",
+  title: "Cateros – The Event Operations Platform",
+  description: "Run events on the Cateros Event Engine. Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
