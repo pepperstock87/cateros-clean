@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -185,83 +185,72 @@ export function CommandPalette() {
     results.staff.length > 0 ||
     results.clients.length > 0;
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all border border-[#2A3A5C] bg-[#0C1220]"
-      >
-        <Search className="w-4 h-4 flex-shrink-0" />
-        <span className="flex-1 text-left">Search...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8]">
-          ⌘K
-        </kbd>
-      </button>
-    );
-  }
-
   let runningIndex = 0;
 
   return (
-    <>
-      {/* Trigger button (hidden when open) */}
-      <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#7A8BA8] border border-[#2A3A5C] bg-[#0C1220] opacity-50 cursor-default">
-        <Search className="w-4 h-4 flex-shrink-0" />
-        <span className="flex-1 text-left">Search...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8]">
-          ⌘K
-        </kbd>
-      </button>
-
-      {/* Overlay */}
+    <div className="relative w-full">
+      {/* Search input / trigger */}
       <div
-        ref={overlayRef}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[15vh]"
-        onClick={(e) => {
-          if (e.target === overlayRef.current) close();
-        }}
+        className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm border border-[#2A3A5C] transition-all ${
+          open
+            ? "bg-[#1A2538] border-[#D4A373] text-[#F4F1ED]"
+            : "text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] bg-[#0C1220] cursor-pointer"
+        }`}
+        onClick={() => { if (!open) setOpen(true); }}
       >
-        {/* Modal */}
-        <div
-          className="w-full max-w-lg bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
-          onKeyDown={handlePaletteKeyDown}
+        <Search className="w-4 h-4 flex-shrink-0" />
+        {open ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handlePaletteKeyDown}
+            placeholder="Search..."
+            className="flex-1 min-w-0 bg-transparent text-[#F4F1ED] placeholder:text-[#7A8BA8] text-sm outline-none"
+          />
+        ) : (
+          <span className="flex-1 text-left truncate">Search...</span>
+        )}
+        <kbd
+          onClick={(e) => { e.stopPropagation(); if (open) close(); }}
+          className={`flex-shrink-0 px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8] ${
+            open ? "cursor-pointer hover:text-[#F4F1ED]" : ""
+          }`}
         >
-          {/* Search input */}
-          <div className="flex items-center gap-3 px-4 border-b border-[#2A3A5C] bg-[#0C1220]">
-            <Search className="w-4 h-4 text-[#7A8BA8] flex-shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search events, recipes, staff, clients..."
-              className="flex-1 py-3.5 bg-transparent text-[#F4F1ED] placeholder:text-[#7A8BA8] text-sm outline-none"
-            />
-            <kbd
-              onClick={close}
-              className="cursor-pointer px-1.5 py-0.5 rounded bg-[#1A2538] border border-[#2A3A5C] text-[10px] font-mono text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors"
-            >
-              ESC
-            </kbd>
-          </div>
+          {open ? "ESC" : "⌘K"}
+        </kbd>
+      </div>
 
-          {/* Results */}
-          <div className="max-h-80 overflow-y-auto">
+      {/* Dropdown overlay to catch outside clicks */}
+      {open && (
+        <div
+          ref={overlayRef}
+          className="fixed inset-0 z-40"
+          onClick={(e) => {
+            if (e.target === overlayRef.current) close();
+          }}
+        />
+      )}
+
+      {/* Inline dropdown results */}
+      {open && (query.trim() || loading) && (
+        <div className="absolute left-0 top-full mt-1 w-full z-50 bg-[#182030] border border-[#2A3A5C] rounded-lg shadow-2xl overflow-hidden">
+          <div className="max-h-72 overflow-y-auto">
             {query.trim() && !loading && !hasResults && (
-              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
-                No results found for &quot;{query.trim()}&quot;
+              <div className="px-3 py-4 text-center text-xs text-[#7A8BA8]">
+                No results for &quot;{query.trim()}&quot;
               </div>
             )}
 
             {loading && !hasResults && (
-              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
+              <div className="px-3 py-4 text-center text-xs text-[#7A8BA8]">
                 Searching...
               </div>
             )}
 
             {hasResults && (
-              <div className="py-2">
-                {/* Events */}
+              <div className="py-1">
                 {results.events.length > 0 && (
                   <ResultGroup label="Events">
                     {results.events.map((event) => {
@@ -269,7 +258,7 @@ export function CommandPalette() {
                       return (
                         <ResultItem
                           key={`event-${event.id}`}
-                          icon={<CalendarDays className="w-4 h-4" />}
+                          icon={<CalendarDays className="w-3.5 h-3.5" />}
                           title={event.name}
                           detail={[event.client_name, event.event_date].filter(Boolean).join(" - ")}
                           active={activeIndex === idx}
@@ -280,7 +269,6 @@ export function CommandPalette() {
                   </ResultGroup>
                 )}
 
-                {/* Recipes */}
                 {results.recipes.length > 0 && (
                   <ResultGroup label="Recipes">
                     {results.recipes.map((recipe) => {
@@ -288,7 +276,7 @@ export function CommandPalette() {
                       return (
                         <ResultItem
                           key={`recipe-${recipe.id}`}
-                          icon={<BookOpen className="w-4 h-4" />}
+                          icon={<BookOpen className="w-3.5 h-3.5" />}
                           title={recipe.name}
                           detail={recipe.category ?? ""}
                           active={activeIndex === idx}
@@ -299,7 +287,6 @@ export function CommandPalette() {
                   </ResultGroup>
                 )}
 
-                {/* Staff */}
                 {results.staff.length > 0 && (
                   <ResultGroup label="Staff">
                     {results.staff.map((member) => {
@@ -307,7 +294,7 @@ export function CommandPalette() {
                       return (
                         <ResultItem
                           key={`staff-${member.id}`}
-                          icon={<Users className="w-4 h-4" />}
+                          icon={<Users className="w-3.5 h-3.5" />}
                           title={member.name}
                           detail={member.role ?? ""}
                           active={activeIndex === idx}
@@ -318,7 +305,6 @@ export function CommandPalette() {
                   </ResultGroup>
                 )}
 
-                {/* Clients */}
                 {results.clients.length > 0 && (
                   <ResultGroup label="Clients">
                     {results.clients.map((client) => {
@@ -326,7 +312,7 @@ export function CommandPalette() {
                       return (
                         <ResultItem
                           key={`client-${client.name}`}
-                          icon={<Contact className="w-4 h-4" />}
+                          icon={<Contact className="w-3.5 h-3.5" />}
                           title={client.name}
                           detail="View events"
                           active={activeIndex === idx}
@@ -342,16 +328,10 @@ export function CommandPalette() {
                 )}
               </div>
             )}
-
-            {!query.trim() && (
-              <div className="px-4 py-8 text-center text-sm text-[#7A8BA8]">
-                Start typing to search...
-              </div>
-            )}
           </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
 
@@ -364,7 +344,7 @@ function ResultGroup({
 }) {
   return (
     <div className="mb-1">
-      <div className="px-4 py-1.5 text-[#7A8BA8] uppercase text-xs tracking-wider font-medium">
+      <div className="px-3 py-1.5 text-[#7A8BA8] uppercase text-[10px] tracking-wider font-medium">
         {label}
       </div>
       {children}
@@ -388,7 +368,7 @@ function ResultItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
+      className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
         active ? "bg-[#1F2A44]" : "hover:bg-[#1F2A44]"
       }`}
     >
@@ -396,11 +376,11 @@ function ResultItem({
       <span className="flex-1 min-w-0">
         <span className="text-[#F4F1ED] block truncate">{title}</span>
         {detail && (
-          <span className="text-[#D4A373] text-xs block truncate">{detail}</span>
+          <span className="text-[#D4A373] text-[10px] block truncate">{detail}</span>
         )}
       </span>
       <ArrowRight
-        className={`w-3.5 h-3.5 text-[#7A8BA8] flex-shrink-0 transition-opacity ${
+        className={`w-3 h-3 text-[#7A8BA8] flex-shrink-0 transition-opacity ${
           active ? "opacity-100" : "opacity-0"
         }`}
       />

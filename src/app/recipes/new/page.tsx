@@ -80,8 +80,8 @@ export default function NewRecipePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5">Description (optional)</label>
-            <textarea name="description" rows={3} className="input" placeholder="Brief description..." />
+            <label className="block text-sm font-medium mb-1.5">Method of Preparation (optional)</label>
+            <textarea name="description" rows={8} className="input" placeholder="Describe the preparation steps..." />
           </div>
         </div>
 

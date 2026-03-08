@@ -60,11 +60,14 @@ export type PricingData = {
   targetMarginPercent: number;
 };
 
+export type MenuItemCategory = "Appetizers" | "Mains" | "Sides" | "Desserts" | "Drinks" | "Other";
+
 export type MenuItem = {
   id: string;
   name: string;
   costPerPerson: number;
   quantity: number;
+  category?: MenuItemCategory;
 };
 
 export type StaffingLine = {
@@ -197,6 +200,7 @@ export type StaffMember = {
   organization_id?: string | null;
   name: string;
   role: string;
+  pay_type: "hourly" | "salary";
   hourly_rate: number;
   phone: string | null;
   email: string | null;

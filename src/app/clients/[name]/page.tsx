@@ -46,7 +46,7 @@ export default async function ClientDetailPage({ params }: Props) {
   // Fetch client notes
   let notesQuery = supabase.from("client_notes").select("notes").eq("user_id", user.id).eq("client_name", clientName);
   if (org?.orgId) notesQuery = notesQuery.eq("organization_id", org.orgId);
-  const { data: notesRow } = await notesQuery.single();
+  const { data: notesRow } = await notesQuery.maybeSingle();
 
   const savedNotes = notesRow?.notes ?? "";
 

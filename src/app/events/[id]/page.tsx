@@ -151,31 +151,37 @@ export default async function EventDetailPage({ params }: Props) {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div className="min-w-0">
-          <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-3 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> All events
-          </Link>
-          <h1 className="font-display text-2xl font-semibold truncate">{e.name}</h1>
-          <p className="text-sm text-[#D4A373] mt-1">{e.client_name}</p>
-          <div className="mt-2">
-            <EventReadinessFlags
-              daysUntil={daysUntilEvent}
-              hasStaff={hasStaff}
-              hasPricing={!!pricing}
-              hasProposal={hasProposal}
-              depositPaid={depositPaid}
-            />
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="min-w-0">
+            <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-[#D4A373] hover:text-[#F4F1ED] mb-3 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> All events
+            </Link>
+            <h1 className="font-display text-2xl font-semibold truncate">{e.name}</h1>
+            <p className="text-sm text-[#D4A373] mt-1">{e.client_name}</p>
+            <div className="mt-2">
+              <EventReadinessFlags
+                daysUntil={daysUntilEvent}
+                hasStaff={hasStaff}
+                hasPricing={!!pricing}
+                hasProposal={hasProposal}
+                depositPaid={depositPaid}
+              />
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <EventStatusSelect eventId={e.id} currentStatus={e.status} />
+            {e.status === "confirmed" && acceptedProposal && (
+              <div className="mt-2">
+                <AutoConfirmBadge
+                  proposalTitle={acceptedProposal.title}
+                  confirmedAt={acceptedProposal.updated_at}
+                />
+              </div>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-          <EventStatusSelect eventId={e.id} currentStatus={e.status} />
-          {e.status === "confirmed" && acceptedProposal && (
-            <AutoConfirmBadge
-              proposalTitle={acceptedProposal.title}
-              confirmedAt={acceptedProposal.updated_at}
-            />
-          )}
+        <div className="flex flex-wrap items-center gap-2">
           {e.pricing_data && <GenerateProposalButton event={e} />}
           <Link href={`/events/${e.id}/beo`} className="btn-secondary flex items-center gap-2">
             <ClipboardList className="w-4 h-4" />Production Sheet

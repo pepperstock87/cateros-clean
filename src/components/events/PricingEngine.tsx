@@ -5,8 +5,10 @@ import { calculatePricing, DEFAULT_PRICING } from "@/lib/pricing";
 import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
-import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
+import type { PricingData, MenuItem, MenuItemCategory, StaffingLine, RentalLine, BarPackage } from "@/types";
 import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed } from "lucide-react";
+
+const MENU_CATEGORIES: MenuItemCategory[] = ["Appetizers", "Mains", "Sides", "Desserts", "Drinks", "Other"];
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 import { toast } from "sonner";
@@ -50,7 +52,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [recipePickerOpen, setRecipePickerOpen] = useState(false);
   const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
-  const addMenuItem = () => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount }]); markDirty(); };
+  const addMenuItem = (category: MenuItemCategory = "Mains") => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount, category }]); markDirty(); };
   const addStaffItem = () => { setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }]); markDirty(); };
   const addRentalItem = () => { setRentals(p => [...p, { id: generateId(), item: "", unitCost: 0, quantity: 1 }]); markDirty(); };
 
@@ -72,6 +74,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
       name: r.name,
       costPerPerson: r.cost_per_serving,
       quantity: guestCount,
+      category: (MENU_CATEGORIES.includes(r.category as MenuItemCategory) ? r.category : "Other") as MenuItemCategory,
     }));
     setMenuItems(p => [...p, ...newItems]);
     markDirty();
@@ -147,7 +150,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <button type="button" onClick={() => setRecipePickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <BookOpen className="w-3.5 h-3.5" />Import from Recipes
                 </button>
-                <button type="button" onClick={addMenuItem} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                <button type="button" onClick={() => addMenuItem()} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <Plus className="w-3.5 h-3.5" />Add item
                 </button>
               </div>
@@ -158,23 +161,49 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <UtensilsCrossed className="w-6 h-6 text-[#7A8BA8] mx-auto mb-2" />
                 <p className="text-sm font-medium text-[#D4A373] mb-1">No menu items yet</p>
                 <p className="text-xs text-[#7A8BA8] mb-3">Add dishes, courses, or menu components to build your pricing</p>
-                <button onClick={addMenuItem} className="btn-primary text-xs px-3 py-1.5">+ Add Menu Item</button>
+                <button onClick={() => addMenuItem()} className="btn-primary text-xs px-3 py-1.5">+ Add Menu Item</button>
               </div>
-            ) : menuItems.map(item => (
-              <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                <input className="input col-span-5 text-sm" placeholder="Item name" value={item.name} onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }} />
-                <div className="col-span-3 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
-                  <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
-                    onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
-                </div>
-                <input className="input col-span-3 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
-                  onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
-                <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-1 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
+            ) : (
+              <>
+                {MENU_CATEGORIES
+                  .filter(cat => menuItems.some(item => (item.category || "Other") === cat))
+                  .map(cat => {
+                    const categoryItems = menuItems.filter(item => (item.category || "Other") === cat);
+                    return (
+                      <div key={cat} className="mb-3 last:mb-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] uppercase tracking-wider text-[#D4A373] font-semibold">{cat}</span>
+                          <button type="button" onClick={() => addMenuItem(cat)} className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-0.5">
+                            <Plus className="w-3 h-3" />Add
+                          </button>
+                        </div>
+                        {categoryItems.map(item => (
+                          <div key={item.id} className="grid grid-cols-12 gap-2 items-center mb-2">
+                            <input className="input col-span-4 text-sm" placeholder="Item name" value={item.name} onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }} />
+                            <select
+                              className="input col-span-2 text-sm"
+                              value={item.category || "Other"}
+                              onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, category: e.target.value as MenuItemCategory } : m)); markDirty(); }}
+                            >
+                              {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <div className="col-span-2 relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
+                              <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
+                                onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
+                            </div>
+                            <input className="input col-span-2 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
+                              onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
+                            <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-2 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+              </>
+            )}
             {menuItems.length > 0 && (
               <div className="flex justify-between text-xs text-[#D4A373] pt-2 border-t border-[#2A3A5C]">
                 <span>Food cost total</span><span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.foodCostTotal)}</span>

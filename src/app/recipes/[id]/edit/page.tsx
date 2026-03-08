@@ -142,8 +142,8 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Chicken Piccata" className="input w-full" />
         </div>
         <div>
-          <label className="block text-xs text-[#D4A373] mb-1">Description</label>
-          <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Optional short description" className="input w-full" />
+          <label className="block text-xs text-[#D4A373] mb-1">Method of Preparation (optional)</label>
+          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the preparation steps..." rows={8} className="input w-full" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

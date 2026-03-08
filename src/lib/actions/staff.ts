@@ -17,6 +17,7 @@ export async function createStaffAction(_prevState: unknown, formData: FormData)
     organization_id: org?.orgId || null,
     name: formData.get("name") as string,
     role: formData.get("role") as string,
+    pay_type: (formData.get("pay_type") as string) || "hourly",
     hourly_rate: Number(formData.get("hourly_rate")) || 25,
     phone: formData.get("phone") as string || null,
     email: formData.get("email") as string || null,

@@ -42,6 +42,7 @@ export async function createOrganizationAction(data: {
     .eq("id", user.id);
 
   revalidatePath("/settings");
+  revalidatePath("/team");
   return { success: true, organizationId: org.id };
 }
 

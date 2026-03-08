@@ -17,9 +17,16 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [addCategory, setAddCategory] = useState("");
+  const [addCustomCategory, setAddCustomCategory] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editCustomCategory, setEditCustomCategory] = useState("");
 
   async function handleSubmit(formData: FormData) {
     setSaving(true);
+    if (addCategory === "Other" && addCustomCategory.trim()) {
+      formData.set("category", addCustomCategory.trim());
+    }
     const result = await createRentalItemAction(undefined, formData);
     setSaving(false);
     if (result?.error) {
@@ -27,6 +34,8 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
     } else {
       toast.success("Rental item added");
       setShowForm(false);
+      setAddCategory("");
+      setAddCustomCategory("");
       router.refresh();
     }
   }
@@ -47,9 +56,10 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
     e.preventDefault();
     setEditSaving(true);
     const formData = new FormData(e.currentTarget);
+    const rawCategory = formData.get("category") as string;
     const data = {
       name: formData.get("name") as string,
-      category: (formData.get("category") as string) || null,
+      category: (rawCategory === "Other" && editCustomCategory.trim()) ? editCustomCategory.trim() : (rawCategory || null),
       unit_cost: Number(formData.get("unit_cost")) || 0,
       vendor: (formData.get("vendor") as string) || null,
       notes: (formData.get("notes") as string) || null,
@@ -61,6 +71,8 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
     } else {
       toast.success("Item updated");
       setEditingId(null);
+      setEditCategory("");
+      setEditCustomCategory("");
       router.refresh();
     }
   }
@@ -92,10 +104,19 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
                           </div>
                           <div>
                             <label className="label">Category</label>
-                            <select name="category" className="input" defaultValue={item.category || ""}>
+                            <select name="category" className="input" value={editCategory || (CATEGORIES.includes(item.category || "") ? item.category || "" : item.category ? "Other" : "")} onChange={e => { setEditCategory(e.target.value); if (e.target.value !== "Other") setEditCustomCategory(""); }}>
                               <option value="">Select...</option>
                               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
+                            {(editCategory === "Other" || (!editCategory && item.category && !CATEGORIES.includes(item.category))) && (
+                              <input
+                                type="text"
+                                value={editCustomCategory || (!editCategory && item.category && !CATEGORIES.includes(item.category) ? item.category : "")}
+                                onChange={e => setEditCustomCategory(e.target.value)}
+                                className="input mt-2"
+                                placeholder="Enter custom category name"
+                              />
+                            )}
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -135,7 +156,7 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <span className="text-sm font-semibold text-brand-300">{formatCurrency(Number(item.unit_cost))}</span>
                             <button
-                              onClick={() => setEditingId(item.id)}
+                              onClick={() => { setEditingId(item.id); setEditCategory(""); setEditCustomCategory(""); }}
                               className="text-[#7A8BA8] hover:text-brand-300 transition-colors p-1"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -170,10 +191,19 @@ export function RentalList({ initialItems }: { initialItems: RentalItem[] }) {
             </div>
             <div>
               <label className="label">Category</label>
-              <select name="category" className="input">
+              <select name="category" className="input" value={addCategory} onChange={e => { setAddCategory(e.target.value); if (e.target.value !== "Other") setAddCustomCategory(""); }}>
                 <option value="">Select...</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              {addCategory === "Other" && (
+                <input
+                  type="text"
+                  value={addCustomCategory}
+                  onChange={e => setAddCustomCategory(e.target.value)}
+                  className="input mt-2"
+                  placeholder="Enter custom category name"
+                />
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

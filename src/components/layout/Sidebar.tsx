@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { OrgSwitcher } from "@/components/layout/OrgSwitcher";
+
+const SIDEBAR_COLLAPSED_KEY = "cateros-sidebar-collapsed";
 
 const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: boolean }[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -35,11 +37,30 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
 export function Sidebar({ companyName }: { companyName?: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [badges, setBadges] = useState<Record<string, number>>({});
   const [orgData, setOrgData] = useState<{
     currentOrg: { id: string; name: string; slug: string } | null;
     allOrgs: Array<{ id: string; name: string }>;
   }>({ currentOrg: null, allOrgs: [] });
+
+  // Load collapsed preference from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (stored === "true") setCollapsed(true);
+    } catch {}
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      } catch {}
+      return next;
+    });
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -151,7 +172,8 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "no-print fixed md:sticky top-0 z-40 md:z-0 w-56 h-screen bg-[#0C1220] border-r border-[#2A3A5C] flex flex-col transition-transform md:translate-x-0",
+        "no-print fixed md:sticky top-0 z-40 md:z-0 h-screen bg-[#0C1220] border-r border-[#2A3A5C] flex flex-col transition-all duration-200 md:translate-x-0",
+        collapsed ? "md:w-16 w-56" : "w-56",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Desktop Header */}
@@ -160,10 +182,12 @@ export function Sidebar({ companyName }: { companyName?: string }) {
             <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
               <ChefHat className="w-4 h-4 text-white" />
             </div>
-            <div className="min-w-0">
-              <div className="font-display text-sm font-semibold leading-tight">Cateros</div>
-              {companyName && <div className="text-xs text-[#7A8BA8] truncate leading-tight mt-0.5">{companyName}</div>}
-            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <div className="font-display text-sm font-semibold leading-tight">Cateros</div>
+                {companyName && <div className="text-xs text-[#7A8BA8] truncate leading-tight mt-0.5">{companyName}</div>}
+              </div>
+            )}
           </Link>
         </div>
 
@@ -171,19 +195,21 @@ export function Sidebar({ companyName }: { companyName?: string }) {
         <div className="md:hidden h-14" />
 
         {/* Org Switcher */}
-        {orgData.currentOrg && (
+        {orgData.currentOrg && !collapsed && (
           <div className="border-b border-[#2A3A5C]">
             <OrgSwitcher currentOrg={orgData.currentOrg} allOrgs={orgData.allOrgs} />
           </div>
         )}
 
         {/* Search */}
-        <div className="px-3 pt-3">
-          <CommandPalette />
-        </div>
+        {!collapsed && (
+          <div className="px-3 pt-3">
+            <CommandPalette />
+          </div>
+        )}
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className={cn("flex-1 py-4 space-y-0.5 overflow-y-auto", collapsed ? "px-2" : "px-3")}>
           {NAV.map(({ href, icon: Icon, label, sub }) => {
             const active = sub ? pathname === href : pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
             return (
@@ -191,18 +217,28 @@ export function Sidebar({ companyName }: { companyName?: string }) {
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
+                title={collapsed ? label : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg font-medium transition-all duration-150",
-                  sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
+                  "flex items-center rounded-lg font-medium transition-all duration-150",
+                  collapsed
+                    ? "justify-center px-0 py-2.5 text-sm"
+                    : cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm"),
                   active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538]"
                 )}
               >
                 <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
-                {label}
-                {badges[href] && (
-                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">
-                    {badges[href]}
-                  </span>
+                {!collapsed && (
+                  <>
+                    {label}
+                    {badges[href] && (
+                      <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">
+                        {badges[href]}
+                      </span>
+                    )}
+                  </>
+                )}
+                {collapsed && badges[href] && (
+                  <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-brand-400" />
                 )}
               </Link>
             );
@@ -210,20 +246,40 @@ export function Sidebar({ companyName }: { companyName?: string }) {
         </nav>
 
         {/* Bottom Actions */}
-        <div className="px-3 py-3 border-t border-[#2A3A5C] space-y-0.5">
-          <NotificationBell />
+        <div className={cn("py-3 border-t border-[#2A3A5C] space-y-0.5", collapsed ? "px-2" : "px-3")}>
+          {!collapsed && <NotificationBell />}
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all"
+            title={collapsed ? "Settings" : undefined}
+            className={cn(
+              "flex items-center rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all",
+              collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-3 py-2.5"
+            )}
           >
-            <Settings className="w-4 h-4" />Settings
+            <Settings className="w-4 h-4" />{!collapsed && "Settings"}
           </Link>
           <form action={logoutAction}>
-            <button type="submit" className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#D4A373] hover:text-red-400 hover:bg-red-900/20 transition-all">
-              <LogOut className="w-4 h-4" />Sign out
+            <button
+              type="submit"
+              title={collapsed ? "Sign out" : undefined}
+              className={cn(
+                "w-full flex items-center rounded-lg text-sm text-[#D4A373] hover:text-red-400 hover:bg-red-900/20 transition-all",
+                collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-3 py-2.5"
+              )}
+            >
+              <LogOut className="w-4 h-4" />{!collapsed && "Sign out"}
             </button>
           </form>
+
+          {/* Desktop Collapse Toggle */}
+          <button
+            onClick={toggleCollapsed}
+            className="hidden md:flex w-full items-center justify-center py-2 mt-1 rounded-lg text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
+          </button>
         </div>
       </aside>
 

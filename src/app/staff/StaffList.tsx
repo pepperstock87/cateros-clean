@@ -8,14 +8,24 @@ import { Plus, Trash2, Phone, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+function formatPay(s: StaffMember) {
+  const payType = s.pay_type ?? "hourly";
+  if (payType === "salary") {
+    return `${formatCurrency(Number(s.hourly_rate))}/yr`;
+  }
+  return `${formatCurrency(Number(s.hourly_rate))}/hr`;
+}
+
 export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [payType, setPayType] = useState<"hourly" | "salary">("hourly");
 
   async function handleSubmit(formData: FormData) {
     setSaving(true);
+    formData.set("pay_type", payType);
     const result = await createStaffAction(undefined, formData);
     setSaving(false);
     if (result?.error) {
@@ -23,6 +33,7 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
     } else {
       toast.success("Staff member added");
       setShowForm(false);
+      setPayType("hourly");
       router.refresh();
     }
   }
@@ -52,7 +63,7 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
                   <p className="text-xs text-[#D4A373]">{s.role}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-brand-300">{formatCurrency(Number(s.hourly_rate))}/hr</span>
+                  <span className="text-sm font-semibold text-brand-300">{formatPay(s)}</span>
                   <button
                     onClick={() => handleDelete(s.id, s.name)}
                     disabled={deleting === s.id}
@@ -98,24 +109,62 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="label">Hourly rate</label>
+              <label className="label">Pay type</label>
+              <div className="flex rounded-lg overflow-hidden border border-[#2A3A5C]">
+                <button
+                  type="button"
+                  onClick={() => setPayType("hourly")}
+                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${
+                    payType === "hourly"
+                      ? "bg-brand-950 text-brand-300 border-brand-800/60"
+                      : "bg-[#182030] text-[#7A8BA8] hover:text-[#F4F1ED]"
+                  }`}
+                >
+                  Hourly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPayType("salary")}
+                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors border-l border-[#2A3A5C] ${
+                    payType === "salary"
+                      ? "bg-brand-950 text-brand-300 border-brand-800/60"
+                      : "bg-[#182030] text-[#7A8BA8] hover:text-[#F4F1ED]"
+                  }`}
+                >
+                  Salary
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="label">{payType === "hourly" ? "Hourly rate" : "Annual salary"}</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
-                <input name="hourly_rate" type="number" className="input pl-6" placeholder="25" min={0} step={0.5} defaultValue={25} />
+                <input
+                  name="hourly_rate"
+                  type="number"
+                  className="input pl-6"
+                  placeholder={payType === "hourly" ? "25" : "52000"}
+                  min={0}
+                  step={payType === "hourly" ? 0.5 : 1000}
+                  defaultValue={payType === "hourly" ? 25 : 52000}
+                  key={payType}
+                />
               </div>
             </div>
             <div>
               <label className="label">Phone</label>
               <input name="phone" type="tel" className="input" placeholder="(555) 123-4567" />
             </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Email</label>
               <input name="email" type="email" className="input" placeholder="john@email.com" />
             </div>
-          </div>
-          <div>
-            <label className="label">Notes</label>
-            <input name="notes" className="input" placeholder="Allergies, certifications, availability..." />
+            <div>
+              <label className="label">Notes</label>
+              <input name="notes" className="input" placeholder="Allergies, certifications, availability..." />
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button type="submit" disabled={saving} className="btn-primary flex items-center gap-2 text-sm">

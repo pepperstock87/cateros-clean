@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Users, Crown, Shield, Building2 } from "lucide-react";
 import { TeamClient } from "./TeamClient";
+import { CreateOrganizationForm } from "./CreateOrganizationForm";
 
 export default async function TeamPage() {
   const supabase = await createClient();
@@ -22,7 +23,8 @@ export default async function TeamPage() {
         <div className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-8 text-center">
           <Users className="w-10 h-10 text-[#7A8BA8] mx-auto mb-3" />
           <p className="text-sm text-[#D4A373]">No organization set up yet.</p>
-          <p className="text-xs text-[#7A8BA8] mt-1">Create or join an organization to manage your team.</p>
+          <p className="text-xs text-[#7A8BA8] mt-1 mb-6">Create or join an organization to manage your team.</p>
+          <CreateOrganizationForm />
         </div>
       </div>
     );

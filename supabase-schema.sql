@@ -46,6 +46,24 @@ CREATE TABLE IF NOT EXISTS public.recipes (
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+-- Staff Members
+CREATE TABLE IF NOT EXISTS public.staff_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  organization_id UUID,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  pay_type TEXT DEFAULT 'hourly' CHECK (pay_type IN ('hourly', 'salary')),
+  hourly_rate NUMERIC(10,2) DEFAULT 25,
+  phone TEXT,
+  email TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- Migration: Add pay_type to existing staff_members tables
+-- ALTER TABLE public.staff_members ADD COLUMN IF NOT EXISTS pay_type TEXT DEFAULT 'hourly' CHECK (pay_type IN ('hourly', 'salary'));
+
 -- Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;

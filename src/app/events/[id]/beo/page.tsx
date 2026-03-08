@@ -63,7 +63,7 @@ export default async function BEOPage({ params }: Props) {
     confirmed: a.confirmed,
     notes: a.notes,
     created_at: "",
-    staff_member: a.staff_members ? { id: "", user_id: user.id, name: a.staff_members.name, role: a.staff_members.role, hourly_rate: 0, phone: a.staff_members.phone, email: null, notes: null, created_at: "" } : undefined,
+    staff_member: a.staff_members ? { id: "", user_id: user.id, name: a.staff_members.name, role: a.staff_members.role, pay_type: "hourly" as const, hourly_rate: 0, phone: a.staff_members.phone, email: null, notes: null, created_at: "" } : undefined,
   }));
 
   // Match menu items to recipes to build shopping list
