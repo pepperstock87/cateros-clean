@@ -9,9 +9,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("company_name")
+    .select("company_name, onboarding_completed")
     .eq("id", user.id)
     .single();
+
+  // Redirect to onboarding if not completed
+  if (profile && !profile.onboarding_completed) {
+    redirect("/onboarding");
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">

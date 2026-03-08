@@ -8,6 +8,9 @@ export type UserProfile = {
   subscription_status: "active" | "trialing" | "canceled" | "past_due" | null;
   plan_tier: "basic" | "pro" | null;
   current_organization_id: string | null;
+  stripe_connect_account_id: string | null;
+  stripe_connect_onboarded: boolean;
+  onboarding_completed: boolean;
   created_at: string;
 };
 
@@ -309,6 +312,8 @@ export type Payment = {
   status: PaymentStatus;
   paid_at: string | null;
   failure_reason: string | null;
+  platform_fee: number | null;
+  stripe_transfer_id: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

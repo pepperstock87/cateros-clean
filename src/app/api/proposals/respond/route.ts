@@ -122,12 +122,29 @@ export async function POST(req: Request) {
 
     // Notify caterer that client viewed the proposal
     if (proposal.user_id && proposal.status === "sent") {
+      // Fetch client name for the email template
+      let viewedClientName = "A client";
+      if (proposal.event_id) {
+        const { data: ev } = await supabase
+          .from("events")
+          .select("client_name")
+          .eq("id", proposal.event_id)
+          .single();
+        if (ev?.client_name) viewedClientName = ev.client_name;
+      }
+
+      const viewedLinkUrl = proposal.event_id ? `/events/${proposal.event_id}` : `/proposals`;
       await createNotification({
         userId: proposal.user_id,
         type: "proposal_viewed",
         title: "Proposal Viewed",
         message: `A client has viewed your proposal "${proposal.title}".`,
-        linkUrl: proposal.event_id ? `/events/${proposal.event_id}` : `/proposals`,
+        linkUrl: viewedLinkUrl,
+        emailData: {
+          proposalTitle: proposal.title,
+          clientName: viewedClientName,
+          eventUrl: viewedLinkUrl,
+        },
       });
     }
 
@@ -153,15 +170,18 @@ export async function POST(req: Request) {
   let bookingConfig: { require_contract?: boolean; require_deposit?: boolean } | null = null;
   let eventName = "Untitled Event";
 
+  let clientName = "A client";
+
   if (proposal.event_id) {
     const { data: eventData } = await supabase
       .from("events")
-      .select("name, booking_config")
+      .select("name, client_name, booking_config")
       .eq("id", proposal.event_id)
       .single();
 
     if (eventData) {
       eventName = eventData.name || "Untitled Event";
+      clientName = eventData.client_name || "A client";
       bookingConfig = (eventData.booking_config as typeof bookingConfig) || null;
     }
   }
@@ -218,6 +238,12 @@ export async function POST(req: Request) {
         title: newStatus === "booked" ? "Event Auto-Confirmed" : "Event Canceled",
         message: autoMessage,
         linkUrl: `/events/${proposal.event_id}`,
+        emailData: {
+          proposalTitle: proposal.title,
+          clientName: clientName,
+          eventName: eventName,
+          eventUrl: `/events/${proposal.event_id}`,
+        },
       });
     }
 
@@ -269,6 +295,12 @@ export async function POST(req: Request) {
           ? `Client responded: "${message.trim()}"`
           : `A client has ${action.replace("_", " ")} your proposal "${proposal.title}".`,
         linkUrl,
+        emailData: {
+          proposalTitle: proposal.title,
+          clientName: clientName,
+          signerName: action === "signed" ? signer_name?.trim() : undefined,
+          eventUrl: linkUrl,
+        },
       });
     }
   }

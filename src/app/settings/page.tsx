@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfileAction, updateBusinessDefaults, getBusinessSettings } from "@/lib/actions/settings";
-import { User, CreditCard, Building2, Mail, Pencil, DollarSign, FileText, Bell } from "lucide-react";
+import { User, CreditCard, Building2, Mail, Pencil, DollarSign, FileText, Bell, Banknote } from "lucide-react";
+import { StripeConnectSetup } from "@/components/payments/StripeConnectSetup";
+import { PaymentsDashboard } from "@/components/payments/PaymentsDashboard";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
@@ -441,6 +443,27 @@ export default function SettingsPage() {
             {savingNotifs ? "Saving..." : "Save Notifications"}
           </button>
         </div>
+      </div>
+
+      {/* Payment Processing (Stripe Connect) */}
+      <div className="card p-4 md:p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Banknote className="w-5 h-5 text-brand-400" />
+          <h2 className="font-semibold text-lg">Payment Processing</h2>
+        </div>
+        <p className="text-xs text-[#D4A373] mb-4">
+          Connect your Stripe account to collect payments from clients directly through proposals and invoices.
+        </p>
+        <StripeConnectSetup />
+      </div>
+
+      {/* Payments Dashboard */}
+      <div className="card p-4 md:p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <DollarSign className="w-5 h-5 text-brand-400" />
+          <h2 className="font-semibold text-lg">Payment Activity</h2>
+        </div>
+        <PaymentsDashboard />
       </div>
 
       {/* Subscription */}

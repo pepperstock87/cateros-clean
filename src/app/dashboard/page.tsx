@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, subMonths, addDays, isThisWeek } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight, FileText, Activity, Send } from "lucide-react";
 import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
 import { DashboardChart } from "@/components/dashboard/DashboardChart";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
@@ -12,6 +12,7 @@ import { RevenueForecasting } from "@/components/dashboard/RevenueForecasting";
 import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { ActionAlerts, type AlertItem } from "@/components/dashboard/ActionAlerts";
 import { UpcomingEventsTimeline } from "@/components/dashboard/UpcomingEventsTimeline";
+import { RecentActivityFeed } from "@/components/dashboard/RecentActivityFeed";
 import { getCurrentOrg } from "@/lib/organizations";
 
 async function getDashboardData(userId: string, orgId: string | null) {
@@ -80,6 +81,15 @@ async function getDashboardData(userId: string, orgId: string | null) {
     if (!pricing || e.status === "canceled") return s;
     return s + (pricing.suggestedPrice - (payment?.totalPaid ?? 0));
   }, 0);
+
+  // Pending proposals count
+  let pendingProposalsQuery = supabase
+    .from("proposals")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .in("status", ["draft", "sent"]);
+  if (orgId) pendingProposalsQuery = pendingProposalsQuery.eq("organization_id", orgId);
+  const { count: pendingProposalsCount } = await pendingProposalsQuery;
 
   // Action Items: Proposals with revision requests
   let revisionQuery = supabase.from("proposals").select("id, title, event_id, events(name)").eq("user_id", userId).eq("status", "sent").not("client_messages", "eq", "[]");
@@ -155,6 +165,24 @@ async function getDashboardData(userId: string, orgId: string | null) {
     return !(detailsComplete && contactComplete && pricingComplete && depositComplete);
   }).length;
 
+  // Recent activity feed
+  let activityQuery = supabase
+    .from("event_activity")
+    .select("id, type, description, created_at, event_id, events(name)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  const { data: recentActivity } = await activityQuery;
+
+  const activityItems = (recentActivity ?? []).map((a: any) => ({
+    id: a.id,
+    type: a.type,
+    description: a.description,
+    created_at: a.created_at,
+    event_name: a.events?.name ?? null,
+    event_id: a.event_id,
+  }));
+
   return {
     totalEventsThisMonth: thisMonthEvents.length,
     totalRevenueThisMonth: monthRevenue,
@@ -166,6 +194,7 @@ async function getDashboardData(userId: string, orgId: string | null) {
     lastMonthMargin,
     proposedPipeline: { total: proposedTotal, count: proposedEvents.length },
     confirmedPipeline: { total: confirmedTotal, count: confirmedEvents.length },
+    pendingProposalsCount: pendingProposalsCount ?? 0,
     upcomingEvents: events.filter(e => e.event_date > now.toISOString() && e.status !== "canceled").slice(0, 10),
     recentEvents: events.slice(0, 8),
     monthlyData,
@@ -180,6 +209,7 @@ async function getDashboardData(userId: string, orgId: string | null) {
     eventsWithoutPricing,
     staleProposals,
     eventsThisWeekCount,
+    activityItems,
   };
 }
 
@@ -298,33 +328,40 @@ export default async function DashboardPage() {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <WelcomeModal hasSeenWelcome={profile?.has_seen_welcome ?? false} />
-      {/* Header - Mobile friendly */}
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">
-            Good {greeting}, {profile?.full_name?.split(" ")[0] ?? "there"} 👋
+            Good {greeting}, {profile?.full_name?.split(" ")[0] ?? "there"}
           </h1>
           <p className="text-xs md:text-sm text-[#D4A373] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="How's my business?" />
+          <Link href="/proposals" className="btn-secondary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
+            <Send className="w-4 h-4" />
+            <span className="hidden sm:inline">New proposal</span>
+            <span className="sm:hidden">Proposal</span>
+          </Link>
           <Link href="/events/new" className="btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
             <Plus className="w-4 h-4" />
-            <span>New event</span>
+            <span className="hidden sm:inline">New event</span>
+            <span className="sm:hidden">Event</span>
           </Link>
         </div>
       </div>
 
-      {/* Stats Grid - Responsive */}
+      {/* Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         {[
+          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue this month", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
           { icon: CalendarDays, label: "Events", fullLabel: "Events this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
-          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
-          { icon: TrendingUp, label: "Profit", fullLabel: "Profit", value: stats.totalProfitThisMonth, prev: stats.lastMonthProfit, color: "text-green-400", green: true },
           { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
-        ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw }) => {
+          { icon: FileText, label: "Proposals", fullLabel: "Pending Proposals", value: stats.pendingProposalsCount, prev: null, color: "text-[#D4A373]", raw: true, noDelta: true },
+        ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw, noDelta }: any) => {
           const current = value as number;
-          const previous = prev as number;
+          const previous = (prev ?? 0) as number;
           const delta = previous > 0
             ? ((current - previous) / previous) * 100
             : current > 0 ? 100 : 0;
@@ -344,28 +381,36 @@ export default async function DashboardPage() {
               <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
                 {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
               </div>
-              <div className="flex items-center gap-1 mt-1.5">
-                {isEqual ? (
-                  <>
-                    <Minus className="w-3 h-3 text-[#7A8BA8]" />
-                    <span className="text-[10px] md:text-xs text-[#7A8BA8]">No change</span>
-                  </>
-                ) : isUp ? (
-                  <>
-                    <TrendingUp className="w-3 h-3 text-green-400" />
-                    <span className="text-[10px] md:text-xs text-green-400">
-                      {raw ? `+${current - previous}` : `+${Math.round(Math.abs(delta))}%`} vs last month
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <TrendingDown className="w-3 h-3 text-red-400" />
-                    <span className="text-[10px] md:text-xs text-red-400">
-                      {raw ? `${current - previous}` : `-${Math.round(Math.abs(delta))}%`} vs last month
-                    </span>
-                  </>
-                )}
-              </div>
+              {!noDelta ? (
+                <div className="flex items-center gap-1 mt-1.5">
+                  {isEqual ? (
+                    <>
+                      <Minus className="w-3 h-3 text-[#7A8BA8]" />
+                      <span className="text-[10px] md:text-xs text-[#7A8BA8]">No change</span>
+                    </>
+                  ) : isUp ? (
+                    <>
+                      <TrendingUp className="w-3 h-3 text-green-400" />
+                      <span className="text-[10px] md:text-xs text-green-400">
+                        {raw ? `+${current - previous}` : `+${Math.round(Math.abs(delta))}%`} vs last month
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <TrendingDown className="w-3 h-3 text-red-400" />
+                      <span className="text-[10px] md:text-xs text-red-400">
+                        {raw ? `${current - previous}` : `-${Math.round(Math.abs(delta))}%`} vs last month
+                      </span>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 mt-1.5">
+                  <span className="text-[10px] md:text-xs text-[#7A8BA8]">
+                    {stats.proposedPipeline.count} proposed, {stats.confirmedPipeline.count} confirmed
+                  </span>
+                </div>
+              )}
             </div>
           );
         })}
@@ -423,15 +468,29 @@ export default async function DashboardPage() {
         <ActionAlerts alerts={alerts} />
       </div>
 
-      {/* Upcoming Events Timeline */}
-      <div className="card p-4 md:p-5 mb-6 md:mb-8">
-        <UpcomingEventsTimeline events={timelineEvents} />
+      {/* Upcoming Events + Recent Activity — Side by Side on Desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        {/* Upcoming Events Timeline — takes 2/3 */}
+        <div className="card p-4 md:p-5 lg:col-span-2">
+          <UpcomingEventsTimeline events={timelineEvents} />
+        </div>
+
+        {/* Recent Activity Feed — takes 1/3 */}
+        <div className="card p-4 md:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Recent Activity
+            </h2>
+          </div>
+          <RecentActivityFeed activities={stats.activityItems} />
+        </div>
       </div>
 
       {/* Revenue Chart */}
       <div className="card p-4 md:p-5 mb-6 md:mb-8">
         <h2 className="font-medium text-xs md:text-sm mb-4 text-[#D4A373] uppercase tracking-wider">
-          <span className="hidden sm:inline">Revenue vs Profit — 6 months</span>
+          <span className="hidden sm:inline">Revenue vs Profit — Last 6 Months</span>
           <span className="sm:hidden">6 Month Overview</span>
         </h2>
         <DashboardChart data={stats.monthlyData} />
@@ -483,7 +542,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Recent Events - Mobile scrollable */}
+      {/* Recent Events */}
       <div className="card p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Recent Events</h2>

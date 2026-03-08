@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { createNotification } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-04-10" });
 
@@ -90,6 +91,36 @@ export async function POST(req: NextRequest) {
             stripe_session_id: session.id,
           },
         });
+
+        // Send payment received notification + email
+        if (session.metadata.user_id) {
+          const amountFormatted = `$${(session.amount_total! / 100).toFixed(2)}`;
+
+          // Fetch event name for the email template
+          let paymentEventName = "Your Event";
+          const { data: eventRow } = await supabase
+            .from("events")
+            .select("name")
+            .eq("id", eventId)
+            .single();
+          if (eventRow?.name) paymentEventName = eventRow.name;
+
+          // Non-blocking: createNotification handles email internally
+          createNotification({
+            userId: session.metadata.user_id,
+            type: "payment_received",
+            title: "Payment Received",
+            message: `Payment of ${amountFormatted} received for "${paymentEventName}" via Stripe.`,
+            linkUrl: `/events/${eventId}`,
+            emailData: {
+              amount: amountFormatted,
+              eventName: paymentEventName,
+              eventUrl: `/events/${eventId}`,
+            },
+          }).catch((err) => {
+            console.error("[webhook] Payment notification error:", err);
+          });
+        }
       }
       break;
     }
@@ -128,6 +159,46 @@ export async function POST(req: NextRequest) {
             status: isFullRefund ? "refunded" : "partially_refunded",
           })
           .eq("stripe_payment_intent_id", paymentIntentId);
+      }
+      break;
+    }
+
+    // ------------------------------------------------------------------
+    // Stripe Connect events
+    // ------------------------------------------------------------------
+    case "account.updated": {
+      const account = event.data.object as Stripe.Account;
+      const connectId = account.id;
+
+      const chargesEnabled = account.charges_enabled ?? false;
+      const payoutsEnabled = account.payouts_enabled ?? false;
+      const detailsSubmitted = account.details_submitted ?? false;
+      const onboarded = chargesEnabled && payoutsEnabled && detailsSubmitted;
+
+      // Update the profile that has this connect account
+      await supabase
+        .from("profiles")
+        .update({ stripe_connect_onboarded: onboarded })
+        .eq("stripe_connect_account_id", connectId);
+
+      console.log(
+        `Connect account ${connectId} updated: onboarded=${onboarded}, charges=${chargesEnabled}, payouts=${payoutsEnabled}`
+      );
+      break;
+    }
+
+    case "transfer.created": {
+      const transfer = event.data.object as Stripe.Transfer;
+      console.log(
+        `Transfer ${transfer.id} created: $${(transfer.amount / 100).toFixed(2)} to ${transfer.destination}`
+      );
+
+      // If the transfer has metadata linking to a payment, update the record
+      if (transfer.source_transaction) {
+        await supabase
+          .from("payments")
+          .update({ stripe_transfer_id: transfer.id })
+          .eq("stripe_payment_intent_id", transfer.source_transaction as string);
       }
       break;
     }
