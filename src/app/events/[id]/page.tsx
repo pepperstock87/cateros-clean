@@ -23,6 +23,7 @@ import { formatCurrency } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
 import { EventVendors } from "@/components/events/EventVendors";
+import { EventVenueSelector } from "@/components/events/EventVenueSelector";
 import { MarginWarning } from "@/components/events/MarginWarning";
 import { StaffingSuggestion } from "@/components/events/StaffingSuggestion";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
@@ -68,13 +69,15 @@ export default async function EventDetailPage({ params }: Props) {
   if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);
   let staffQuery = supabase.from("staff_members").select("*").eq("user_id", user.id);
   if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
+  const eventOrgsQuery = supabase.from("event_organizations").select("organization_id, relationship_type").eq("event_id", id);
 
-  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes] = await Promise.all([
+  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes, eventOrgsRes] = await Promise.all([
     proposalsQuery.order("created_at", { ascending: false }),
     receiptsQuery.order("receipt_date", { ascending: false }),
     invoicesQuery,
     assignmentsQuery,
     staffQuery.order("name"),
+    eventOrgsQuery,
   ]);
 
   const proposals = proposalsRes.data ?? [];
@@ -82,6 +85,7 @@ export default async function EventDetailPage({ params }: Props) {
   const receipts = receiptsRes.data ?? [];
   const assignments = assignmentsRes.data ?? [];
   const allStaff = staffRes.data ?? [];
+  const eventOrganizations = eventOrgsRes.data ?? [];
   const spendingTotal = receipts.reduce((s: number, r: any) => s + (Number(r.total_amount) || 0), 0);
   const pricing = e.pricing_data as PricingData | null;
 
@@ -142,7 +146,7 @@ export default async function EventDetailPage({ params }: Props) {
   );
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div className="min-w-0">
@@ -378,8 +382,15 @@ export default async function EventDetailPage({ params }: Props) {
 
           vendors: (
             <div>
-              <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
-              <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
+              <EventVenueSelector
+                eventId={e.id}
+                currentVenue={e.venue}
+                eventOrganizations={eventOrganizations}
+              />
+              <div className="mt-6">
+                <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
+                <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
+              </div>
               <EventVendors eventId={e.id} isAdmin={true} />
               <EventInviteManager eventId={e.id} />
             </div>

@@ -45,7 +45,7 @@ export default async function ClientPortalPage({ params, searchParams }: Props) 
     .from("profiles")
     .select("company_name")
     .eq("id", proposal.user_id)
-    .single();
+    .maybeSingle();
 
   const event = proposal.event as Event | null;
   const pricing = event?.pricing_data as PricingData | null;

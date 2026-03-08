@@ -71,9 +71,9 @@ export default function BillingPage() {
   const currentPlan = profile?.plan_tier || "basic";
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-display text-2xl font-semibold">Billing</h1>
+        <h1 className="font-display text-xl md:text-2xl font-semibold">Billing</h1>
         <p className="text-sm text-[#9c8876] mt-1">Manage your Cateros subscription</p>
       </div>
 

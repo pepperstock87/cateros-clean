@@ -73,10 +73,10 @@ export default async function ClientsPage() {
   clients.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Clients</h1>
+          <h1 className="font-display text-xl md:text-2xl font-semibold">Clients</h1>
           <p className="text-sm text-[#9c8876] mt-1">
             {clients.length} {clients.length === 1 ? "client" : "clients"}
           </p>

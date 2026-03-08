@@ -108,7 +108,7 @@ async function getDashboardData(userId: string, orgId: string | null) {
   });
 
   // Action Items: Events within 7 days with no staff assigned
-  let staffAssignQuery = supabase.from("staff_assignments").select("event_id").eq("user_id", userId);
+  let staffAssignQuery = supabase.from("event_staff_assignments").select("event_id").eq("user_id", userId);
   if (orgId) staffAssignQuery = staffAssignQuery.eq("organization_id", orgId);
   const { data: staffAssignments } = await staffAssignQuery;
   const eventIdsWithStaff = new Set((staffAssignments ?? []).map((sa: any) => sa.event_id));

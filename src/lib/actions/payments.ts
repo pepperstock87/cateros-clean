@@ -138,7 +138,8 @@ export async function deletePaymentScheduleItemAction(
     const { error } = await supabase
       .from("payment_schedules")
       .delete()
-      .eq("id", scheduleId);
+      .eq("id", scheduleId)
+      .eq("event_id", eventId);
 
     if (error) return { error: error.message };
 

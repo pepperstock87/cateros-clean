@@ -48,7 +48,7 @@ export default async function ProposalDetailPage({ params }: Props) {
   }));
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto">
       <Link href="/proposals" className="inline-flex items-center gap-1.5 text-sm text-[#9c8876] hover:text-[#f5ede0] mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> All proposals
       </Link>

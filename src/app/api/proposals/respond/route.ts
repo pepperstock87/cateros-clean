@@ -166,10 +166,10 @@ export async function POST(req: Request) {
     await supabase.from("contract_acceptances").insert({
       proposal_id: proposal.id,
       event_id: proposal.event_id,
-      user_id: proposal.user_id,
-      signer_name: signer_name.trim(),
-      signer_email: signer_email?.trim() || null,
+      accepted_by_name: signer_name.trim(),
+      accepted_by_email: signer_email?.trim() || null,
       ip_address: clientIp,
+      user_agent: req.headers.get("user-agent") || null,
       accepted_at: new Date().toISOString(),
     });
   }

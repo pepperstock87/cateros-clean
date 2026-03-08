@@ -30,7 +30,7 @@ export default async function RecipeAnalyticsPage() {
   }));
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <Link
@@ -45,7 +45,7 @@ export default async function RecipeAnalyticsPage() {
               <BarChart3 className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-semibold">Recipe Analytics</h1>
+              <h1 className="font-display text-xl md:text-2xl font-semibold">Recipe Analytics</h1>
               <p className="text-sm text-[#9c8876] mt-0.5">Understand your recipe profitability</p>
             </div>
           </div>

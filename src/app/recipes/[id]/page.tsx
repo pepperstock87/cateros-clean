@@ -54,7 +54,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <Link href="/recipes" className="flex items-center gap-2 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors">
           <ArrowLeft className="w-4 h-4" />

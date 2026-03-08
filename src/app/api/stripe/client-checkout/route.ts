@@ -63,6 +63,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate amount matches the schedule — don't trust client-provided amount
+    const validatedAmount = schedule.amount;
+
     const eventData = proposal.event as unknown;
     const event = (Array.isArray(eventData) ? eventData[0] : eventData) as { id: string; name: string; client_name: string } | null;
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/p/${shareToken}/portal`;
@@ -80,7 +83,7 @@ export async function POST(req: NextRequest) {
                 ? `${installmentName || "Payment"} for ${event.name}`
                 : undefined,
             },
-            unit_amount: Math.round(amount * 100),
+            unit_amount: Math.round(validatedAmount * 100),
           },
           quantity: 1,
         },
@@ -102,7 +105,7 @@ export async function POST(req: NextRequest) {
       proposal_id: proposal.id,
       payment_schedule_id: paymentScheduleId,
       organization_id: schedule.organization_id || null,
-      amount,
+      amount: validatedAmount,
       payment_method_type: "stripe",
       status: "pending",
       stripe_checkout_session_id: session.id,

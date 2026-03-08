@@ -124,7 +124,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
         </button>
       )}
 
-      {proposal.status === "sent" && (
+      {(proposal.status === "sent" || proposal.status === "viewed") && (
         <>
           <button
             onClick={() => handleStatusChange("booked")}
@@ -141,6 +141,35 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
             <XCircle className="w-3.5 h-3.5" />Declined
           </button>
         </>
+      )}
+
+      {(proposal.status === "approved" || proposal.status === "signed" || proposal.status === "deposit_paid") && (
+        <>
+          <button
+            onClick={() => handleStatusChange("booked")}
+            disabled={loading}
+            className="btn-primary flex items-center gap-1.5 text-sm py-2 px-3"
+          >
+            <CheckCircle className="w-3.5 h-3.5" />Mark Booked
+          </button>
+          <button
+            onClick={() => handleStatusChange("draft")}
+            disabled={loading}
+            className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />Reset to Draft
+          </button>
+        </>
+      )}
+
+      {proposal.status === "expired" && (
+        <button
+          onClick={() => handleStatusChange("draft")}
+          disabled={loading}
+          className="btn-secondary flex items-center gap-1.5 text-sm py-2 px-3"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />Reopen as Draft
+        </button>
       )}
 
       {(proposal.status === "declined" || proposal.status === "booked") && (
@@ -205,7 +234,7 @@ export function ProposalActions({ proposal, event }: { proposal: Proposal; event
     </div>
 
       {/* Follow-up status — show when proposal has been sent */}
-      {(proposal.status === "sent" || proposal.status === "booked" || proposal.status === "declined") && (
+      {proposal.status !== "draft" && (
         <ProposalFollowUp proposal={followUpData} />
       )}
 

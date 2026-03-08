@@ -119,13 +119,13 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
   }
 
   if (loading) return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <div className="card p-16 text-center text-[#9c8876] text-sm">Loading…</div>
     </div>
   );
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <Link href={`/recipes/${id}`} className="flex items-center gap-2 text-sm text-[#9c8876] hover:text-[#f5ede0] transition-colors">
           <ArrowLeft className="w-4 h-4" />Back to recipe
