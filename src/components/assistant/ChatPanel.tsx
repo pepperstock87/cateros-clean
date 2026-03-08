@@ -340,10 +340,20 @@ export function ChatPanel({
                 )}
               >
                 {msg.role === "assistant" ? (
-                  <div
-                    className="prose-chat leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(displayText) }}
-                  />
+                  (() => {
+                    try {
+                      return (
+                        <div
+                          className="prose-chat leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(displayText) }}
+                        />
+                      );
+                    } catch {
+                      return (
+                        <div className="whitespace-pre-wrap">{displayText}</div>
+                      );
+                    }
+                  })()
                 ) : (
                   <div className="whitespace-pre-wrap">{displayText}</div>
                 )}

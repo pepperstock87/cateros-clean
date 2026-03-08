@@ -80,7 +80,7 @@ export function generateEventsSummaryPDF(events: Event[], companyName: string) {
     return sum + (p?.suggestedPrice ?? 0);
   }, 0);
 
-  const finalY = (doc as any).lastAutoTable?.finalY ?? startY + 40;
+  const finalY = doc.lastAutoTable?.finalY ?? startY + 40;
 
   doc.setFontSize(10);
   doc.setTextColor(...LIGHT);

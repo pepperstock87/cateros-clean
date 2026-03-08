@@ -3,10 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 
 // ── Resend client (lazy-initialized) ──────────────────────────────────────────
 let resendClient: Resend | null = null;
+let resendKeyWarned = false;
 
 function getResend(): Resend | null {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[email] RESEND_API_KEY is not set — email sending is disabled.");
+    if (!resendKeyWarned) {
+      resendKeyWarned = true;
+      console.warn("[email] RESEND_API_KEY is not set — email sending is disabled.");
+    }
     return null;
   }
   if (!resendClient) {

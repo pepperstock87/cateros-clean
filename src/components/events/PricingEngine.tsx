@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { calculatePricing, DEFAULT_PRICING } from "@/lib/pricing";
+import { DEFAULTS } from "@/lib/constants";
 import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
@@ -44,9 +45,9 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [staffing, setStaffing] = useState<StaffingLine[]>(initialPricing?.staffing ?? []);
   const [rentals, setRentals] = useState<RentalLine[]>(initialPricing?.rentals ?? []);
   const [barPackage, setBarPackage] = useState<BarPackage | null>(initialPricing?.barPackage ?? null);
-  const [adminPercent, setAdminPercent] = useState(initialPricing?.adminPercent ?? 22);
-  const [taxPercent, setTaxPercent] = useState(initialPricing?.taxPercent ?? 8.5);
-  const [targetMargin, setTargetMargin] = useState(initialPricing?.targetMarginPercent ?? 28);
+  const [adminPercent, setAdminPercent] = useState(initialPricing?.adminPercent ?? DEFAULTS.ADMIN_FEE_PERCENT);
+  const [taxPercent, setTaxPercent] = useState(initialPricing?.taxPercent ?? DEFAULTS.TAX_RATE_PERCENT);
+  const [targetMargin, setTargetMargin] = useState(initialPricing?.targetMarginPercent ?? DEFAULTS.PROFIT_MARGIN_PERCENT);
   const [saving, setSaving] = useState(false);
   const [usingDefaults, setUsingDefaults] = useState(false);
   const [recipePickerOpen, setRecipePickerOpen] = useState(false);

@@ -38,6 +38,10 @@ export function canAccessProFeatures(profile: any): boolean {
   return hasActiveSubscription(profile) && profile?.plan_tier === "pro";
 }
 
+export function unwrapSingle<T>(val: T | T[]): T {
+  return Array.isArray(val) ? val[0] : val;
+}
+
 export function canCreateEvents(profile: any): boolean {
   // Pro and Basic users with active subscriptions can create unlimited events
   if (hasActiveSubscription(profile) && (profile?.plan_tier === "basic" || profile?.plan_tier === "pro")) {

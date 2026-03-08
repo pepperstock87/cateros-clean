@@ -181,17 +181,11 @@ export async function POST(req: NextRequest) {
         .update({ stripe_connect_onboarded: onboarded })
         .eq("stripe_connect_account_id", connectId);
 
-      console.log(
-        `Connect account ${connectId} updated: onboarded=${onboarded}, charges=${chargesEnabled}, payouts=${payoutsEnabled}`
-      );
       break;
     }
 
     case "transfer.created": {
       const transfer = event.data.object as Stripe.Transfer;
-      console.log(
-        `Transfer ${transfer.id} created: $${(transfer.amount / 100).toFixed(2)} to ${transfer.destination}`
-      );
 
       // If the transfer has metadata linking to a payment, update the record
       if (transfer.source_transaction) {

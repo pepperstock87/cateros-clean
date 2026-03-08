@@ -117,7 +117,7 @@ export function generateBEOPDF(
     columnStyles: { 0: { cellWidth: 100, fontStyle: "bold" } },
     showHead: false,
   });
-  y = (doc as any).lastAutoTable.finalY + 20;
+  y = doc.lastAutoTable.finalY + 20;
 
   // ── Staff Roster ──
   if (staffAssignments.length > 0) {
@@ -137,7 +137,7 @@ export function generateBEOPDF(
       headStyles,
       alternateRowStyles: altRowStyles,
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 20;
   }
 
   // ── Menu Items ──
@@ -160,7 +160,7 @@ export function generateBEOPDF(
         2: { cellWidth: 80, halign: "right" },
       },
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 20;
   }
 
   // ── Shopping List (aggregated from recipes) ──
@@ -204,7 +204,7 @@ export function generateBEOPDF(
         2: { cellWidth: 70, halign: "center" },
       },
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 20;
   }
 
   // ── Equipment / Rentals ──
@@ -220,7 +220,7 @@ export function generateBEOPDF(
       alternateRowStyles: altRowStyles,
       columnStyles: { 1: { cellWidth: 80, halign: "right" } },
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 20;
   }
 
   // ── Cost Summary ──
@@ -253,7 +253,7 @@ export function generateBEOPDF(
       },
       columnStyles: { 1: { cellWidth: 120, halign: "right" } },
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 20;
   }
 
   // ── Notes ──

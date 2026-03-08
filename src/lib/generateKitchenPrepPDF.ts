@@ -195,7 +195,7 @@ export function generateKitchenPrepPDF(
             3: { cellWidth: 60, halign: "center" },
           },
         });
-        y = (doc as any).lastAutoTable.finalY + 20;
+        y = doc.lastAutoTable.finalY + 20;
       }
     }
   } else {

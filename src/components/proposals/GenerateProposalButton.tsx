@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { generateProposalPDF } from "@/lib/generateProposalPDF";
 import type { Event, BusinessSettings, UserEntitlements } from "@/types";
 import { FileText, Loader2, Eye, X, Download } from "lucide-react";
@@ -14,10 +14,42 @@ export function GenerateProposalButton({ event }: { event: Event }) {
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState("");
-  const [terms, setTerms] = useState(
-    "A deposit of 50% is required to secure your event date. The remaining balance is due 7 days prior to the event. Cancellations made within 30 days of the event are non-refundable. Prices subject to change based on final guest count confirmed 10 days before event."
-  );
+  const defaultTerms =
+    "A deposit of 50% is required to secure your event date. The remaining balance is due 7 days prior to the event. Cancellations made within 30 days of the event are non-refundable. Prices subject to change based on final guest count confirmed 10 days before event.";
+  const [terms, setTerms] = useState(defaultTerms);
   const docRef = useRef<Awaited<ReturnType<typeof generateProposalPDF>> | null>(null);
+
+  // Load proposal terms from business settings if available
+  useEffect(() => {
+    async function loadTerms() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("current_organization_id")
+          .eq("id", user.id)
+          .single();
+        const orgId = profile?.current_organization_id;
+
+        let settingsQuery = supabase
+          .from("business_settings")
+          .select("proposal_terms")
+          .eq("user_id", user.id);
+        if (orgId) settingsQuery = settingsQuery.eq("organization_id", orgId);
+
+        const { data: settings } = await settingsQuery.maybeSingle();
+        if (settings?.proposal_terms && settings.proposal_terms.trim().length > 0) {
+          setTerms(settings.proposal_terms);
+        }
+      } catch {
+        // Silently fall back to default terms
+      }
+    }
+    loadTerms();
+  }, []);
   const filenameRef = useRef<string>("");
 
   async function buildPDF() {
@@ -71,9 +103,9 @@ export function GenerateProposalButton({ event }: { event: Event }) {
     });
 
     if (insertError) {
-      toast.error("Failed to save proposal record");
+      toast.error(`Failed to save proposal record for "${event.name}": ${insertError.message}`);
     } else {
-      toast.success("Proposal saved");
+      toast.success(`Proposal for "${event.name}" saved to your proposals list`);
     }
 
     return { doc, filename };
@@ -84,10 +116,10 @@ export function GenerateProposalButton({ event }: { event: Event }) {
     try {
       const { doc, filename } = await buildPDF();
       doc.save(filename);
-      toast.success("Proposal PDF downloaded!");
+      toast.success(`Proposal PDF for "${event.name}" downloaded successfully`);
       setShowModal(false);
     } catch {
-      toast.error("Failed to generate proposal");
+      toast.error(`Failed to generate proposal for "${event.name}". Please check event pricing data and try again.`);
     } finally {
       setLoading(false);
     }
@@ -104,7 +136,7 @@ export function GenerateProposalButton({ event }: { event: Event }) {
       setShowModal(false);
       setShowPreview(true);
     } catch {
-      toast.error("Failed to generate proposal preview");
+      toast.error(`Failed to generate preview for "${event.name}". Please check event pricing data and try again.`);
     } finally {
       setPreviewLoading(false);
     }

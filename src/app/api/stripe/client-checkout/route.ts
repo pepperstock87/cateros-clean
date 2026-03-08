@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { unwrapSingle } from "@/lib/utils";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-04-10",
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
     const validatedAmount = schedule.amount;
 
     const eventData = proposal.event as unknown;
-    const event = (Array.isArray(eventData) ? eventData[0] : eventData) as {
+    const event = unwrapSingle(eventData) as {
       id: string;
       name: string;
       client_name: string;

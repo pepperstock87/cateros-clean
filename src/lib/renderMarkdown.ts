@@ -1,3 +1,22 @@
+// Allowed HTML tags after markdown conversion — everything else is stripped.
+const ALLOWED_TAGS = new Set([
+  "pre", "code", "strong", "em", "h2", "h3", "li", "ul", "br", "a",
+]);
+
+/**
+ * Strip any HTML tags / attributes that are NOT in the allow-list.
+ * This acts as defence-in-depth on top of the entity escaping below.
+ */
+function sanitizeHtml(html: string): string {
+  // Remove all tags that are not in the allow-list
+  return html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, (match, tag) => {
+    const lower = tag.toLowerCase();
+    if (!ALLOWED_TAGS.has(lower)) return "";
+    // For allowed tags, strip event-handler attributes (on*)
+    return match.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+  });
+}
+
 // Lightweight markdown to HTML converter for chat messages
 // Supports: **bold**, *italic*, `code`, ```code blocks```, - lists, ## headers, [links](url)
 export function renderMarkdown(text: string): string {
@@ -30,5 +49,5 @@ export function renderMarkdown(text: string): string {
     return '<ul class="my-1 space-y-0.5">' + match.replace(/<br\/>/g, '') + '</ul>';
   });
 
-  return html;
+  return sanitizeHtml(html);
 }

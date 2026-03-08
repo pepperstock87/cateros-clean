@@ -22,14 +22,14 @@ export async function createRecipeAction(_prevState: unknown, formData: FormData
   const unitsPerCaseRaw = formData.get("units_per_case") as string;
   const org = await getCurrentOrg();
   const { error } = await supabase.from("recipes").insert({
-    user_id: user.id, organization_id: org?.orgId || null, name: formData.get("name") as string,
-    description: formData.get("description") as string || null,
-    servings, category: formData.get("category") as string || null,
+    user_id: user.id, organization_id: org?.orgId || null, name: (formData.get("name") as string).trim(),
+    description: (formData.get("description") as string)?.trim() || null,
+    servings, category: (formData.get("category") as string)?.trim() || null,
     ingredients, total_cost, cost_per_serving,
-    case_price: casePriceRaw ? parseFloat(casePriceRaw) : null,
-    units_per_case: unitsPerCaseRaw ? parseFloat(unitsPerCaseRaw) : null,
+    case_price: casePriceRaw ? Number(casePriceRaw) : null,
+    units_per_case: unitsPerCaseRaw ? Number(unitsPerCaseRaw) : null,
     case_unit_type: formData.get("case_unit_type") as string || null,
-    yield_percent: formData.get("yield_percent") ? parseFloat(formData.get("yield_percent") as string) : null,
+    yield_percent: formData.get("yield_percent") ? Number(formData.get("yield_percent") as string) : null,
   });
   if (error) return { error: error.message };
   revalidatePath("/recipes");
@@ -45,8 +45,8 @@ export async function updateRecipeAction(recipeId: string, formData: FormData) {
   const { total_cost, cost_per_serving } = calcCosts(ingredients, servings);
   const org = await getCurrentOrg();
   let updateQuery = supabase.from("recipes").update({
-    name: formData.get("name") as string, description: formData.get("description") as string || null,
-    servings, category: formData.get("category") as string || null,
+    name: (formData.get("name") as string).trim(), description: (formData.get("description") as string)?.trim() || null,
+    servings, category: (formData.get("category") as string)?.trim() || null,
     ingredients, total_cost, cost_per_serving, updated_at: new Date().toISOString(),
   }).eq("id", recipeId).eq("user_id", user.id);
   if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);

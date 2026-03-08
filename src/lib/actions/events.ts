@@ -18,16 +18,16 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
     .insert({
       user_id: user.id,
       organization_id: org?.orgId || null,
-      name: formData.get("name") as string,
-      client_name: formData.get("client_name") as string,
-      client_email: formData.get("client_email") as string || null,
-      client_phone: formData.get("client_phone") as string || null,
-      event_date: formData.get("event_date") as string,
-      start_time: formData.get("start_time") as string || null,
-      end_time: formData.get("end_time") as string || null,
+      name: (formData.get("name") as string).trim(),
+      client_name: (formData.get("client_name") as string).trim(),
+      client_email: (formData.get("client_email") as string)?.trim() || null,
+      client_phone: (formData.get("client_phone") as string)?.trim() || null,
+      event_date: (formData.get("event_date") as string).trim(),
+      start_time: (formData.get("start_time") as string)?.trim() || null,
+      end_time: (formData.get("end_time") as string)?.trim() || null,
       guest_count: Number(formData.get("guest_count")),
-      venue: formData.get("venue") as string || null,
-      notes: formData.get("notes") as string || null,
+      venue: (formData.get("venue") as string)?.trim() || null,
+      notes: (formData.get("notes") as string)?.trim() || null,
       status: "draft",
     })
     .select()
@@ -70,16 +70,16 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
   let updateQuery = supabase
     .from("events")
     .update({
-      name: formData.get("name") as string,
-      client_name: formData.get("client_name") as string,
-      client_email: formData.get("client_email") as string || null,
-      client_phone: formData.get("client_phone") as string || null,
-      event_date: formData.get("event_date") as string,
-      start_time: formData.get("start_time") as string || null,
-      end_time: formData.get("end_time") as string || null,
+      name: (formData.get("name") as string).trim(),
+      client_name: (formData.get("client_name") as string).trim(),
+      client_email: (formData.get("client_email") as string)?.trim() || null,
+      client_phone: (formData.get("client_phone") as string)?.trim() || null,
+      event_date: (formData.get("event_date") as string).trim(),
+      start_time: (formData.get("start_time") as string)?.trim() || null,
+      end_time: (formData.get("end_time") as string)?.trim() || null,
       guest_count: Number(formData.get("guest_count")),
-      venue: formData.get("venue") as string || null,
-      notes: formData.get("notes") as string || null,
+      venue: (formData.get("venue") as string)?.trim() || null,
+      notes: (formData.get("notes") as string)?.trim() || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId)
@@ -255,7 +255,7 @@ export async function saveAsTemplateAction(eventId: string, templateName: string
   const { error } = await supabase.from("event_templates").insert({
     user_id: user.id,
     organization_id: org?.orgId || null,
-    name: templateName,
+    name: templateName.trim(),
     guest_count: event.guest_count,
     pricing_data: event.pricing_data,
   });

@@ -160,7 +160,12 @@ export function Sidebar({ companyName }: { companyName?: string }) {
           </div>
           <span className="font-display text-sm font-semibold">Cateros</span>
         </Link>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 hover:bg-[#1A2538] rounded-lg transition-colors">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 hover:bg-[#1A2538] rounded-lg transition-colors"
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileOpen}
+        >
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
@@ -263,6 +268,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
             <button
               type="submit"
               title={collapsed ? "Sign out" : undefined}
+              aria-label="Sign out"
               className={cn(
                 "w-full flex items-center rounded-lg text-sm text-[#D4A373] hover:text-red-400 hover:bg-red-900/20 transition-all",
                 collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-3 py-2.5"
@@ -277,6 +283,8 @@ export function Sidebar({ companyName }: { companyName?: string }) {
             onClick={toggleCollapsed}
             className="hidden md:flex w-full items-center justify-center py-2 mt-1 rounded-lg text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
           >
             {collapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
           </button>

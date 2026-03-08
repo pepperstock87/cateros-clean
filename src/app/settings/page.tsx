@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 import type { BusinessSettings } from "@/types";
+import { DEFAULTS } from "@/lib/constants";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
@@ -37,6 +38,9 @@ export default function SettingsPage() {
   const [taxId, setTaxId] = useState("");
   const [savingPolicies, setSavingPolicies] = useState(false);
 
+  // Loading state
+  const [loading, setLoading] = useState(true);
+
   // Notification state
   const [notifEmail, setNotifEmail] = useState(true);
   const [notifProposals, setNotifProposals] = useState(true);
@@ -45,18 +49,18 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("*").maybeSingle().then(({ data }) => {
+    const profilePromise = supabase.from("profiles").select("*").maybeSingle().then(({ data }) => {
       setProfile(data);
       setNameValue(data?.full_name || "");
       setCompanyValue(data?.company_name || "");
     });
 
-    getBusinessSettings().then((data) => {
+    const settingsPromise = getBusinessSettings().then((data) => {
       if (data) {
         setBusinessSettings(data);
-        setDefaultAdminFee(data.default_admin_fee ?? 20);
-        setDefaultTaxRate(data.default_tax_rate ?? 8.875);
-        setDefaultTargetMargin(data.default_target_margin ?? 35);
+        setDefaultAdminFee(data.default_admin_fee ?? DEFAULTS.ADMIN_FEE_PERCENT);
+        setDefaultTaxRate(data.default_tax_rate ?? DEFAULTS.TAX_RATE_PERCENT);
+        setDefaultTargetMargin(data.default_target_margin ?? DEFAULTS.PROFIT_MARGIN_PERCENT);
         setDefaultDepositPercent(data.default_deposit_percent ?? 50);
         setServiceChargePercent(data.service_charge_percent ?? 0);
         setPaymentTerms(data.payment_terms ?? "Net 30");
@@ -67,6 +71,8 @@ export default function SettingsPage() {
         setNotifPayments(data.notification_payments ?? true);
       }
     });
+
+    Promise.all([profilePromise, settingsPromise]).finally(() => setLoading(false));
   }, []);
 
   const isActive = profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
@@ -145,6 +151,20 @@ export default function SettingsPage() {
     } else {
       toast.success("Notification preferences saved");
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <div className="mb-6 md:mb-8">
+          <h1 className="font-display text-xl md:text-2xl font-semibold">Settings</h1>
+          <p className="text-xs md:text-sm text-[#D4A373] mt-1">Manage your account, defaults, and preferences</p>
+        </div>
+        <div className="flex items-center justify-center py-20 text-[#D4A373] text-sm">
+          Loading settings...
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -279,7 +299,7 @@ export default function SettingsPage() {
                 type="number"
                 min={0}
                 max={100}
-                step={0.5}
+                step={0.1}
                 value={defaultAdminFee}
                 onChange={(e) => setDefaultAdminFee(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
@@ -294,7 +314,7 @@ export default function SettingsPage() {
                 type="number"
                 min={0}
                 max={100}
-                step={0.125}
+                step={0.1}
                 value={defaultTaxRate}
                 onChange={(e) => setDefaultTaxRate(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
@@ -309,7 +329,7 @@ export default function SettingsPage() {
                 type="number"
                 min={0}
                 max={100}
-                step={0.5}
+                step={0.1}
                 value={defaultTargetMargin}
                 onChange={(e) => setDefaultTargetMargin(parseFloat(e.target.value) || 0)}
                 className="input pr-7"
@@ -339,7 +359,7 @@ export default function SettingsPage() {
                 type="number"
                 min={0}
                 max={100}
-                step={0.5}
+                step={0.1}
                 value={serviceChargePercent}
                 onChange={(e) => setServiceChargePercent(parseFloat(e.target.value) || 0)}
                 className="input pr-7"

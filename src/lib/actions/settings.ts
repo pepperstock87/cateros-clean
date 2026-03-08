@@ -38,13 +38,13 @@ export async function updateBusinessSettings(formData: FormData) {
   const settings = {
     user_id: user.id,
     organization_id: org?.orgId || null,
-    business_name: formData.get("business_name") as string,
-    phone: formData.get("phone") as string,
-    email: formData.get("email") as string,
-    address: formData.get("address") as string,
-    proposal_terms: formData.get("proposal_terms") as string,
-    proposal_template: (formData.get("proposal_template") as string) || "simple",
-    brand_color: (formData.get("brand_color") as string) || null,
+    business_name: (formData.get("business_name") as string)?.trim(),
+    phone: (formData.get("phone") as string)?.trim(),
+    email: (formData.get("email") as string)?.trim(),
+    address: (formData.get("address") as string)?.trim(),
+    proposal_terms: (formData.get("proposal_terms") as string)?.trim(),
+    proposal_template: (formData.get("proposal_template") as string)?.trim() || "simple",
+    brand_color: (formData.get("brand_color") as string)?.trim() || null,
     updated_at: new Date().toISOString(),
   };
 
@@ -128,10 +128,14 @@ export async function updateBusinessDefaults(data: {
 
   const org = await getCurrentOrg();
 
+  const trimmedData = Object.fromEntries(
+    Object.entries(data).map(([k, v]) => [k, typeof v === "string" ? v.trim() : v])
+  );
+
   const settings = {
     user_id: user.id,
     organization_id: org?.orgId || null,
-    ...data,
+    ...trimmedData,
     updated_at: new Date().toISOString(),
   };
 
@@ -157,9 +161,13 @@ export async function updateProfileAction(data: { full_name?: string; company_na
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  const trimmedData = Object.fromEntries(
+    Object.entries(data).map(([k, v]) => [k, typeof v === "string" ? v.trim() : v])
+  );
+
   const { error } = await supabase
     .from("profiles")
-    .update({ ...data })
+    .update({ ...trimmedData })
     .eq("id", user.id);
 
   if (error) return { error: error.message };

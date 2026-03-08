@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { unwrapSingle } from "@/lib/utils";
 import {
   DollarSign,
   TrendingUp,
@@ -150,9 +151,10 @@ export function PaymentsDashboard() {
               <tbody>
                 {summary.recentPayments.map((payment) => {
                   const eventData = payment.event as unknown;
-                  const event = (
-                    Array.isArray(eventData) ? eventData[0] : eventData
-                  ) as { name: string; client_name: string } | null;
+                  const event = unwrapSingle(eventData) as {
+                    name: string;
+                    client_name: string;
+                  } | null;
 
                   return (
                     <tr

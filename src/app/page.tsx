@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChefHat, TrendingUp, FileText, BookOpen, BarChart2, Users, Calendar, Zap, Quote, MapPin, Store, ArrowRight, ClipboardList, DollarSign } from "lucide-react";
+import { ChefHat, TrendingUp, FileText, BookOpen, BarChart2, Users, Calendar, Zap, MapPin, Store, ArrowRight, ClipboardList, DollarSign } from "lucide-react";
 import FAQSection from "@/components/landing/FAQSection";
 
 const ENGINE_STEPS = [
@@ -193,48 +193,6 @@ export default function LandingPage() {
             <div key={label}>
               <div className="font-display text-2xl md:text-3xl font-bold text-brand-400 mb-1">{value}</div>
               <div className="text-xs md:text-sm text-[#D4A373]">{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Testimonials */}
-      <div className="max-w-6xl mx-auto px-6 py-28">
-        <h2 className="text-center font-display text-3xl md:text-4xl font-semibold mb-4">Trusted by event professionals</h2>
-        <p className="text-center text-[#D4A373] mb-14">See what our customers have to say</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              quote:
-                "We were losing money on weekend weddings and didn\u2019t even know it. Cateros showed us our labor costs were way off \u2014 we fixed our pricing and added 15% to our margins within a month.",
-              name: "Sarah M.",
-              role: "Executive Chef",
-              company: "The Grand Bistro",
-            },
-            {
-              quote:
-                "Our old process was a mess \u2014 Excel for recipes, Word for proposals, texts for staffing. Now everything lives in one place. We landed three new corporate accounts last quarter.",
-              name: "Marcus R.",
-              role: "Catering Director",
-              company: "Riverside Kitchen",
-            },
-            {
-              quote:
-                "I used to spend Sunday nights building quotes at my kitchen table. Now I price an event during a phone call and send the proposal before we hang up. My clients think I have a whole team behind me.",
-              name: "Lisa T.",
-              role: "Owner",
-              company: "Fresh Fork Catering",
-            },
-          ].map(({ quote, name, role, company }) => (
-            <div key={name} className="card p-7 flex flex-col">
-              <Quote className="w-8 h-8 text-brand-800 mb-4 shrink-0" />
-              <p className="italic text-sm leading-relaxed mb-6 flex-1">{quote}</p>
-              <div>
-                <p className="font-medium text-sm">{name}</p>
-                <p className="text-xs text-[#D4A373]">
-                  {role}, {company}
-                </p>
-              </div>
             </div>
           ))}
         </div>

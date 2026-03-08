@@ -12,15 +12,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const plan = body.plan || "pro";
 
-  // Log env vars present (names only, not values) for debugging
-  console.log("Stripe env check:", {
-    STRIPE_PRICE_ID_BASIC: !!process.env.STRIPE_PRICE_ID_BASIC,
-    STRIPE_PRICE_ID_PRO: !!process.env.STRIPE_PRICE_ID_PRO,
-    STRIPE_PRICE_ID_MONTHLY: !!process.env.STRIPE_PRICE_ID_MONTHLY,
-    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "(not set)",
-  }, "| requested plan:", plan);
-
   const rawPriceId = plan === "basic"
     ? (process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY)
     : (process.env.STRIPE_PRICE_ID_PRO || process.env.STRIPE_PRICE_ID_MONTHLY);
@@ -33,8 +24,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (!priceId.startsWith("price_")) {
-    console.error("Invalid Stripe price ID format:", JSON.stringify(priceId), "for plan:", plan);
-    return NextResponse.json({ error: `Invalid price ID format for "${plan}" plan. Expected "price_..." but got "${priceId.substring(0, 10)}..."` }, { status: 500 });
+    console.error("Invalid Stripe price ID format for plan:", plan);
+    return NextResponse.json({ error: `Invalid price ID format for "${plan}" plan.` }, { status: 500 });
   }
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
@@ -53,7 +44,6 @@ export async function POST(req: NextRequest) {
 
   const host = req.headers.get("host") || "cateros-clean.vercel.app";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || req.headers.get("origin") || `https://${host}`;
-  console.log("Checkout appUrl:", appUrl);
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -69,10 +59,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    console.error("Stripe checkout error:", err.message, err.type, err.code, err.param);
-    const detail = err.message || "Unknown error";
+    console.error("Stripe checkout error:", err.message || "Unknown error");
     return NextResponse.json(
-      { error: `Stripe error: ${detail}` },
+      { error: "Unable to create checkout session. Please try again or contact support." },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import type { PricingData, MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
+import { DEFAULTS } from "@/lib/constants";
 
 export function calculatePricing(params: {
   guestCount: number;
@@ -25,4 +26,4 @@ export function calculatePricing(params: {
   return { guestCount, menuItems, staffing, rentals, barPackage, adminPercent, taxPercent, foodCostTotal, staffingTotal, rentalsTotal, barTotal, subtotal, adminFee, taxAmount, totalCost, suggestedPrice, projectedMargin, targetMarginPercent };
 }
 
-export const DEFAULT_PRICING = { adminPercent: 22, taxPercent: 8.5, targetMarginPercent: 28, menuItems: [], staffing: [], rentals: [], barPackage: null };
+export const DEFAULT_PRICING = { adminPercent: DEFAULTS.ADMIN_FEE_PERCENT, taxPercent: DEFAULTS.TAX_RATE_PERCENT, targetMarginPercent: DEFAULTS.PROFIT_MARGIN_PERCENT, menuItems: [], staffing: [], rentals: [], barPackage: null };

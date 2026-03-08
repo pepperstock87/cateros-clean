@@ -143,7 +143,7 @@ export async function generateProposalPDF(
       alternateRowStyles: { fillColor: [22,18,14] as [number,number,number] },
       columnStyles: { 1: { cellWidth: 50, halign: "right" }, 2: { cellWidth: 80, halign: "right" }, 3: { cellWidth: 80, halign: "right" } },
     });
-    y = (doc as any).lastAutoTable.finalY + (template === "modern" ? 25 : 20);
+    y = doc.lastAutoTable.finalY + (template === "modern" ? 25 : 20);
   }
 
   // Staffing
@@ -161,7 +161,7 @@ export async function generateProposalPDF(
       headStyles: { fillColor: [30,25,18] as [number,number,number], textColor: [156,136,118] as [number,number,number], fontStyle: "bold", fontSize: template === "modern" ? 9 : 8 },
       alternateRowStyles: { fillColor: [22,18,14] as [number,number,number] },
     });
-    y = (doc as any).lastAutoTable.finalY + (template === "modern" ? 25 : 20);
+    y = doc.lastAutoTable.finalY + (template === "modern" ? 25 : 20);
   }
 
   // Rentals
@@ -181,7 +181,7 @@ export async function generateProposalPDF(
       alternateRowStyles: { fillColor: [22,18,14] as [number,number,number] },
       columnStyles: { 1: { cellWidth: 50, halign: "right" }, 2: { cellWidth: 80, halign: "right" }, 3: { cellWidth: 80, halign: "right" } },
     });
-    y = (doc as any).lastAutoTable.finalY + (template === "modern" ? 25 : 20);
+    y = doc.lastAutoTable.finalY + (template === "modern" ? 25 : 20);
   }
 
   if (y > 620) { doc.addPage(); y = 56; }
@@ -213,7 +213,7 @@ export async function generateProposalPDF(
     footStyles: { fillColor: [212,128,31] as [number,number,number], textColor: [255,255,255] as [number,number,number], fontStyle: "bold", fontSize: template === "modern" ? 12 : 11 },
     columnStyles: { 1: { cellWidth: 100, halign: "right" } },
   });
-  y = (doc as any).lastAutoTable.finalY + 28;
+  y = doc.lastAutoTable.finalY + 28;
 
   // Per-person
   doc.setFillColor(...CARD);
