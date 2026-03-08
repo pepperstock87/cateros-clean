@@ -12,14 +12,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const plan = body.plan || "pro";
 
-  // Log all Stripe env vars present (names only, not values) for debugging
-  const envCheck = {
+  // Log env vars present (names only, not values) for debugging
+  console.log("Stripe env check:", {
     STRIPE_PRICE_ID_BASIC: !!process.env.STRIPE_PRICE_ID_BASIC,
     STRIPE_PRICE_ID_PRO: !!process.env.STRIPE_PRICE_ID_PRO,
     STRIPE_PRICE_ID_MONTHLY: !!process.env.STRIPE_PRICE_ID_MONTHLY,
     STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-  };
-  console.log("Stripe env check:", envCheck, "| requested plan:", plan);
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "(not set)",
+  }, "| requested plan:", plan);
 
   const rawPriceId = plan === "basic"
     ? (process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY)
@@ -51,14 +51,16 @@ export async function POST(req: NextRequest) {
     await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || `https://${req.headers.get("host")}`;
+
   try {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?success=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?canceled=1`,
+      success_url: `${appUrl}/billing?success=1`,
+      cancel_url: `${appUrl}/billing?canceled=1`,
       client_reference_id: user.id,
       subscription_data: { trial_period_days: 14 },
     });
