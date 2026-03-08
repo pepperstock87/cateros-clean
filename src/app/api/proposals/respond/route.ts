@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { createNotification } from "@/lib/notifications";
 import type { ActivityType } from "@/lib/activity";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const VALID_ACTIONS = ["viewed", "approved", "signed", "declined", "revision_requested"];
 
@@ -36,6 +37,11 @@ function determineNextStatus(
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  if (!rateLimit(`proposal-respond:${ip}`, { limit: 30, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const body = await req.json();
   const { share_token, action, message, signer_name, signer_email } = body;
 
@@ -74,6 +80,22 @@ export async function POST(req: Request) {
   // Prevent actions on terminal states
   if (["booked", "declined", "expired"].includes(proposal.status)) {
     return NextResponse.json({ error: "Proposal has already been finalized" }, { status: 400 });
+  }
+
+  // State transition guards — prevent invalid transitions
+  const allowedTransitions: Record<string, string[]> = {
+    sent: ["viewed", "approved", "declined", "revision_requested"],
+    viewed: ["approved", "declined", "revision_requested"],
+    approved: ["signed", "declined"],
+    signed: ["declined"],
+    deposit_paid: ["declined"],
+  };
+  const allowed = allowedTransitions[proposal.status];
+  if (allowed && !allowed.includes(action)) {
+    return NextResponse.json(
+      { error: `Cannot ${action.replace("_", " ")} a proposal that is currently "${proposal.status}"` },
+      { status: 400 }
+    );
   }
 
   // ── Handle "viewed" action ──

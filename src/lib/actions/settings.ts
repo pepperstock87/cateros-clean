@@ -48,9 +48,17 @@ export async function updateBusinessSettings(formData: FormData) {
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase
+  // Try update first, then insert if not found
+  const { data: existing } = await supabase
     .from("business_settings")
-    .upsert(settings, { onConflict: "user_id" });
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("organization_id", org?.orgId || null)
+    .maybeSingle();
+
+  const { error } = existing
+    ? await supabase.from("business_settings").update(settings).eq("id", existing.id)
+    : await supabase.from("business_settings").insert(settings);
 
   if (error) return { error: error.message };
 
@@ -82,9 +90,18 @@ export async function uploadLogo(formData: FormData) {
 
   const { data } = supabase.storage.from("logos").getPublicUrl(fileName);
 
-  const { error: updateError } = await supabase
+  const org = await getCurrentOrg();
+  const { data: existing } = await supabase
     .from("business_settings")
-    .upsert({ user_id: user.id, logo_url: data.publicUrl, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("organization_id", org?.orgId || null)
+    .maybeSingle();
+
+  const logoData = { user_id: user.id, organization_id: org?.orgId || null, logo_url: data.publicUrl, updated_at: new Date().toISOString() };
+  const { error: updateError } = existing
+    ? await supabase.from("business_settings").update(logoData).eq("id", existing.id)
+    : await supabase.from("business_settings").insert(logoData);
 
   if (updateError) return { error: updateError.message };
 
@@ -118,9 +135,16 @@ export async function updateBusinessDefaults(data: {
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase
+  const { data: existing } = await supabase
     .from("business_settings")
-    .upsert(settings, { onConflict: "user_id" });
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("organization_id", org?.orgId || null)
+    .maybeSingle();
+
+  const { error } = existing
+    ? await supabase.from("business_settings").update(settings).eq("id", existing.id)
+    : await supabase.from("business_settings").insert(settings);
 
   if (error) return { error: error.message };
 
