@@ -7,6 +7,21 @@ import { AssistantProvider } from "@/components/assistant/AssistantProvider";
 export const metadata: Metadata = {
   title: "Cateros – The Event Operations Platform",
   description: "Run events on the Cateros Event Engine. Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+  metadataBase: new URL("https://cateros.com"),
+  openGraph: {
+    title: "Cateros – The Event Operations Platform",
+    description: "Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+    url: "https://cateros.com",
+    siteName: "Cateros",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Cateros Event Engine" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cateros – The Event Operations Platform",
+    description: "Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
