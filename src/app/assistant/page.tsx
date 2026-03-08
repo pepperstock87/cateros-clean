@@ -1,20 +1,13 @@
 import { AssistantPageClient } from "./AssistantPageClient";
-import { getUserEntitlements } from "@/lib/entitlements";
-import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
+import { getOrgEntitlements } from "@/lib/orgEntitlements";
+import { FeatureGate } from "@/components/ui/FeatureGate";
 
 export default async function AssistantPage() {
-  const { isPro } = await getUserEntitlements();
+  const { plan } = await getOrgEntitlements();
 
-  if (!isPro) {
-    return (
-      <div className="p-8 max-w-6xl mx-auto flex items-center justify-center min-h-[60vh]">
-        <UpgradePrompt
-          message="AI Assistant is a Pro feature. Upgrade to get business insights and automate tasks."
-          plan="pro"
-        />
-      </div>
-    );
-  }
-
-  return <AssistantPageClient />;
+  return (
+    <FeatureGate feature="ai_assistant" plan={plan} requiredPlans={["pro", "enterprise"]}>
+      <AssistantPageClient />
+    </FeatureGate>
+  );
 }

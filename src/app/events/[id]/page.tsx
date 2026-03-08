@@ -32,6 +32,8 @@ import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
 import { PaymentScheduleManager } from "@/components/events/PaymentScheduleManager";
 import { EventInviteManager } from "@/components/events/EventInviteManager";
 import { getCurrentOrg } from "@/lib/organizations";
+import { getOrgEntitlements } from "@/lib/orgEntitlements";
+import { FeatureGate, FeatureGateInline } from "@/components/ui/FeatureGate";
 import type { Event, PricingData, PaymentData } from "@/types";
 
 type ActivityItem = {
@@ -50,6 +52,7 @@ export default async function EventDetailPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
+  const { plan } = await getOrgEntitlements();
 
   let eventQuery = supabase.from("events").select("*").eq("id", id).eq("user_id", user.id);
   if (org?.orgId) eventQuery = eventQuery.eq("organization_id", org.orgId);
@@ -338,12 +341,14 @@ export default async function EventDetailPage({ params }: Props) {
             <div>
               {pricing ? (
                 <>
-                  <PaymentScheduleManager
-                    eventId={e.id}
-                    proposalId={proposals[0]?.id}
-                    totalPrice={pricing.suggestedPrice}
-                    organizationId={org?.orgId ?? null}
-                  />
+                  <FeatureGate feature="payment_processing" plan={plan} requiredPlans={["enterprise"]}>
+                    <PaymentScheduleManager
+                      eventId={e.id}
+                      proposalId={proposals[0]?.id}
+                      totalPrice={pricing.suggestedPrice}
+                      organizationId={org?.orgId ?? null}
+                    />
+                  </FeatureGate>
                   <div className="mt-6 pt-6 border-t border-[#2e271f]">
                     <h3 className="text-xs font-medium text-[#6b5a4a] uppercase tracking-wider mb-3">Legacy Payment Tracking</h3>
                     <PaymentTracker
@@ -387,12 +392,14 @@ export default async function EventDetailPage({ params }: Props) {
                 currentVenue={e.venue}
                 eventOrganizations={eventOrganizations}
               />
-              <div className="mt-6">
-                <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
-                <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
-              </div>
-              <EventVendors eventId={e.id} isAdmin={true} />
-              <EventInviteManager eventId={e.id} />
+              <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
+                <div className="mt-6">
+                  <h2 className="font-display text-lg font-semibold mb-1">Event Vendors</h2>
+                  <p className="text-sm text-[#9c8876] mb-4">Organizations collaborating on this event</p>
+                </div>
+                <EventVendors eventId={e.id} isAdmin={true} />
+                <EventInviteManager eventId={e.id} />
+              </FeatureGate>
             </div>
           ),
 

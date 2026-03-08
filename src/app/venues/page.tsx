@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCurrentOrg } from "@/lib/organizations";
+import { getOrgEntitlements } from "@/lib/orgEntitlements";
 import { getVenueProfileAction } from "@/lib/actions/venues";
 import { VenueProfileEditor } from "@/components/venues/VenueProfileEditor";
+import { FeatureGate } from "@/components/ui/FeatureGate";
 
 export default async function VenuesPage() {
   const supabase = await createClient();
@@ -14,6 +16,7 @@ export default async function VenuesPage() {
   const org = await getCurrentOrg();
   if (!org) redirect("/dashboard");
 
+  const { plan } = await getOrgEntitlements();
   const { data: venueProfile } = await getVenueProfileAction();
 
   return (
@@ -27,10 +30,12 @@ export default async function VenuesPage() {
         </p>
       </div>
 
-      <VenueProfileEditor
-        venueProfile={venueProfile}
-        organizationId={org.orgId}
-      />
+      <FeatureGate feature="venue_management" plan={plan} requiredPlans={["pro", "enterprise"]}>
+        <VenueProfileEditor
+          venueProfile={venueProfile}
+          organizationId={org.orgId}
+        />
+      </FeatureGate>
     </div>
   );
 }

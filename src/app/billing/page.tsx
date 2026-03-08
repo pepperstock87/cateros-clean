@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CreditCard, CheckCircle, Zap } from "lucide-react";
+import { CreditCard, CheckCircle, Zap, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const BASIC_FEATURES = [
   "Unlimited events",
@@ -75,6 +76,13 @@ export default function BillingPage() {
       <div className="mb-8">
         <h1 className="font-display text-xl md:text-2xl font-semibold">Billing</h1>
         <p className="text-sm text-[#9c8876] mt-1">Manage your Cateros subscription</p>
+        <Link
+          href="/billing/plans"
+          className="inline-flex items-center gap-2 mt-3 text-sm text-brand-400 hover:text-brand-300 transition-colors"
+        >
+          View Plans &amp; Compare Features
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
 
       {error && (

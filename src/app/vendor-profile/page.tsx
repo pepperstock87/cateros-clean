@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCurrentOrg } from "@/lib/organizations";
+import { getOrgEntitlements } from "@/lib/orgEntitlements";
 import { getVendorProfileAction } from "@/lib/actions/vendorProfiles";
 import { VendorProfileEditor } from "@/components/vendors/VendorProfileEditor";
+import { FeatureGate } from "@/components/ui/FeatureGate";
 
 export default async function VendorProfilePage() {
   const supabase = await createClient();
@@ -14,6 +16,7 @@ export default async function VendorProfilePage() {
   const org = await getCurrentOrg();
   if (!org) redirect("/dashboard");
 
+  const { plan } = await getOrgEntitlements();
   const { data: vendorProfile } = await getVendorProfileAction();
 
   return (
@@ -27,10 +30,12 @@ export default async function VendorProfilePage() {
         </p>
       </div>
 
-      <VendorProfileEditor
-        vendorProfile={vendorProfile}
-        organizationId={org.orgId}
-      />
+      <FeatureGate feature="vendor_collaboration" plan={plan} requiredPlans={["pro", "enterprise"]}>
+        <VendorProfileEditor
+          vendorProfile={vendorProfile}
+          organizationId={org.orgId}
+        />
+      </FeatureGate>
     </div>
   );
 }
