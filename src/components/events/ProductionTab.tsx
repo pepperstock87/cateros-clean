@@ -824,6 +824,8 @@ function TimelineSection({ eventId, items }: { eventId: string; items: EventTime
   const [addingPhase, setAddingPhase] = useState<string | null>(null);
   const [taskForm, setTaskForm] = useState({ task: "", assigned_to: "", notes: "" });
   const [saving, setSaving] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [showLoadTemplate, setShowLoadTemplate] = useState(false);
   const router = useRouter();
 
   const byPhase = useMemo(() => {
@@ -871,6 +873,52 @@ function TimelineSection({ eventId, items }: { eventId: string; items: EventTime
 
   return (
     <div className="space-y-4">
+      {/* Timeline template buttons */}
+      <div className="flex items-center justify-end gap-2 mb-2">
+        {items.length > 0 && (
+          <button
+            onClick={() => setShowSaveTemplate(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+          >
+            <Bookmark className="w-3.5 h-3.5" />
+            Save as Template
+          </button>
+        )}
+        <button
+          onClick={() => setShowLoadTemplate(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+        >
+          <LayoutTemplate className="w-3.5 h-3.5" />
+          Load Template
+        </button>
+      </div>
+
+      {/* Template modals */}
+      {showSaveTemplate && (
+        <SaveTemplateModal
+          category="timeline"
+          templateData={{
+            timelineItems: items.map((i) => ({
+              phase: i.phase,
+              task: i.task,
+              sort_order: i.sort_order,
+              assigned_to: i.assigned_to,
+              notes: i.notes,
+            })),
+          }}
+          defaultName="Timeline Template"
+          onClose={() => setShowSaveTemplate(false)}
+        />
+      )}
+      {showLoadTemplate && (
+        <LoadTemplateModal
+          category="timeline"
+          eventId={eventId}
+          onClose={() => setShowLoadTemplate(false)}
+          onApplied={() => router.refresh()}
+        />
+      )}
+
       {PHASES.map((phase) => {
         const phaseItems = byPhase.get(phase.key) ?? [];
         const completedCount = phaseItems.filter((i) => (optimistic[i.id] ?? i.completed)).length;

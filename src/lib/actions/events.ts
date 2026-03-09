@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { PricingData, PaymentData } from "@/types";
 import { logActivity } from "@/lib/activity";
+import { logAudit } from "@/lib/audit";
 import { getCurrentOrg } from "@/lib/organizations";
 
 export async function createEventAction(_prevState: unknown, formData: FormData) {
@@ -41,6 +42,17 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
   await logActivity(data.id, user.id, "event_created", `Event "${data.name}" created`, {
     client: data.client_name,
     guest_count: data.guest_count,
+  });
+
+  // Fire-and-forget audit log
+  logAudit({
+    userId: user.id,
+    action: "create",
+    entity: "event",
+    entityId: data.id,
+    entityName: data.name,
+    details: { client: data.client_name, guest_count: data.guest_count },
+    organizationId: org?.orgId || null,
   });
 
   // If a template was selected, apply its pricing_data to the new event
@@ -99,6 +111,16 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
     name: formData.get("name") as string,
     guest_count: Number(formData.get("guest_count")),
     venue: formData.get("venue") as string || null,
+  });
+
+  logAudit({
+    userId: user.id,
+    action: "update",
+    entity: "event",
+    entityId: eventId,
+    entityName: (formData.get("name") as string)?.trim(),
+    details: { guest_count: Number(formData.get("guest_count")), venue: formData.get("venue") as string || null },
+    organizationId: org?.orgId || null,
   });
 
   revalidatePath(`/events/${eventId}`);
@@ -319,6 +341,16 @@ export async function cloneEventAction(eventId: string, overrides?: {
 
   await logActivity(newEvent.id, user.id, "event_created", `Cloned from "${original.name}"`, {
     source_event_id: eventId,
+  });
+
+  logAudit({
+    userId: user.id,
+    action: "clone",
+    entity: "event",
+    entityId: newEvent.id,
+    entityName: newEvent.name,
+    details: { source_event_id: eventId, source_event_name: original.name },
+    organizationId: org?.orgId || null,
   });
 
   revalidatePath("/events");

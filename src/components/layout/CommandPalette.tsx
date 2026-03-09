@@ -206,7 +206,7 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handlePaletteKeyDown}
-            placeholder="Search..."
+            placeholder="Search... (/ or ⌘K)"
             className="flex-1 min-w-0 bg-transparent text-[#F4F1ED] placeholder:text-[#7A8BA8] text-sm outline-none"
           />
         ) : (

@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell, Shield } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -34,6 +35,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
   { href: "/team", icon: Users, label: "Team" },
+  { href: "/audit", icon: Shield, label: "Audit Log" },
 ];
 
 export function Sidebar({ companyName }: { companyName?: string }) {
@@ -155,7 +157,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
   return (
     <>
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0C1220] border-b border-[#2A3A5C] px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[var(--bg-primary)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <ChefHat className="w-4 h-4 text-white" />
@@ -164,7 +166,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
         </Link>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 hover:bg-[#1A2538] rounded-lg transition-colors"
+          className="p-2 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
         >
@@ -179,12 +181,12 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "no-print fixed md:sticky top-0 z-40 md:z-0 h-screen bg-[#0C1220] border-r border-[#2A3A5C] flex flex-col transition-all duration-200 md:translate-x-0",
+        "no-print fixed md:sticky top-0 z-40 md:z-0 h-screen bg-[var(--bg-primary)] border-r border-[var(--border)] flex flex-col transition-all duration-200 md:translate-x-0",
         collapsed ? "md:w-16 w-56" : "w-56",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Desktop Header */}
-        <div className="hidden md:block px-5 py-5 border-b border-[#2A3A5C]">
+        <div className="hidden md:block px-5 py-5 border-b border-[var(--border)]">
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
               <ChefHat className="w-4 h-4 text-white" />
@@ -192,7 +194,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
             {!collapsed && (
               <div className="min-w-0">
                 <div className="font-display text-sm font-semibold leading-tight">Cateros</div>
-                {companyName && <div className="text-xs text-[#7A8BA8] truncate leading-tight mt-0.5">{companyName}</div>}
+                {companyName && <div className="text-xs text-[var(--text-muted)] truncate leading-tight mt-0.5">{companyName}</div>}
               </div>
             )}
           </Link>
@@ -203,7 +205,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Org Switcher */}
         {orgData.currentOrg && !collapsed && (
-          <div className="border-b border-[#2A3A5C]">
+          <div className="border-b border-[var(--border)]">
             <OrgSwitcher currentOrg={orgData.currentOrg} allOrgs={orgData.allOrgs} />
           </div>
         )}
@@ -230,7 +232,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
                   collapsed
                     ? "justify-center px-0 py-2.5 text-sm"
                     : cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm"),
-                  active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538]"
+                  active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                 )}
               >
                 <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
@@ -253,14 +255,14 @@ export function Sidebar({ companyName }: { companyName?: string }) {
         </nav>
 
         {/* Bottom Actions */}
-        <div className={cn("py-3 border-t border-[#2A3A5C] space-y-0.5", collapsed ? "px-2" : "px-3")}>
+        <div className={cn("py-3 border-t border-[var(--border)] space-y-0.5", collapsed ? "px-2" : "px-3")}>
           <NotificationBell collapsed={collapsed} />
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Settings" : undefined}
             className={cn(
-              "flex items-center rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all",
+              "flex items-center rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all",
               collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-3 py-2.5"
             )}
           >
@@ -272,7 +274,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
               title={collapsed ? "Sign out" : undefined}
               aria-label="Sign out"
               className={cn(
-                "w-full flex items-center rounded-lg text-sm text-[#D4A373] hover:text-red-400 hover:bg-red-900/20 transition-all",
+                "w-full flex items-center rounded-lg text-sm text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-900/20 transition-all",
                 collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-3 py-2.5"
               )}
             >
@@ -280,10 +282,13 @@ export function Sidebar({ companyName }: { companyName?: string }) {
             </button>
           </form>
 
+          {/* Theme Toggle */}
+          <ThemeToggle collapsed={collapsed} />
+
           {/* Desktop Collapse Toggle */}
           <button
             onClick={toggleCollapsed}
-            className="hidden md:flex w-full items-center justify-center py-2 mt-1 rounded-lg text-[#7A8BA8] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all"
+            className="hidden md:flex w-full items-center justify-center py-2 mt-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!collapsed}

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { logAudit } from "@/lib/audit";
 
 export async function createClientAction(formData: FormData) {
   const supabase = await createClient();
@@ -37,6 +38,15 @@ export async function createClientAction(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
+  logAudit({
+    userId: user.id,
+    action: "create",
+    entity: "client",
+    entityId: data.id,
+    entityName: `${data.first_name} ${data.last_name}`.trim(),
+    organizationId: profile?.current_organization_id || null,
+  });
+
   revalidatePath("/clients");
   return data;
 }
@@ -67,6 +77,14 @@ export async function updateClientAction(clientId: string, formData: FormData) {
 
   if (error) throw new Error(error.message);
 
+  logAudit({
+    userId: user.id,
+    action: "update",
+    entity: "client",
+    entityId: clientId,
+    entityName: `${(formData.get("first_name") as string)?.trim() || ""} ${(formData.get("last_name") as string)?.trim() || ""}`.trim(),
+  });
+
   revalidatePath("/clients");
   revalidatePath(`/clients/${clientId}`);
 }
@@ -78,6 +96,13 @@ export async function deleteClientAction(clientId: string) {
 
   const { error } = await supabase.from("clients").delete().eq("id", clientId).eq("user_id", user.id);
   if (error) throw new Error(error.message);
+
+  logAudit({
+    userId: user.id,
+    action: "delete",
+    entity: "client",
+    entityId: clientId,
+  });
 
   revalidatePath("/clients");
 }

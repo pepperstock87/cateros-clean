@@ -7,7 +7,7 @@ import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
 import type { PricingData, MenuItem, MenuItemCategory, StaffingLine, RentalLine, BarPackage } from "@/types";
-import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed, Link2 } from "lucide-react";
+import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed, Link2, Bookmark, LayoutTemplate } from "lucide-react";
 
 const MENU_CATEGORIES: MenuItemCategory[] = ["Appetizers", "Mains", "Sides", "Desserts", "Drinks", "Other"];
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
@@ -17,6 +17,8 @@ import { RecipePickerModal } from "./RecipePickerModal";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { RentalPickerModal } from "./RentalPickerModal";
 import { MenuItemRecipeLinker } from "./MenuItemRecipeLinker";
+import { SaveTemplateModal } from "./SaveTemplateModal";
+import { LoadTemplateModal } from "./LoadTemplateModal";
 import { linkMenuItemRecipe, unlinkMenuItemRecipe } from "@/lib/actions/production";
 import { createClient } from "@/lib/supabase/client";
 import type { Recipe, StaffMember, RentalItem } from "@/types";
@@ -54,6 +56,8 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [saving, setSaving] = useState(false);
   const [usingDefaults, setUsingDefaults] = useState(false);
   const [recipePickerOpen, setRecipePickerOpen] = useState(false);
+  const [showSaveMenuTemplate, setShowSaveMenuTemplate] = useState(false);
+  const [showLoadMenuTemplate, setShowLoadMenuTemplate] = useState(false);
   const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
   const addMenuItem = (category: MenuItemCategory = "Mains") => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount, category }]); markDirty(); };
@@ -246,6 +250,14 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-sm">Menu Items</h3>
               <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setShowLoadMenuTemplate(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                  <LayoutTemplate className="w-3.5 h-3.5" />Load Template
+                </button>
+                {menuItems.length > 0 && (
+                  <button type="button" onClick={() => setShowSaveMenuTemplate(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                    <Bookmark className="w-3.5 h-3.5" />Save as Template
+                  </button>
+                )}
                 <button type="button" onClick={() => setRecipePickerOpen(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <BookOpen className="w-3.5 h-3.5" />Import from Recipes
                 </button>
@@ -524,6 +536,22 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
           onUnlink={(mappingId) => handleUnlinkRecipe(linkerOpen, mappingId)}
           onUpdateMapping={(mappingId, updates) => handleUpdateMapping(linkerOpen, mappingId, updates)}
           onClose={() => setLinkerOpen(null)}
+        />
+      )}
+      {showSaveMenuTemplate && (
+        <SaveTemplateModal
+          category="menu"
+          templateData={{ menuItems }}
+          defaultName="Menu Template"
+          onClose={() => setShowSaveMenuTemplate(false)}
+        />
+      )}
+      {showLoadMenuTemplate && (
+        <LoadTemplateModal
+          category="menu"
+          eventId={eventId}
+          onClose={() => setShowLoadMenuTemplate(false)}
+          onApplied={() => window.location.reload()}
         />
       )}
     </div>

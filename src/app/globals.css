@@ -4,45 +4,118 @@
 @tailwind components;
 @tailwind utilities;
 
+/* === Theme CSS Variables ===
+   Dark is the default. Light theme activates via data-theme="light" on <html>.
+   Individual pages can be migrated to use these variables over time.
+*/
 :root {
   --brand-gold: #D4A373;
-  --surface-bg: #0C1220;
-  --surface-card: #1A2538;
-  --surface-border: #2A3A5C;
+  --bg-primary: #0C1220;
+  --bg-secondary: #1A2538;
+  --bg-card: #1A2538;
+  --bg-hover: #1F2A44;
+  --border: #2A3A5C;
+  --border-hover: #344570;
   --text-primary: #F4F1ED;
   --text-secondary: #D4A373;
+  --text-muted: #7A8BA8;
+  --scrollbar-track: #0C1220;
+  --scrollbar-thumb: #2A3A5C;
+
+  /* Legacy aliases kept for backward compat */
+  --surface-bg: var(--bg-primary);
+  --surface-card: var(--bg-card);
+  --surface-border: var(--border);
+}
+
+[data-theme="light"] {
+  --bg-primary: #F8F6F3;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F0EDE8;
+  --border: #E2DDD5;
+  --border-hover: #D4CFC7;
+  --text-primary: #1A1A1A;
+  --text-secondary: #C4935F;
+  --text-muted: #6B6B6B;
+  --scrollbar-track: #F8F6F3;
+  --scrollbar-thumb: #D4CFC7;
 }
 
 * { box-sizing: border-box; }
 
+/* Smooth transition when toggling themes */
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
 body {
-  background-color: var(--surface-bg);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0C1220; }
-::-webkit-scrollbar-thumb { background: #2A3A5C; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #D4A373; }
-*:focus-visible { outline: 2px solid #D4A373; outline-offset: 2px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-gold); }
+*:focus-visible { outline: 2px solid var(--brand-gold); outline-offset: 2px; }
 ::selection { background: rgba(212, 163, 115, 0.3); }
 
 @layer components {
-  .card { @apply bg-[#1A2538] border border-[#2A3A5C] rounded-xl; }
+  .card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
   .card-hover { @apply hover:border-brand-400 transition-colors duration-200; }
   .btn-primary { @apply bg-brand-500 hover:bg-brand-400 text-white font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-secondary { @apply bg-[#1F2A44] hover:bg-[#2A3A5C] text-[#F4F1ED] border border-[#2A3A5C] hover:border-[#344570] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-ghost { @apply hover:bg-[#1F2A44] text-[#D4A373] hover:text-[#F4F1ED] font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-secondary {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    @apply font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary:hover {
+    background-color: var(--border);
+    border-color: var(--border-hover);
+  }
+  .btn-ghost {
+    color: var(--text-secondary);
+    @apply font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+  }
   .btn-danger { @apply bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 font-medium px-4 py-2.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-50 disabled:cursor-not-allowed; }
-  .input { @apply w-full bg-[#1A2538] border border-[#2A3A5C] text-[#F4F1ED] placeholder-[#7A8BA8] rounded-lg px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none transition-colors; }
-  .label { @apply block text-xs font-medium text-[#D4A373] uppercase tracking-wider mb-1.5; }
+  .input {
+    width: 100%;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    @apply placeholder-[#7A8BA8] rounded-lg px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none transition-colors;
+  }
+  .label {
+    display: block;
+    color: var(--text-secondary);
+    @apply text-xs font-medium uppercase tracking-wider mb-1.5;
+  }
   .stat-card { @apply card p-5 flex flex-col gap-1; }
-  .stat-value { @apply text-2xl font-semibold text-[#F4F1ED] font-display; }
-  .stat-label { @apply text-xs text-[#D4A373] uppercase tracking-wider; }
+  .stat-value {
+    color: var(--text-primary);
+    @apply text-2xl font-semibold font-display;
+  }
+  .stat-label {
+    color: var(--text-secondary);
+    @apply text-xs uppercase tracking-wider;
+  }
   .badge { @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium; }
-  .badge-draft { @apply badge bg-[#1F2A44] text-[#D4A373]; }
+  .badge-draft {
+    background-color: var(--bg-hover);
+    color: var(--text-secondary);
+  }
   .badge-proposed { @apply badge bg-blue-900/40 text-blue-400; }
   .badge-confirmed { @apply badge bg-green-900/40 text-green-400; }
   .badge-completed { @apply badge bg-brand-900/40 text-brand-300; }
@@ -62,6 +135,14 @@ body {
   .prose-chat a { color: var(--brand-gold); text-decoration: underline; }
   .prose-chat br { line-height: 0.5; }
 }
+
+/* Light-theme overrides for colored badges that use dark bg with opacity */
+[data-theme="light"] .badge-proposed { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+[data-theme="light"] .badge-confirmed { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
+[data-theme="light"] .badge-completed { background: rgba(212, 163, 115, 0.15); color: #b07d4f; }
+[data-theme="light"] .badge-canceled { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+[data-theme="light"] .btn-danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); color: #dc2626; }
+[data-theme="light"] .btn-danger:hover { background: rgba(239, 68, 68, 0.18); }
 
 @media print {
   body { background: white !important; color: black !important; }

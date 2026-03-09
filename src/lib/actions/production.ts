@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { logAudit } from "@/lib/audit";
 
 /**
  * Generate production data for an event.
@@ -212,6 +213,15 @@ export async function generateProduction(eventId: string) {
     await supabase.from("event_pack_items").delete().eq("event_id", eventId).eq("category", "Rentals");
     await supabase.from("event_pack_items").insert(packItems);
   }
+
+  logAudit({
+    userId: user.id,
+    action: "generate_production",
+    entity: "production",
+    entityId: eventId,
+    entityName: event.name,
+    details: { version: nextVersion, prep_items: prepItems.length, shopping_items: shoppingItems.length },
+  });
 
   revalidatePath(`/events/${eventId}`);
   return { success: true, version: nextVersion };

@@ -572,3 +572,17 @@ export interface Notification {
   read: boolean;
   created_at: string;
 }
+
+// ─── Audit Log ───
+
+export interface AuditLogEntry {
+  id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  entity_name: string | null;
+  details: Record<string, any> | null;
+  organization_id: string | null;
+  created_at: string;
+}

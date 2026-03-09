@@ -85,8 +85,8 @@ export async function applyTemplateToEvent(templateId: string, eventId: string) 
   const { data: template } = await tplQuery.single();
   if (!template) return { error: "Template not found" };
 
-  const category = template.category as TemplateCategory;
-  const td = template.template_data as Record<string, any>;
+  const category = (template.category as TemplateCategory) ?? "pricing";
+  const td = (template.template_data ?? template.pricing_data ?? {}) as Record<string, any>;
 
   // Apply based on category
   if (category === "menu" || category === "pricing") {
