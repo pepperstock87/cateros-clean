@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, LayoutTemplate, Users, Sparkles } from "lucide-react";
 import { DEFAULT_TEMPLATES, type DefaultTemplate } from "@/lib/defaultTemplates";
+import { ClientSelector } from "@/components/events/ClientSelector";
 
 type Template = { id: string; name: string; guest_count: number | null };
 
@@ -32,6 +33,17 @@ export function NewEventForm({
         : ""
   );
   const [activeDefault, setActiveDefault] = useState<DefaultTemplate | null>(initialDefault);
+  const [selectedClient, setSelectedClient] = useState<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    company_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null>(null);
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
   function handleTemplateChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -199,18 +211,60 @@ export function NewEventForm({
 
         <div className="card p-6 space-y-4">
           <h2 className="font-medium text-sm text-[#D4A373] uppercase tracking-wider">Client Information</h2>
+
+          <ClientSelector
+            selectedClientId={selectedClient?.id ?? null}
+            clientName={selectedClient ? `${selectedClient.first_name} ${selectedClient.last_name}` : ""}
+            onSelect={(client) => {
+              setSelectedClient(client);
+              if (client) {
+                const fullName = `${client.first_name} ${client.last_name}`.trim();
+                setClientName(fullName);
+                setClientEmail(client.email ?? "");
+                setClientPhone(client.phone ?? "");
+              } else {
+                setClientName("");
+                setClientEmail("");
+                setClientPhone("");
+              }
+            }}
+          />
+
+          {selectedClient && <input type="hidden" name="client_id" value={selectedClient.id} />}
+
           <div>
             <label className="label">Client name *</label>
-            <input name="client_name" className="input" placeholder="Sarah & Michael Smith" required />
+            <input
+              name="client_name"
+              className="input"
+              placeholder="Sarah & Michael Smith"
+              required
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Client email</label>
-              <input name="client_email" type="email" className="input" placeholder="client@email.com" />
+              <input
+                name="client_email"
+                type="email"
+                className="input"
+                placeholder="client@email.com"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+              />
             </div>
             <div>
               <label className="label">Client phone</label>
-              <input name="client_phone" type="tel" className="input" placeholder="(555) 123-4567" />
+              <input
+                name="client_phone"
+                type="tel"
+                className="input"
+                placeholder="(555) 123-4567"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+              />
             </div>
           </div>
         </div>

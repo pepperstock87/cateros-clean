@@ -427,6 +427,7 @@ export default async function EventDetailPage({ params }: Props) {
           production: (
             <ProductionTab
               eventId={e.id}
+              event={e}
               prepItems={prepItems}
               shoppingItems={shoppingItems}
               packItems={packItems}

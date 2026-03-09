@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   ExternalLink,
   Check,
+  Download,
+  Printer,
 } from "lucide-react";
 import {
   generateProduction,
@@ -28,7 +30,15 @@ import {
   toggleTimelineItem,
   deleteTimelineItem,
 } from "@/lib/actions/production";
+import {
+  generatePrepSheetPDF,
+  generateConsolidatedPrepPDF,
+  generateStationPrepPDF,
+  generateShoppingListPDF,
+  generatePackListPDF,
+} from "@/lib/generateProductionPDFs";
 import type {
+  Event,
   EventPrepItem,
   EventShoppingItem,
   EventPackItem,
@@ -79,13 +89,14 @@ const SUB_TABS: { key: SubTab; label: string; icon: React.ReactNode }[] = [
 // ─── Props ───
 type Props = {
   eventId: string;
+  event: Event;
   prepItems: EventPrepItem[];
   shoppingItems: EventShoppingItem[];
   packItems: EventPackItem[];
   timelineItems: EventTimelineItem[];
 };
 
-export function ProductionTab({ eventId, prepItems, shoppingItems, packItems, timelineItems }: Props) {
+export function ProductionTab({ eventId, event, prepItems, shoppingItems, packItems, timelineItems }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("prep_by_item");
@@ -185,14 +196,51 @@ export function ProductionTab({ eventId, prepItems, shoppingItems, packItems, ti
           {/* Sub-tab content */}
           <div>
             {activeSubTab === "beo" && <BeoSection eventId={eventId} />}
-            {activeSubTab === "prep_by_item" && <PrepByItemSection prepItems={prepItems} />}
-            {activeSubTab === "consolidated" && <ConsolidatedSection prepItems={prepItems} />}
-            {activeSubTab === "by_station" && <ByStationSection prepItems={prepItems} />}
-            {activeSubTab === "shopping" && <ShoppingSection eventId={eventId} items={shoppingItems} />}
-            {activeSubTab === "pack_list" && <PackListSection eventId={eventId} items={packItems} />}
+            {activeSubTab === "prep_by_item" && <PrepByItemSection event={event} prepItems={prepItems} />}
+            {activeSubTab === "consolidated" && <ConsolidatedSection event={event} prepItems={prepItems} />}
+            {activeSubTab === "by_station" && <ByStationSection event={event} prepItems={prepItems} />}
+            {activeSubTab === "shopping" && <ShoppingSection eventId={eventId} event={event} items={shoppingItems} />}
+            {activeSubTab === "pack_list" && <PackListSection eventId={eventId} event={event} items={packItems} />}
             {activeSubTab === "timeline" && <TimelineSection eventId={eventId} items={timelineItems} />}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// Export Helpers
+// ═══════════════════════════════════════════════
+
+function slugify(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-");
+}
+
+function ExportButtons({
+  onExport,
+  onPrint,
+}: {
+  onExport: () => void;
+  onPrint?: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={onExport}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Export PDF
+      </button>
+      {onPrint && (
+        <button
+          onClick={onPrint}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          Print
+        </button>
       )}
     </div>
   );
@@ -221,7 +269,7 @@ function BeoSection({ eventId }: { eventId: string }) {
 // ═══════════════════════════════════════════════
 // Prep by Item Section
 // ═══════════════════════════════════════════════
-function PrepByItemSection({ prepItems }: { prepItems: EventPrepItem[] }) {
+function PrepByItemSection({ event, prepItems }: { event: Event; prepItems: EventPrepItem[] }) {
   const grouped = useMemo(() => {
     const map = new Map<string, EventPrepItem[]>();
     for (const item of prepItems) {
@@ -232,12 +280,29 @@ function PrepByItemSection({ prepItems }: { prepItems: EventPrepItem[] }) {
     return Array.from(map.entries());
   }, [prepItems]);
 
+  const handleExport = () => {
+    const doc = generatePrepSheetPDF(event, prepItems);
+    doc.save(`prep-sheet-${slugify(event.name)}.pdf`);
+  };
+
+  const handlePrint = () => {
+    const doc = generatePrepSheetPDF(event, prepItems);
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  };
+
   if (grouped.length === 0) {
     return <EmptySubTab message="No prep items yet. Generate production to populate prep lists." />;
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-medium text-sm text-[#F4F1ED]">Prep by Item</h3>
+        <ExportButtons onExport={handleExport} onPrint={handlePrint} />
+      </div>
       {grouped.map(([menuName, items]) => (
         <div key={menuName} className="card overflow-hidden">
           <div className="px-4 py-3 bg-[#182030] border-b border-[#2A3A5C]">
@@ -273,7 +338,7 @@ function PrepByItemSection({ prepItems }: { prepItems: EventPrepItem[] }) {
 // ═══════════════════════════════════════════════
 // Consolidated Prep Section
 // ═══════════════════════════════════════════════
-function ConsolidatedSection({ prepItems }: { prepItems: EventPrepItem[] }) {
+function ConsolidatedSection({ event, prepItems }: { event: Event; prepItems: EventPrepItem[] }) {
   const [sortBy, setSortBy] = useState<"alpha" | "station">("alpha");
 
   const consolidated = useMemo(() => {
@@ -305,23 +370,39 @@ function ConsolidatedSection({ prepItems }: { prepItems: EventPrepItem[] }) {
     return <EmptySubTab message="No prep items to consolidate." />;
   }
 
+  const handleExport = () => {
+    const doc = generateConsolidatedPrepPDF(event, prepItems);
+    doc.save(`consolidated-prep-${slugify(event.name)}.pdf`);
+  };
+
+  const handlePrint = () => {
+    const doc = generateConsolidatedPrepPDF(event, prepItems);
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  };
+
   return (
     <div className="card overflow-hidden">
       <div className="px-4 py-3 bg-[#182030] border-b border-[#2A3A5C] flex items-center justify-between">
         <h3 className="font-medium text-sm text-[#F4F1ED]">Consolidated Prep List</h3>
-        <div className="flex gap-1">
-          <button
-            onClick={() => setSortBy("alpha")}
-            className={`text-[10px] px-2 py-0.5 rounded ${sortBy === "alpha" ? "bg-[#D4A373] text-[#0C1220]" : "bg-[#1A2538] text-[#D4A373]"}`}
-          >
-            A-Z
-          </button>
-          <button
-            onClick={() => setSortBy("station")}
-            className={`text-[10px] px-2 py-0.5 rounded ${sortBy === "station" ? "bg-[#D4A373] text-[#0C1220]" : "bg-[#1A2538] text-[#D4A373]"}`}
-          >
-            Station
-          </button>
+        <div className="flex items-center gap-2">
+          <ExportButtons onExport={handleExport} onPrint={handlePrint} />
+          <div className="flex gap-1">
+            <button
+              onClick={() => setSortBy("alpha")}
+              className={`text-[10px] px-2 py-0.5 rounded ${sortBy === "alpha" ? "bg-[#D4A373] text-[#0C1220]" : "bg-[#1A2538] text-[#D4A373]"}`}
+            >
+              A-Z
+            </button>
+            <button
+              onClick={() => setSortBy("station")}
+              className={`text-[10px] px-2 py-0.5 rounded ${sortBy === "station" ? "bg-[#D4A373] text-[#0C1220]" : "bg-[#1A2538] text-[#D4A373]"}`}
+            >
+              Station
+            </button>
+          </div>
         </div>
       </div>
       <table className="w-full text-sm">
@@ -358,7 +439,7 @@ function ConsolidatedSection({ prepItems }: { prepItems: EventPrepItem[] }) {
 // ═══════════════════════════════════════════════
 // By Station Section
 // ═══════════════════════════════════════════════
-function ByStationSection({ prepItems }: { prepItems: EventPrepItem[] }) {
+function ByStationSection({ event, prepItems }: { event: Event; prepItems: EventPrepItem[] }) {
   const grouped = useMemo(() => {
     const map = new Map<string, EventPrepItem[]>();
     for (const item of prepItems) {
@@ -376,12 +457,31 @@ function ByStationSection({ prepItems }: { prepItems: EventPrepItem[] }) {
     return entries;
   }, [prepItems]);
 
+  const handleExportAll = () => {
+    for (const [station, items] of grouped) {
+      if (station === "__unassigned" || items.length === 0) continue;
+      const doc = generateStationPrepPDF(event, prepItems, station);
+      doc.save(`station-prep-${slugify(station)}-${slugify(event.name)}.pdf`);
+    }
+  };
+
   if (grouped.length === 0) {
     return <EmptySubTab message="No prep items to display by station." />;
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-medium text-sm text-[#F4F1ED]">By Station</h3>
+        <button
+          onClick={handleExportAll}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Export All Stations
+        </button>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
       {grouped.map(([station, items]) => {
         const sc = stationColor(station === "__unassigned" ? null : station);
         return (
@@ -409,6 +509,7 @@ function ByStationSection({ prepItems }: { prepItems: EventPrepItem[] }) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -416,7 +517,7 @@ function ByStationSection({ prepItems }: { prepItems: EventPrepItem[] }) {
 // ═══════════════════════════════════════════════
 // Shopping List Section
 // ═══════════════════════════════════════════════
-function ShoppingSection({ eventId, items }: { eventId: string; items: EventShoppingItem[] }) {
+function ShoppingSection({ eventId, event, items }: { eventId: string; event: Event; items: EventShoppingItem[] }) {
   const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
 
   const sorted = useMemo(() => {
@@ -439,13 +540,29 @@ function ShoppingSection({ eventId, items }: { eventId: string; items: EventShop
 
   const purchasedCount = sorted.filter((i) => (optimistic[i.id] ?? i.purchased)).length;
 
+  const handleExport = () => {
+    const doc = generateShoppingListPDF(event, items);
+    doc.save(`shopping-list-${slugify(event.name)}.pdf`);
+  };
+
+  const handlePrint = () => {
+    const doc = generateShoppingListPDF(event, items);
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  };
+
   return (
     <div className="card overflow-hidden">
       <div className="px-4 py-3 bg-[#182030] border-b border-[#2A3A5C] flex items-center justify-between">
-        <h3 className="font-medium text-sm text-[#F4F1ED]">Shopping List</h3>
-        <span className="text-[10px] text-[#7A8BA8]">
-          {purchasedCount}/{sorted.length} purchased
-        </span>
+        <div className="flex items-center gap-3">
+          <h3 className="font-medium text-sm text-[#F4F1ED]">Shopping List</h3>
+          <span className="text-[10px] text-[#7A8BA8]">
+            {purchasedCount}/{sorted.length} purchased
+          </span>
+        </div>
+        <ExportButtons onExport={handleExport} onPrint={handlePrint} />
       </div>
       <table className="w-full text-sm">
         <thead>
@@ -492,7 +609,7 @@ function ShoppingSection({ eventId, items }: { eventId: string; items: EventShop
 // ═══════════════════════════════════════════════
 // Pack List Section
 // ═══════════════════════════════════════════════
-function PackListSection({ eventId, items }: { eventId: string; items: EventPackItem[] }) {
+function PackListSection({ eventId, event, items }: { eventId: string; event: Event; items: EventPackItem[] }) {
   const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ item_name: "", quantity: "1", category: "" });
@@ -538,6 +655,19 @@ function PackListSection({ eventId, items }: { eventId: string; items: EventPack
 
   const packedCount = items.filter((i) => (optimistic[i.id] ?? i.packed)).length;
 
+  const handleExportPack = () => {
+    const doc = generatePackListPDF(event, items);
+    doc.save(`pack-list-${slugify(event.name)}.pdf`);
+  };
+
+  const handlePrintPack = () => {
+    const doc = generatePackListPDF(event, items);
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -547,10 +677,15 @@ function PackListSection({ eventId, items }: { eventId: string; items: EventPack
             <span className="text-[10px] text-[#7A8BA8]">{packedCount}/{items.length} packed</span>
           )}
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-secondary text-xs flex items-center gap-1.5">
-          <Plus className="w-3.5 h-3.5" />
-          Add Item
-        </button>
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <ExportButtons onExport={handleExportPack} onPrint={handlePrintPack} />
+          )}
+          <button onClick={() => setShowForm(!showForm)} className="btn-secondary text-xs flex items-center gap-1.5">
+            <Plus className="w-3.5 h-3.5" />
+            Add Item
+          </button>
+        </div>
       </div>
 
       {/* Inline add form */}

@@ -7,7 +7,7 @@ import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
 import type { PricingData, MenuItem, MenuItemCategory, StaffingLine, RentalLine, BarPackage } from "@/types";
-import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed } from "lucide-react";
+import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed, Link2 } from "lucide-react";
 
 const MENU_CATEGORIES: MenuItemCategory[] = ["Appetizers", "Mains", "Sides", "Desserts", "Drinks", "Other"];
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import { RecipePickerModal } from "./RecipePickerModal";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { RentalPickerModal } from "./RentalPickerModal";
+import { MenuItemRecipeLinker } from "./MenuItemRecipeLinker";
+import { linkMenuItemRecipe, unlinkMenuItemRecipe } from "@/lib/actions/production";
+import { createClient } from "@/lib/supabase/client";
 import type { Recipe, StaffMember, RentalItem } from "@/types";
 
 interface Props { eventId: string; guestCount: number; initialPricing?: PricingData | null; }
@@ -98,6 +101,101 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   };
 
   const [rentalPickerOpen, setRentalPickerOpen] = useState(false);
+
+  // Recipe linker state
+  const [linkerOpen, setLinkerOpen] = useState<string | null>(null); // menu item name or null
+  const [allRecipes, setAllRecipes] = useState<Array<{ id: string; name: string; station: string | null }>>([]);
+  const [menuItemMappings, setMenuItemMappings] = useState<Record<string, Array<{
+    id: string; recipe_id: string; recipe_name: string;
+    quantity_per_serving: number; unit: string; station: string | null;
+  }>>>({});
+  const [recipesLoaded, setRecipesLoaded] = useState(false);
+
+  // Load recipes and mappings when the linker is opened
+  const openLinker = async (menuItemName: string) => {
+    setLinkerOpen(menuItemName);
+    if (!recipesLoaded) {
+      const supabase = createClient();
+      const [recipesRes, mappingsRes] = await Promise.all([
+        supabase.from("recipes").select("id, name, station").order("name"),
+        supabase.from("menu_item_recipes").select("id, menu_item_name, recipe_id, quantity_per_serving, unit, station, recipe:recipes(name)"),
+      ]);
+      const recipes = (recipesRes.data ?? []) as Array<{ id: string; name: string; station: string | null }>;
+      setAllRecipes(recipes);
+
+      // Build mappings grouped by menu_item_name
+      const mappings: typeof menuItemMappings = {};
+      for (const m of (mappingsRes.data ?? []) as any[]) {
+        const key = m.menu_item_name;
+        if (!mappings[key]) mappings[key] = [];
+        mappings[key].push({
+          id: m.id,
+          recipe_id: m.recipe_id,
+          recipe_name: m.recipe?.name ?? "Unknown",
+          quantity_per_serving: m.quantity_per_serving ?? 1,
+          unit: m.unit ?? "serving",
+          station: m.station ?? null,
+        });
+      }
+      setMenuItemMappings(mappings);
+      setRecipesLoaded(true);
+    }
+  };
+
+  const handleLinkRecipe = async (menuItemName: string, recipeId: string, data?: { quantity_per_serving?: number; unit?: string; station?: string }) => {
+    const recipe = allRecipes.find(r => r.id === recipeId);
+    if (!recipe) return;
+    try {
+      await linkMenuItemRecipe({
+        menu_item_name: menuItemName,
+        recipe_id: recipeId,
+        quantity_per_serving: data?.quantity_per_serving,
+        unit: data?.unit,
+        station: data?.station,
+      });
+      // Refresh mappings from DB for accuracy
+      const supabase = createClient();
+      const { data: fresh } = await supabase
+        .from("menu_item_recipes")
+        .select("id, menu_item_name, recipe_id, quantity_per_serving, unit, station, recipe:recipes(name)")
+        .eq("menu_item_name", menuItemName);
+      const updated = (fresh ?? []).map((m: any) => ({
+        id: m.id,
+        recipe_id: m.recipe_id,
+        recipe_name: m.recipe?.name ?? "Unknown",
+        quantity_per_serving: m.quantity_per_serving ?? 1,
+        unit: m.unit ?? "serving",
+        station: m.station ?? null,
+      }));
+      setMenuItemMappings(prev => ({ ...prev, [menuItemName]: updated }));
+      toast.success(`Linked ${recipe.name}`);
+    } catch {
+      toast.error("Failed to link recipe");
+    }
+  };
+
+  const handleUnlinkRecipe = async (menuItemName: string, mappingId: string) => {
+    try {
+      await unlinkMenuItemRecipe(mappingId);
+      setMenuItemMappings(prev => ({
+        ...prev,
+        [menuItemName]: (prev[menuItemName] ?? []).filter(m => m.id !== mappingId),
+      }));
+      toast.success("Recipe unlinked");
+    } catch {
+      toast.error("Failed to unlink recipe");
+    }
+  };
+
+  const handleUpdateMapping = (menuItemName: string, mappingId: string, updates: Record<string, any>) => {
+    // Optimistic local update (saved on next production generation)
+    setMenuItemMappings(prev => ({
+      ...prev,
+      [menuItemName]: (prev[menuItemName] ?? []).map(m =>
+        m.id === mappingId ? { ...m, ...updates } : m
+      ),
+    }));
+  };
 
   const handleImportRentals = (items: RentalItem[]) => {
     const newRentals = items.map(item => ({
@@ -193,8 +291,24 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                               <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
                                 onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
                             </div>
-                            <input className="input col-span-2 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
+                            <input className="input col-span-1 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
                               onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
+                            <button
+                              type="button"
+                              onClick={() => item.name.trim() && openLinker(item.name.trim())}
+                              disabled={!item.name.trim()}
+                              className={`col-span-1 flex items-center justify-center transition-colors ${
+                                (menuItemMappings[item.name.trim()] ?? []).length > 0
+                                  ? "text-[#D4A373] hover:text-brand-300"
+                                  : "text-[#7A8BA8] hover:text-[#D4A373]"
+                              } disabled:opacity-30 disabled:cursor-not-allowed`}
+                              title={`Link recipes to "${item.name || "item"}"`}
+                            >
+                              <Link2 className="w-3.5 h-3.5" />
+                              {(menuItemMappings[item.name.trim()] ?? []).length > 0 && (
+                                <span className="text-[9px] ml-0.5 font-semibold">{menuItemMappings[item.name.trim()].length}</span>
+                              )}
+                            </button>
                             <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-2 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -401,6 +515,17 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
       <RecipePickerModal open={recipePickerOpen} onClose={() => setRecipePickerOpen(false)} onSelect={handleImportRecipes} />
       <StaffPickerModal open={staffPickerOpen} onClose={() => setStaffPickerOpen(false)} onSelect={handleImportStaff} />
       <RentalPickerModal open={rentalPickerOpen} onClose={() => setRentalPickerOpen(false)} onSelect={handleImportRentals} />
+      {linkerOpen && (
+        <MenuItemRecipeLinker
+          menuItemName={linkerOpen}
+          linkedRecipes={menuItemMappings[linkerOpen] ?? []}
+          availableRecipes={allRecipes}
+          onLink={(recipeId, data) => handleLinkRecipe(linkerOpen, recipeId, data)}
+          onUnlink={(mappingId) => handleUnlinkRecipe(linkerOpen, mappingId)}
+          onUpdateMapping={(mappingId, updates) => handleUpdateMapping(linkerOpen, mappingId, updates)}
+          onClose={() => setLinkerOpen(null)}
+        />
+      )}
     </div>
   );
 }

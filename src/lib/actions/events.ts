@@ -13,6 +13,8 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
+  const clientId = (formData.get("client_id") as string)?.trim() || null;
+
   const { data, error } = await supabase
     .from("events")
     .insert({
@@ -22,6 +24,7 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
       client_name: (formData.get("client_name") as string).trim(),
       client_email: (formData.get("client_email") as string)?.trim() || null,
       client_phone: (formData.get("client_phone") as string)?.trim() || null,
+      client_id: clientId,
       event_date: (formData.get("event_date") as string).trim(),
       start_time: (formData.get("start_time") as string)?.trim() || null,
       end_time: (formData.get("end_time") as string)?.trim() || null,
@@ -67,6 +70,8 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
+  const clientId = (formData.get("client_id") as string)?.trim() || null;
+
   let updateQuery = supabase
     .from("events")
     .update({
@@ -74,6 +79,7 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
       client_name: (formData.get("client_name") as string).trim(),
       client_email: (formData.get("client_email") as string)?.trim() || null,
       client_phone: (formData.get("client_phone") as string)?.trim() || null,
+      client_id: clientId,
       event_date: (formData.get("event_date") as string).trim(),
       start_time: (formData.get("start_time") as string)?.trim() || null,
       end_time: (formData.get("end_time") as string)?.trim() || null,
