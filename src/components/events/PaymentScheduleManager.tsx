@@ -14,6 +14,9 @@ import {
   CheckCircle,
   Clock,
   Loader2,
+  RotateCcw,
+  Bell,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -181,6 +184,8 @@ export function PaymentScheduleManager({
   const [recordingForId, setRecordingForId] = useState<string | null>(null);
   const [recordingPayment, setRecordingPayment] = useState(false);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
   // ---------------------------------------------------------------------------
@@ -194,7 +199,7 @@ export function PaymentScheduleManager({
 
       // Fetch schedule items
       let scheduleQuery = supabase
-        .from("payment_schedule_items")
+        .from("payment_schedules")
         .select("*")
         .eq("event_id", eventId)
         .order("sort_order", { ascending: true });
@@ -318,7 +323,7 @@ export function PaymentScheduleManager({
 
       // Delete existing schedule items for this event
       let deleteQuery = supabase
-        .from("payment_schedule_items")
+        .from("payment_schedules")
         .delete()
         .eq("event_id", eventId);
       if (organizationId) {
@@ -341,7 +346,7 @@ export function PaymentScheduleManager({
         }));
 
         const { data: inserted, error } = await supabase
-          .from("payment_schedule_items")
+          .from("payment_schedules")
           .insert(rows)
           .select();
 
@@ -430,7 +435,7 @@ export function PaymentScheduleManager({
         );
         if (matchingItem) {
           await supabase
-            .from("payment_schedule_items")
+            .from("payment_schedules")
             .update({ status: "paid" })
             .eq("id", scheduleItemId);
 
@@ -491,6 +496,61 @@ export function PaymentScheduleManager({
       toast.error("Failed to generate payment link");
     } finally {
       setGeneratingLink(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Refund
+  // ---------------------------------------------------------------------------
+
+  async function handleRefund(payment: Payment) {
+    if (!confirm(`Refund ${formatCurrency(payment.amount)} for this payment?`)) return;
+    setRefundingId(payment.id);
+    try {
+      const { initiateRefundAction } = await import("@/lib/actions/payments");
+      const result = await initiateRefundAction({ paymentId: payment.id });
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Refund initiated successfully");
+        setPayments((prev) =>
+          prev.map((p) =>
+            p.id === payment.id ? { ...p, status: (result.status || "refunded") as Payment["status"] } : p
+          )
+        );
+      }
+    } catch {
+      toast.error("Failed to initiate refund");
+    } finally {
+      setRefundingId(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Payment reminder
+  // ---------------------------------------------------------------------------
+
+  async function handleSendReminder(installment: LocalInstallment) {
+    if (!installment.dbId) {
+      toast.error("Save the schedule first");
+      return;
+    }
+    setSendingReminder(installment.localId);
+    try {
+      const { sendPaymentReminderAction } = await import("@/lib/actions/payments");
+      const result = await sendPaymentReminderAction({
+        eventId,
+        scheduleItemId: installment.dbId,
+      });
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Payment reminder sent");
+      }
+    } catch {
+      toast.error("Failed to send reminder");
+    } finally {
+      setSendingReminder(null);
     }
   }
 
@@ -778,12 +838,24 @@ export function PaymentScheduleManager({
                         onClick={() => generateStripeLink(item)}
                         disabled={generatingLink === item.localId}
                         className="p-1.5 rounded text-[#7A8BA8] hover:text-brand-400 hover:bg-brand-500/10 transition-colors disabled:opacity-50"
-                        title="Send payment link"
+                        title="Copy payment link"
                       >
                         {generatingLink === item.localId ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleSendReminder(item)}
+                        disabled={sendingReminder === item.localId}
+                        className="p-1.5 rounded text-[#7A8BA8] hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors disabled:opacity-50"
+                        title="Send payment reminder"
+                      >
+                        {sendingReminder === item.localId ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Bell className="w-3.5 h-3.5" />
                         )}
                       </button>
                     </>
@@ -949,20 +1021,49 @@ export function PaymentScheduleManager({
                       </div>
                     </div>
                   </div>
-                  <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize flex-shrink-0 ${
-                      p.status === "paid"
-                        ? "bg-green-500/20 text-green-400 border-green-500/30"
-                        : p.status === "failed"
-                        ? "bg-red-500/20 text-red-400 border-red-500/30"
-                        : p.status === "refunded" ||
-                          p.status === "partially_refunded"
-                        ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
-                        : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                    }`}
-                  >
-                    {p.status}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Refund button — only for paid Stripe payments */}
+                    {p.status === "paid" && p.stripe_payment_intent_id && (
+                      <button
+                        onClick={() => handleRefund(p)}
+                        disabled={refundingId === p.id}
+                        className="p-1 rounded text-[#7A8BA8] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                        title="Initiate refund"
+                      >
+                        {refundingId === p.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <RotateCcw className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                    {/* Receipt download — only for paid payments */}
+                    {p.status === "paid" && (
+                      <a
+                        href={`/api/stripe/receipt?paymentId=${p.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1 rounded text-[#7A8BA8] hover:text-brand-400 hover:bg-brand-500/10 transition-colors"
+                        title="Download receipt"
+                      >
+                        <FileText className="w-3 h-3" />
+                      </a>
+                    )}
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${
+                        p.status === "paid"
+                          ? "bg-green-500/20 text-green-400 border-green-500/30"
+                          : p.status === "failed"
+                          ? "bg-red-500/20 text-red-400 border-red-500/30"
+                          : p.status === "refunded" ||
+                            p.status === "partially_refunded"
+                          ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                          : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                      }`}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
                 </div>
               );
             })}

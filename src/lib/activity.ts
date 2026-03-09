@@ -10,7 +10,9 @@ export type ActivityType =
   | "proposal_responded"
   | "note_added"
   | "event_created"
-  | "event_updated";
+  | "event_updated"
+  | "refund_initiated"
+  | "payment_reminder_sent";
 
 export async function logActivity(
   eventId: string,

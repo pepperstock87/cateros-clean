@@ -19,7 +19,8 @@ type NotificationType =
   | "proposal_signed"
   | "proposal_booked"
   | "revision_requested"
-  | "payment_received";
+  | "payment_received"
+  | "payment_reminder";
 
 export async function createNotification(params: {
   userId: string;

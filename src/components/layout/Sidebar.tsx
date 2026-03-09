@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell, Shield } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell, Shield, Wallet } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
@@ -34,6 +34,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/spending", icon: Receipt, label: "Spending" },
   { href: "/shopping", icon: ShoppingCart, label: "Shopping List" },
   { href: "/billing", icon: CreditCard, label: "Billing" },
+  { href: "/payouts", icon: Wallet, label: "Payouts" },
   { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
   { href: "/team", icon: Users, label: "Team" },
   { href: "/team/invites", icon: Users, label: "Team Invites", sub: true },

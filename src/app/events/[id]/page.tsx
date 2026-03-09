@@ -15,7 +15,6 @@ import { EventLifecycle } from "@/components/events/EventLifecycle";
 import { EventFinancialSummary } from "@/components/events/EventFinancialSummary";
 import { EventProfitLoss } from "@/components/events/EventProfitLoss";
 import { GenerateProposalButton } from "@/components/proposals/GenerateProposalButton";
-import { PaymentTracker } from "@/components/events/PaymentTracker";
 import { StaffAssignments } from "@/components/events/StaffAssignments";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { PrintButton } from "@/components/events/PrintButton";
@@ -402,14 +401,6 @@ export default async function EventDetailPage({ params }: Props) {
                       organizationId={org?.orgId ?? null}
                     />
                   </FeatureGate>
-                  <div className="mt-6 pt-6 border-t border-[#2A3A5C]">
-                    <h3 className="text-xs font-medium text-[#7A8BA8] uppercase tracking-wider mb-3">Legacy Payment Tracking</h3>
-                    <PaymentTracker
-                      eventId={e.id}
-                      suggestedPrice={pricing.suggestedPrice}
-                      initialPayment={e.payment_data as PaymentData | null}
-                    />
-                  </div>
                   <SuggestedDeposit totalPrice={pricing.suggestedPrice} />
                 </>
               ) : (
