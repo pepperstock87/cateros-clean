@@ -7,9 +7,14 @@ import {
   proposalViewedEmail,
   proposalApprovedEmail,
   proposalSignedEmail,
-  proposalDeclinedEmail,
-  paymentReceivedEmail,
+  // Legacy templates kept for proposal_viewed, proposal_approved, proposal_signed, proposal_booked
 } from "@/lib/email";
+import {
+  paymentReceived as paymentReceivedTemplate,
+  paymentReminder as paymentReminderTemplate,
+  proposalAccepted as proposalAcceptedTemplate,
+  proposalDeclined as proposalDeclinedTemplate,
+} from "@/lib/email-templates";
 
 type NotificationType =
   | "proposal_accepted"
@@ -36,6 +41,10 @@ export async function createNotification(params: {
     amount?: string;
     eventName?: string;
     eventUrl?: string;
+    dueDate?: string;
+    installmentName?: string;
+    paymentMethod?: string;
+    paymentUrl?: string;
   };
 }) {
   const supabase = createClient(
@@ -68,7 +77,7 @@ export async function createNotification(params: {
       "proposal_booked",
       "revision_requested",
     ].includes(params.type);
-    const isPaymentType = params.type === "payment_received";
+    const isPaymentType = ["payment_received", "payment_reminder"].includes(params.type);
 
     if (isProposalType && !prefs.notificationProposals) return;
     if (isPaymentType && !prefs.notificationPayments) return;
@@ -118,13 +127,23 @@ export async function createNotification(params: {
         });
         break;
 
+      case "proposal_accepted":
+        subject = `Proposal Accepted: ${ed.eventName || ed.proposalTitle || "Your Proposal"}`;
+        html = proposalAcceptedTemplate({
+          recipientName,
+          clientName: ed.clientName || "A client",
+          eventName: ed.eventName || ed.proposalTitle || "Your Event",
+          eventUrl,
+        });
+        break;
+
       case "proposal_declined":
         subject = `Proposal Declined: ${ed.proposalTitle || "Your Proposal"}`;
-        html = proposalDeclinedEmail({
+        html = proposalDeclinedTemplate({
           recipientName,
-          proposalTitle: ed.proposalTitle || "Your Proposal",
           clientName: ed.clientName || "A client",
-          message: params.message.startsWith("Client responded:")
+          eventName: ed.eventName || ed.proposalTitle || "Your Event",
+          reason: params.message.startsWith("Client responded:")
             ? params.message.replace(/^Client responded:\s*"?|"$/g, "")
             : undefined,
           eventUrl,
@@ -143,11 +162,24 @@ export async function createNotification(params: {
 
       case "payment_received":
         subject = `Payment Received: ${ed.amount || ""}`;
-        html = paymentReceivedEmail({
+        html = paymentReceivedTemplate({
           recipientName,
           amount: ed.amount || "$0.00",
           eventName: ed.eventName || "Your Event",
+          paymentMethod: ed.paymentMethod,
           eventUrl,
+        });
+        break;
+
+      case "payment_reminder":
+        subject = `Payment Reminder: ${ed.amount || ""} due ${ed.dueDate || "soon"}`;
+        html = paymentReminderTemplate({
+          recipientName,
+          amount: ed.amount || "$0.00",
+          dueDate: ed.dueDate || "soon",
+          eventName: ed.eventName || "Your Event",
+          installmentName: ed.installmentName,
+          paymentUrl: ed.paymentUrl || eventUrl,
         });
         break;
 

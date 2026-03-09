@@ -224,7 +224,11 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const org = await getCurrentOrg();
-  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome, onboarding_completed").eq("id", user.id).single();
+
+  if (profile && profile.onboarding_completed === false) {
+    redirect("/onboarding");
+  }
   const stats = await getDashboardData(user.id, org?.orgId ?? null);
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
