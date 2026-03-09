@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { Suspense } from "react";
 import { AssistantProvider } from "@/components/assistant/AssistantProvider";
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style: { background: "#1A2538", border: "1px solid #2A3A5C", color: "#F4F1ED" },
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
