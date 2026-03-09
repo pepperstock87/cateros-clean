@@ -22,6 +22,7 @@ import {
   Printer,
   Bookmark,
   LayoutTemplate,
+  Boxes,
 } from "lucide-react";
 import {
   generateProduction,
@@ -32,6 +33,10 @@ import {
   toggleTimelineItem,
   deleteTimelineItem,
 } from "@/lib/actions/production";
+import {
+  checkInventoryForEvent,
+  deductFromShoppingList,
+} from "@/lib/actions/inventory";
 import {
   generatePrepSheetPDF,
   generateConsolidatedPrepPDF,
@@ -522,7 +527,17 @@ function ByStationSection({ event, prepItems }: { event: Event; prepItems: Event
 // Shopping List Section
 // ═══════════════════════════════════════════════
 function ShoppingSection({ eventId, event, items }: { eventId: string; event: Event; items: EventShoppingItem[] }) {
+  const router = useRouter();
   const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
+  const [inventoryStatus, setInventoryStatus] = useState<
+    Record<string, { status: "in_stock" | "low" | "not_in_stock"; available: number }>
+  >({});
+  const [checkingInventory, setCheckingInventory] = useState(false);
+  const [deductingInventory, setDeductingInventory] = useState(false);
+  const [deductResult, setDeductResult] = useState<{
+    deducted: { ingredient_name: string; deducted: number; unit: string }[];
+    shortfall: { ingredient_name: string; needed: number; available: number; unit: string }[];
+  } | null>(null);
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => {
@@ -538,11 +553,43 @@ function ShoppingSection({ eventId, event, items }: { eventId: string; event: Ev
     await toggleShoppingItem(id, !current);
   }
 
+  async function handleCheckInventory() {
+    setCheckingInventory(true);
+    try {
+      const result = await checkInventoryForEvent(eventId);
+      const statusMap: Record<string, { status: "in_stock" | "low" | "not_in_stock"; available: number }> = {};
+      for (const r of result) {
+        statusMap[r.id] = { status: r.status, available: r.available };
+      }
+      setInventoryStatus(statusMap);
+    } catch {
+      alert("Failed to check inventory");
+    } finally {
+      setCheckingInventory(false);
+    }
+  }
+
+  async function handleDeductInventory() {
+    setDeductingInventory(true);
+    try {
+      const result = await deductFromShoppingList(eventId);
+      setDeductResult(result);
+      // Clear inventory status since quantities changed
+      setInventoryStatus({});
+      router.refresh();
+    } catch {
+      alert("Failed to deduct from inventory");
+    } finally {
+      setDeductingInventory(false);
+    }
+  }
+
   if (sorted.length === 0) {
     return <EmptySubTab message="No shopping items yet. Generate production to build a shopping list from recipe ingredients." />;
   }
 
   const purchasedCount = sorted.filter((i) => (optimistic[i.id] ?? i.purchased)).length;
+  const hasInventoryStatus = Object.keys(inventoryStatus).length > 0;
 
   const handleExport = () => {
     const doc = generateShoppingListPDF(event, items);
@@ -557,55 +604,129 @@ function ShoppingSection({ eventId, event, items }: { eventId: string; event: Ev
     if (win) win.onload = () => win.print();
   };
 
+  function inventoryBadge(itemId: string) {
+    const status = inventoryStatus[itemId];
+    if (!status) return null;
+    if (status.status === "in_stock") {
+      return (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-700">
+          In Stock ({status.available})
+        </span>
+      );
+    }
+    if (status.status === "low") {
+      return (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-300 border border-amber-700">
+          Low ({status.available})
+        </span>
+      );
+    }
+    return (
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-900/40 text-red-300 border border-red-700">
+        Not in Stock
+      </span>
+    );
+  }
+
   return (
-    <div className="card overflow-hidden">
-      <div className="px-4 py-3 bg-[#182030] border-b border-[#2A3A5C] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h3 className="font-medium text-sm text-[#F4F1ED]">Shopping List</h3>
-          <span className="text-[10px] text-[#7A8BA8]">
-            {purchasedCount}/{sorted.length} purchased
-          </span>
+    <div className="space-y-3">
+      {/* Deduct result banner */}
+      {deductResult && (
+        <div className="card p-4 space-y-2">
+          {deductResult.deducted.length > 0 && (
+            <div className="text-xs text-emerald-400">
+              Deducted {deductResult.deducted.length} item{deductResult.deducted.length !== 1 ? "s" : ""} from inventory.
+            </div>
+          )}
+          {deductResult.shortfall.length > 0 && (
+            <div className="text-xs text-amber-400">
+              {deductResult.shortfall.length} item{deductResult.shortfall.length !== 1 ? "s" : ""} had insufficient stock — still need to purchase.
+            </div>
+          )}
+          <button onClick={() => setDeductResult(null)} className="text-[10px] text-[#7A8BA8] hover:text-[#F4F1ED] underline">
+            Dismiss
+          </button>
         </div>
-        <ExportButtons onExport={handleExport} onPrint={handlePrint} />
+      )}
+
+      <div className="card overflow-hidden">
+        <div className="px-4 py-3 bg-[#182030] border-b border-[#2A3A5C] flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <h3 className="font-medium text-sm text-[#F4F1ED]">Shopping List</h3>
+            <span className="text-[10px] text-[#7A8BA8]">
+              {purchasedCount}/{sorted.length} purchased
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCheckInventory}
+              disabled={checkingInventory}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+            >
+              {checkingInventory ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Boxes className="w-3.5 h-3.5" />}
+              Check Inventory
+            </button>
+            <button
+              onClick={handleDeductInventory}
+              disabled={deductingInventory}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+            >
+              {deductingInventory ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Boxes className="w-3.5 h-3.5" />}
+              Deduct from Inventory
+            </button>
+            <ExportButtons onExport={handleExport} onPrint={handlePrint} />
+          </div>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wider text-[#7A8BA8] border-b border-[#2A3A5C]">
+              <th className="px-4 py-2 w-10"></th>
+              <th className="px-4 py-2 font-medium">Ingredient</th>
+              <th className="px-4 py-2 font-medium">Quantity</th>
+              <th className="px-4 py-2 font-medium">Unit</th>
+              <th className="px-4 py-2 font-medium">Vendor</th>
+              {hasInventoryStatus && <th className="px-4 py-2 font-medium">Inventory</th>}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#2A3A5C]">
+            {sorted.map((item) => {
+              const purchased = optimistic[item.id] ?? item.purchased;
+              const status = inventoryStatus[item.id];
+              let rowBg = "";
+              if (status) {
+                if (status.status === "in_stock") rowBg = "bg-emerald-950/10";
+                else if (status.status === "low") rowBg = "bg-amber-950/10";
+                else rowBg = "bg-red-950/10";
+              }
+              return (
+                <tr key={item.id} className={`transition-colors ${purchased ? "opacity-50" : `hover:bg-[#182030] ${rowBg}`}`}>
+                  <td className="px-4 py-2.5">
+                    <button
+                      onClick={() => handleToggle(item.id, purchased)}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                        purchased
+                          ? "bg-[#D4A373] border-[#D4A373]"
+                          : "border-[#2A3A5C] hover:border-[#D4A373]"
+                      }`}
+                    >
+                      {purchased && <Check className="w-3 h-3 text-[#0C1220]" />}
+                    </button>
+                  </td>
+                  <td className={`px-4 py-2.5 ${purchased ? "line-through text-[#7A8BA8]" : "text-[#F4F1ED]"}`}>
+                    {item.ingredient_name}
+                  </td>
+                  <td className="px-4 py-2.5 text-[#D4A373]">{Math.round(item.quantity * 100) / 100}</td>
+                  <td className="px-4 py-2.5 text-[#7A8BA8]">{item.unit}</td>
+                  <td className="px-4 py-2.5 text-[#7A8BA8]">{item.vendor ?? "—"}</td>
+                  {hasInventoryStatus && (
+                    <td className="px-4 py-2.5">{inventoryBadge(item.id)}</td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-[10px] uppercase tracking-wider text-[#7A8BA8] border-b border-[#2A3A5C]">
-            <th className="px-4 py-2 w-10"></th>
-            <th className="px-4 py-2 font-medium">Ingredient</th>
-            <th className="px-4 py-2 font-medium">Quantity</th>
-            <th className="px-4 py-2 font-medium">Unit</th>
-            <th className="px-4 py-2 font-medium">Vendor</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#2A3A5C]">
-          {sorted.map((item) => {
-            const purchased = optimistic[item.id] ?? item.purchased;
-            return (
-              <tr key={item.id} className={`transition-colors ${purchased ? "opacity-50" : "hover:bg-[#182030]"}`}>
-                <td className="px-4 py-2.5">
-                  <button
-                    onClick={() => handleToggle(item.id, purchased)}
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                      purchased
-                        ? "bg-[#D4A373] border-[#D4A373]"
-                        : "border-[#2A3A5C] hover:border-[#D4A373]"
-                    }`}
-                  >
-                    {purchased && <Check className="w-3 h-3 text-[#0C1220]" />}
-                  </button>
-                </td>
-                <td className={`px-4 py-2.5 ${purchased ? "line-through text-[#7A8BA8]" : "text-[#F4F1ED]"}`}>
-                  {item.ingredient_name}
-                </td>
-                <td className="px-4 py-2.5 text-[#D4A373]">{Math.round(item.quantity * 100) / 100}</td>
-                <td className="px-4 py-2.5 text-[#7A8BA8]">{item.unit}</td>
-                <td className="px-4 py-2.5 text-[#7A8BA8]">{item.vendor ?? "—"}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }

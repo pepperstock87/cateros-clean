@@ -24,6 +24,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
   { href: "/recipes/analytics", icon: BarChart3, label: "Recipe Analytics", sub: true },
+  { href: "/inventory", icon: Package, label: "Inventory" },
   { href: "/staff", icon: Users, label: "Staff" },
   { href: "/rentals", icon: Package, label: "Rentals" },
   { href: "/venues", icon: MapPin, label: "Venues" },
@@ -35,6 +36,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
   { href: "/team", icon: Users, label: "Team" },
+  { href: "/team/invites", icon: Users, label: "Team Invites", sub: true },
   { href: "/audit", icon: Shield, label: "Audit Log" },
 ];
 

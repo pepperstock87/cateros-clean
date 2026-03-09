@@ -249,6 +249,24 @@ export type UserEntitlements = {
 export type OrganizationType = 'caterer' | 'venue' | 'planner' | 'rental_vendor' | 'florist' | 'entertainment_vendor' | 'other_vendor';
 export type OrgMemberRole = 'owner' | 'admin' | 'manager' | 'staff' | 'viewer';
 
+export type OrganizationInvite = {
+  id: string;
+  organization_id: string;
+  invited_by: string;
+  invited_email: string;
+  role: OrgMemberRole;
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'revoked';
+  invite_token: string;
+  accepted_at: string | null;
+  accepted_by: string | null;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  inviter_profile?: { full_name: string | null; email: string };
+  organization?: Organization;
+};
+
 export type Organization = {
   id: string;
   name: string;
@@ -464,6 +482,24 @@ export interface Client {
   organization_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ─── Inventory ───
+
+export interface InventoryItem {
+  id: string;
+  user_id: string;
+  ingredient_name: string;
+  quantity_on_hand: number;
+  unit: string;
+  par_level: number | null;
+  vendor: string | null;
+  cost_per_unit: number | null;
+  category: string;
+  location: string | null;
+  last_updated: string;
+  organization_id: string | null;
+  created_at: string;
 }
 
 // ─── Production System ───

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { switchOrganizationAction } from "@/lib/actions/organizations";
-import { ChevronDown, Building2, Loader2 } from "lucide-react";
+import { ChevronDown, Building2, Loader2, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type OrgSwitcherProps = {
   currentOrg: { id: string; name: string; slug: string };
@@ -14,6 +15,7 @@ type OrgSwitcherProps = {
 export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [switchingToId, setSwitchingToId] = useState<string | null>(null);
   const router = useRouter();
   const hasMultiple = allOrgs.length > 1;
 
@@ -23,6 +25,7 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
       return;
     }
     setSwitching(true);
+    setSwitchingToId(orgId);
     try {
       const result = await switchOrganizationAction(orgId);
       if (result.error) {
@@ -35,6 +38,7 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
       toast.error("Failed to switch organization");
     } finally {
       setSwitching(false);
+      setSwitchingToId(null);
       setOpen(false);
     }
   }
@@ -42,13 +46,9 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
   return (
     <div className="relative px-3 py-2">
       <button
-        onClick={() => hasMultiple && setOpen(!open)}
+        onClick={() => setOpen(!open)}
         disabled={switching}
-        className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
-          hasMultiple
-            ? "hover:bg-[#1A2538] cursor-pointer"
-            : "cursor-default"
-        }`}
+        className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-colors hover:bg-[var(--bg-secondary)] cursor-pointer"
       >
         <div className="w-6 h-6 rounded-md bg-brand-950 border border-brand-800/60 flex items-center justify-center flex-shrink-0">
           {switching ? (
@@ -57,36 +57,68 @@ export function OrgSwitcher({ currentOrg, allOrgs }: OrgSwitcherProps) {
             <Building2 className="w-3 h-3 text-brand-400" />
           )}
         </div>
-        <span className="text-xs font-medium text-[#F4F1ED] truncate flex-1">
-          {currentOrg.name}
-        </span>
-        {hasMultiple && (
-          <ChevronDown className={`w-3 h-3 text-[#7A8BA8] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-        )}
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-medium text-[var(--text-primary)] truncate block">
+            {currentOrg.name}
+          </span>
+          {allOrgs.length > 1 && (
+            <span className="text-[10px] text-[var(--text-muted)]">
+              {allOrgs.length} organization{allOrgs.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+        <ChevronDown className={`w-3 h-3 text-[var(--text-muted)] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {/* Dropdown */}
-      {open && hasMultiple && (
+      {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-lg border border-[#2A3A5C] bg-[#182030] shadow-xl overflow-hidden">
-            {allOrgs.map((org) => (
-              <button
-                key={org.id}
-                onClick={() => handleSwitch(org.id)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
-                  org.id === currentOrg.id
-                    ? "bg-brand-950/50 text-brand-300"
-                    : "text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538]"
-                }`}
-              >
-                <Building2 className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{org.name}</span>
-                {org.id === currentOrg.id && (
-                  <span className="ml-auto text-[10px] text-brand-400">Current</span>
-                )}
-              </button>
-            ))}
+          <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] shadow-xl overflow-hidden">
+            {/* Org list */}
+            {allOrgs.map((org) => {
+              const isCurrent = org.id === currentOrg.id;
+              const isSwitchingTo = switchingToId === org.id;
+              return (
+                <button
+                  key={org.id}
+                  onClick={() => handleSwitch(org.id)}
+                  disabled={switching}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left text-xs transition-colors ${
+                    isCurrent
+                      ? "bg-brand-950/50 text-brand-300"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                  } disabled:opacity-50`}
+                >
+                  <div className="w-5 h-5 rounded-md bg-brand-950/50 border border-brand-800/30 flex items-center justify-center flex-shrink-0">
+                    {isSwitchingTo ? (
+                      <Loader2 className="w-2.5 h-2.5 text-brand-400 animate-spin" />
+                    ) : (
+                      <Building2 className="w-2.5 h-2.5" />
+                    )}
+                  </div>
+                  <span className="truncate flex-1">{org.name}</span>
+                  {isCurrent && (
+                    <Check className="w-3 h-3 text-brand-400 flex-shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+
+            {/* Divider */}
+            <div className="border-t border-[var(--border)]" />
+
+            {/* Create New Organization */}
+            <Link
+              href="/team"
+              onClick={() => setOpen(false)}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-xs text-[var(--text-muted)] hover:text-brand-400 hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              <div className="w-5 h-5 rounded-md border border-dashed border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                <Plus className="w-2.5 h-2.5" />
+              </div>
+              <span>Create New Organization</span>
+            </Link>
           </div>
         </>
       )}

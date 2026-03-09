@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ClipboardList, FileText, Receipt, DollarSign, Edit, ExternalLink } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, Receipt, DollarSign, Edit, ExternalLink, Building2 } from "lucide-react";
 import { InlineEventEditor } from "@/components/events/InlineEventEditor";
 import { CalendarExport } from "@/components/events/CalendarExport";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
@@ -75,7 +75,7 @@ export default async function EventDetailPage({ params }: Props) {
   if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);
   let staffQuery = supabase.from("staff_members").select("*").eq("user_id", user.id);
   if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
-  const eventOrgsQuery = supabase.from("event_organizations").select("organization_id, relationship_type").eq("event_id", id);
+  const eventOrgsQuery = supabase.from("event_organizations").select("organization_id, relationship_type, status, is_primary, role_label, organization:organizations(id, name, organization_type, logo_url)").eq("event_id", id).neq("status", "removed");
 
   // Production queries
   const prepQuery = supabase.from("event_prep_items").select("*").eq("event_id", id).order("group_order");
@@ -321,6 +321,34 @@ export default async function EventDetailPage({ params }: Props) {
                         <p className="text-xs text-[#7A8BA8]">+{receipts.length - 5} more</p>
                       )}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Shared With / Collaborating Organizations */}
+              {eventOrganizations.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="font-medium text-sm mb-3 text-[#D4A373]">Shared With</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {eventOrganizations.map((eo: any) => (
+                      <div
+                        key={eo.organization_id}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#182030] border border-[#2A3A5C] text-sm"
+                      >
+                        <div className="w-6 h-6 rounded-md bg-brand-950 border border-brand-800/60 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-3 h-3 text-brand-400" />
+                        </div>
+                        <span className="text-[#F4F1ED]">{eo.organization?.name ?? "Unknown"}</span>
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#1A2538] border border-[#2A3A5C] text-[#D4A373] capitalize">
+                          {eo.relationship_type?.replace(/_/g, " ") ?? "vendor"}
+                        </span>
+                        {eo.is_primary && (
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-300 border border-brand-800/60">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

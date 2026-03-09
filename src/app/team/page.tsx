@@ -36,7 +36,7 @@ export default async function TeamPage() {
   const [orgRes, membersRes, currentMemberRes] = await Promise.all([
     supabase
       .from("organizations")
-      .select("id, name, slug, type, primary_contact_email")
+      .select("id, name, slug, organization_type, primary_contact_email")
       .eq("id", orgId)
       .single(),
     supabase
@@ -104,10 +104,10 @@ export default async function TeamPage() {
               <span className="text-[11px] uppercase tracking-wider text-[#7A8BA8] block mb-1">Name</span>
               <span className="text-sm text-[#F4F1ED]">{org.name}</span>
             </div>
-            {org.type && (
+            {org.organization_type && (
               <div>
                 <span className="text-[11px] uppercase tracking-wider text-[#7A8BA8] block mb-1">Type</span>
-                <span className="text-sm text-[#F4F1ED] capitalize">{org.type}</span>
+                <span className="text-sm text-[#F4F1ED] capitalize">{org.organization_type.replace(/_/g, ' ')}</span>
               </div>
             )}
             {org.primary_contact_email && (
@@ -128,6 +128,14 @@ export default async function TeamPage() {
         members={members}
         currentUserId={user.id}
         isAdmin={isAdmin}
+        organization={org ? {
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          type: org.organization_type,
+          primary_contact_email: org.primary_contact_email,
+        } : null}
+        currentUserRole={currentMemberRole}
       />
     </div>
   );
