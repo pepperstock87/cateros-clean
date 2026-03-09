@@ -22,7 +22,7 @@ const PLATFORM_FEE_PERCENT = parseFloat(
  */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  if (!rateLimit(`client-checkout:${ip}`, { limit: 10, windowMs: 60_000 })) {
+  if (!(await rateLimit(`client-checkout:${ip}`, { limit: 10, windowMs: 60_000 }))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 

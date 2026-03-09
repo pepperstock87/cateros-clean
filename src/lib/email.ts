@@ -259,6 +259,33 @@ export function welcomeEmail(data: {
   );
 }
 
+// ── Email logging ─────────────────────────────────────────────────────────────
+
+async function logEmailResult(data: {
+  recipient_email: string;
+  template: string;
+  status: "sent" | "failed";
+  error_message?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    await supabase.from("email_logs").insert({
+      recipient_email: data.recipient_email,
+      template: data.template,
+      status: data.status,
+      error_message: data.error_message ?? null,
+      metadata: data.metadata ?? null,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Don't let logging failures break the app
+  }
+}
+
 // ── Send email function ───────────────────────────────────────────────────────
 
 export async function sendEmail(params: {
@@ -268,6 +295,12 @@ export async function sendEmail(params: {
 }): Promise<{ success: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
+    logEmailResult({
+      recipient_email: params.to,
+      template: params.subject,
+      status: "failed",
+      error_message: "Email sending is not configured",
+    });
     return { success: false, error: "Email sending is not configured" };
   }
 
@@ -281,15 +314,33 @@ export async function sendEmail(params: {
 
     if (error) {
       console.error("[email] Failed to send email:", error);
+      logEmailResult({
+        recipient_email: params.to,
+        template: params.subject,
+        status: "failed",
+        error_message: error.message,
+      });
       return { success: false, error: error.message };
     }
 
+    logEmailResult({
+      recipient_email: params.to,
+      template: params.subject,
+      status: "sent",
+    });
     return { success: true };
   } catch (err) {
     console.error("[email] Unexpected error sending email:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    logEmailResult({
+      recipient_email: params.to,
+      template: params.subject,
+      status: "failed",
+      error_message: errorMessage,
+    });
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: errorMessage,
     };
   }
 }

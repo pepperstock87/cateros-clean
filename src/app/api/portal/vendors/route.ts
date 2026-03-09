@@ -4,7 +4,7 @@ import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
   const ip = getClientIp(req);
-  if (!rateLimit(`portal-vendors:${ip}`, { limit: 30, windowMs: 60_000 })) {
+  if (!(await rateLimit(`portal-vendors:${ip}`, { limit: 30, windowMs: 60_000 }))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 

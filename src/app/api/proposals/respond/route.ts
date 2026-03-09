@@ -38,7 +38,7 @@ function determineNextStatus(
 
 export async function POST(req: Request) {
   const ip = getClientIp(req);
-  if (!rateLimit(`proposal-respond:${ip}`, { limit: 30, windowMs: 60_000 })) {
+  if (!(await rateLimit(`proposal-respond:${ip}`, { limit: 30, windowMs: 60_000 }))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
