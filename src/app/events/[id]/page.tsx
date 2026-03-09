@@ -31,10 +31,11 @@ import { SuggestedDeposit } from "@/components/events/SuggestedDeposit";
 import { AutoConfirmBadge } from "@/components/events/AutoConfirmBadge";
 import { PaymentScheduleManager } from "@/components/events/PaymentScheduleManager";
 import { EventInviteManager } from "@/components/events/EventInviteManager";
+import { ProductionTab } from "@/components/events/ProductionTab";
 import { getCurrentOrg } from "@/lib/organizations";
 import { getOrgEntitlements } from "@/lib/orgEntitlements";
 import { FeatureGate, FeatureGateInline } from "@/components/ui/FeatureGate";
-import type { Event, PricingData, PaymentData } from "@/types";
+import type { Event, PricingData, PaymentData, EventPrepItem, EventShoppingItem, EventPackItem, EventTimelineItem } from "@/types";
 
 type ActivityItem = {
   id: string;
@@ -74,13 +75,23 @@ export default async function EventDetailPage({ params }: Props) {
   if (org?.orgId) staffQuery = staffQuery.eq("organization_id", org.orgId);
   const eventOrgsQuery = supabase.from("event_organizations").select("organization_id, relationship_type").eq("event_id", id);
 
-  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes, eventOrgsRes] = await Promise.all([
+  // Production queries
+  const prepQuery = supabase.from("event_prep_items").select("*").eq("event_id", id).order("group_order");
+  const shoppingQuery = supabase.from("event_shopping_items").select("*").eq("event_id", id).order("ingredient_name");
+  const packQuery = supabase.from("event_pack_items").select("*").eq("event_id", id).order("category");
+  const timelineQuery = supabase.from("event_timeline_items").select("*").eq("event_id", id).order("sort_order");
+
+  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes, eventOrgsRes, prepRes, shoppingRes, packRes, timelineRes] = await Promise.all([
     proposalsQuery.order("created_at", { ascending: false }),
     receiptsQuery.order("receipt_date", { ascending: false }),
     invoicesQuery,
     assignmentsQuery,
     staffQuery.order("name"),
     eventOrgsQuery,
+    prepQuery,
+    shoppingQuery,
+    packQuery,
+    timelineQuery,
   ]);
 
   const proposals = proposalsRes.data ?? [];
@@ -89,6 +100,10 @@ export default async function EventDetailPage({ params }: Props) {
   const assignments = assignmentsRes.data ?? [];
   const allStaff = staffRes.data ?? [];
   const eventOrganizations = eventOrgsRes.data ?? [];
+  const prepItems = (prepRes.data ?? []) as EventPrepItem[];
+  const shoppingItems = (shoppingRes.data ?? []) as EventShoppingItem[];
+  const packItems = (packRes.data ?? []) as EventPackItem[];
+  const timelineItems = (timelineRes.data ?? []) as EventTimelineItem[];
   const spendingTotal = receipts.reduce((s: number, r: any) => s + (Number(r.total_amount) || 0), 0);
   const pricing = e.pricing_data as PricingData | null;
 
@@ -407,6 +422,16 @@ export default async function EventDetailPage({ params }: Props) {
                 <EventInviteManager eventId={e.id} />
               </FeatureGate>
             </div>
+          ),
+
+          production: (
+            <ProductionTab
+              eventId={e.id}
+              prepItems={prepItems}
+              shoppingItems={shoppingItems}
+              packItems={packItems}
+              timelineItems={timelineItems}
+            />
           ),
 
           activity: (

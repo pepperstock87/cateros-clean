@@ -34,6 +34,7 @@ export type Event = {
   client_phone: string | null;
   notes: string | null;
   status: "draft" | "proposed" | "confirmed" | "completed" | "canceled";
+  client_id: string | null;
   organization_id?: string | null;
   pricing_data: PricingData | null;
   payment_data: PaymentData | null;
@@ -441,3 +442,103 @@ export type FeatureFlag = {
   is_active: boolean;
   created_at: string;
 };
+
+export interface Client {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  tags: string[];
+  dietary_notes: string | null;
+  communication_preferences: string | null;
+  notes: string | null;
+  status: 'lead' | 'active' | 'past' | 'archived';
+  organization_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Production System ───
+
+export interface MenuItemRecipe {
+  id: string;
+  menu_item_id: string;
+  recipe_id: string;
+  quantity_per_serving: number;
+  unit: string;
+  yield_override: number | null;
+  station: string | null;
+  notes: string | null;
+}
+
+export type PrepStation =
+  | 'garde_manger'
+  | 'hot_line'
+  | 'pastry'
+  | 'butchery'
+  | 'prep_kitchen'
+  | 'beverage'
+  | 'packing';
+
+export interface EventPrepItem {
+  id: string;
+  event_id: string;
+  menu_item_name: string;
+  recipe_id: string | null;
+  recipe_name: string | null;
+  component_name: string;
+  required_quantity: number;
+  unit: string;
+  station: PrepStation | string | null;
+  prep_notes: string | null;
+  is_manual: boolean;
+  group_order: number;
+}
+
+export interface EventShoppingItem {
+  id: string;
+  event_id: string;
+  ingredient_name: string;
+  quantity: number;
+  unit: string;
+  vendor: string | null;
+  purchased: boolean;
+  notes: string | null;
+}
+
+export interface EventPackItem {
+  id: string;
+  event_id: string;
+  item_name: string;
+  quantity: number;
+  category: string;
+  packed: boolean;
+  notes: string | null;
+}
+
+export interface EventTimelineItem {
+  id: string;
+  event_id: string;
+  phase: 'two_days_out' | 'one_day_out' | 'day_of' | 'load_out';
+  task: string;
+  sort_order: number;
+  completed: boolean;
+  assigned_to: string | null;
+  notes: string | null;
+}
+
+export interface EventProductionSheet {
+  id: string;
+  event_id: string;
+  version: number;
+  generated_at: string;
+  notes: string | null;
+}
