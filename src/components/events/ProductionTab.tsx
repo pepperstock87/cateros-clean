@@ -20,6 +20,8 @@ import {
   Check,
   Download,
   Printer,
+  Bookmark,
+  LayoutTemplate,
 } from "lucide-react";
 import {
   generateProduction,
@@ -44,6 +46,8 @@ import type {
   EventPackItem,
   EventTimelineItem,
 } from "@/types";
+import { SaveTemplateModal } from "./SaveTemplateModal";
+import { LoadTemplateModal } from "./LoadTemplateModal";
 
 // ─── Station Colors ───
 const STATION_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -614,6 +618,8 @@ function PackListSection({ eventId, event, items }: { eventId: string; event: Ev
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ item_name: "", quantity: "1", category: "" });
   const [adding, setAdding] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [showLoadTemplate, setShowLoadTemplate] = useState(false);
   const router = useRouter();
 
   const grouped = useMemo(() => {
@@ -679,14 +685,55 @@ function PackListSection({ eventId, event, items }: { eventId: string; event: Ev
         </div>
         <div className="flex items-center gap-2">
           {items.length > 0 && (
-            <ExportButtons onExport={handleExportPack} onPrint={handlePrintPack} />
+            <>
+              <ExportButtons onExport={handleExportPack} onPrint={handlePrintPack} />
+              <button
+                onClick={() => setShowSaveTemplate(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                Save as Template
+              </button>
+            </>
           )}
+          <button
+            onClick={() => setShowLoadTemplate(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1A2538] text-[#D4A373] hover:bg-[#223050] border border-[#2A3A5C] transition-colors"
+          >
+            <LayoutTemplate className="w-3.5 h-3.5" />
+            Load Template
+          </button>
           <button onClick={() => setShowForm(!showForm)} className="btn-secondary text-xs flex items-center gap-1.5">
             <Plus className="w-3.5 h-3.5" />
             Add Item
           </button>
         </div>
       </div>
+
+      {/* Template modals */}
+      {showSaveTemplate && (
+        <SaveTemplateModal
+          category="pack_list"
+          templateData={{
+            packItems: items.map((i) => ({
+              item_name: i.item_name,
+              quantity: i.quantity,
+              category: i.category,
+              notes: i.notes,
+            })),
+          }}
+          defaultName={`${event.name} Pack List`}
+          onClose={() => setShowSaveTemplate(false)}
+        />
+      )}
+      {showLoadTemplate && (
+        <LoadTemplateModal
+          category="pack_list"
+          eventId={eventId}
+          onClose={() => setShowLoadTemplate(false)}
+          onApplied={() => router.refresh()}
+        />
+      )}
 
       {/* Inline add form */}
       {showForm && (

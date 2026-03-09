@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -15,6 +15,8 @@ const SIDEBAR_COLLAPSED_KEY = "cateros-sidebar-collapsed";
 
 const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: boolean }[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/reports", icon: BarChart3, label: "Reports" },
+  { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/events", icon: CalendarDays, label: "Events" },
   { href: "/templates", icon: LayoutTemplate, label: "Templates" },
   { href: "/clients", icon: Contact, label: "Clients" },
@@ -252,7 +254,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Bottom Actions */}
         <div className={cn("py-3 border-t border-[#2A3A5C] space-y-0.5", collapsed ? "px-2" : "px-3")}>
-          {!collapsed && <NotificationBell />}
+          <NotificationBell collapsed={collapsed} />
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}

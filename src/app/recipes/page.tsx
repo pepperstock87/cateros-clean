@@ -6,6 +6,7 @@ import { Plus, BookOpen, BarChart3 } from "lucide-react";
 import { getCurrentOrg } from "@/lib/organizations";
 import type { Recipe } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
+import { RecipeImportButton } from "./RecipeImportButton";
 
 export default async function RecipesPage() {
   const supabase = await createClient();
@@ -31,6 +32,7 @@ export default async function RecipesPage() {
           <Link href="/recipes/analytics" className="btn-secondary flex items-center gap-2 text-sm">
             <BarChart3 className="w-4 h-4" />Analytics
           </Link>
+          <RecipeImportButton />
           <Link href="/recipes/new" className="btn-primary flex items-center gap-2">
             <Plus className="w-4 h-4" />New recipe
           </Link>

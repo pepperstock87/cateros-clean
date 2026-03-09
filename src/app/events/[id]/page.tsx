@@ -6,6 +6,8 @@ import { InlineEventEditor } from "@/components/events/InlineEventEditor";
 import { CalendarExport } from "@/components/events/CalendarExport";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { DuplicateEventButton } from "@/components/events/DuplicateEventButton";
+import { CloneEventButton } from "@/components/events/CloneEventModal";
+import { RecurringEventButton } from "@/components/events/RecurringEventModal";
 import { SaveAsTemplateButton } from "@/components/events/SaveAsTemplateButton";
 import { PricingEngine } from "@/components/events/PricingEngine";
 import { EventStatusSelect } from "@/components/events/EventStatusSelect";
@@ -207,6 +209,8 @@ export default async function EventDetailPage({ params }: Props) {
           <CalendarExport event={{ id: e.id, name: e.name, event_date: e.event_date, start_time: e.start_time, end_time: e.end_time, venue: e.venue, client_name: e.client_name, notes: e.notes }} />
           <PrintButton />
           <DuplicateEventButton eventId={e.id} />
+          <CloneEventButton eventId={e.id} eventName={e.name} clientName={e.client_name} />
+          <RecurringEventButton eventId={e.id} eventName={e.name} />
           {e.pricing_data && <SaveAsTemplateButton eventId={e.id} />}
           <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />
           <DeleteEventButton eventId={e.id} eventName={e.name} />

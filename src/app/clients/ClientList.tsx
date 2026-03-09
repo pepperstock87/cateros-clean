@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { downloadCSV } from "@/lib/csv";
 import { createClientAction } from "@/lib/actions/clients";
+import { importClients } from "@/lib/actions/import";
+import { CSVImport } from "@/components/ui/CSVImport";
 import type { ClientWithStats } from "./page";
 
 const clientStatusColors: Record<string, string> = {
@@ -156,6 +158,19 @@ export function ClientList({ clients }: { clients: ClientWithStats[] }) {
           <Download className="w-3.5 h-3.5" />
           CSV
         </button>
+        <CSVImport
+          entityType="clients"
+          expectedColumns={["first_name", "last_name", "company_name", "email", "phone", "status"]}
+          sampleRow={{
+            first_name: "Jane",
+            last_name: "Doe",
+            company_name: "Acme Corp",
+            email: "jane@acme.com",
+            phone: "(555) 123-4567",
+            status: "lead",
+          }}
+          onImport={importClients}
+        />
         <button
           onClick={() => setShowNewModal(true)}
           className="btn-primary text-sm flex items-center gap-2 whitespace-nowrap"

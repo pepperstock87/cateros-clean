@@ -271,6 +271,135 @@ export async function saveAsTemplateAction(eventId: string, templateName: string
   return { success: true };
 }
 
+export async function cloneEventAction(eventId: string, overrides?: {
+  name?: string;
+  event_date?: string;
+  client_name?: string;
+  client_id?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
+
+  let fetchQuery = supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("user_id", user.id);
+  if (org?.orgId) fetchQuery = fetchQuery.eq("organization_id", org.orgId);
+  const { data: original } = await fetchQuery.single();
+
+  if (!original) return { error: "Event not found" };
+
+  const { data: newEvent, error } = await supabase
+    .from("events")
+    .insert({
+      user_id: user.id,
+      organization_id: org?.orgId || null,
+      name: overrides?.name || `Copy of ${original.name}`,
+      client_name: overrides?.client_name || original.client_name,
+      client_email: original.client_email,
+      client_phone: original.client_phone,
+      client_id: overrides?.client_id ?? original.client_id,
+      event_date: overrides?.event_date || original.event_date,
+      start_time: original.start_time,
+      end_time: original.end_time,
+      guest_count: original.guest_count,
+      venue: original.venue,
+      notes: original.notes,
+      status: "draft",
+      pricing_data: original.pricing_data,
+      payment_data: null,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+
+  await logActivity(newEvent.id, user.id, "event_created", `Cloned from "${original.name}"`, {
+    source_event_id: eventId,
+  });
+
+  revalidatePath("/events");
+  return { success: true, eventId: newEvent.id };
+}
+
+export async function createRecurringEvents(sourceEventId: string, config: {
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  count: number;
+  startDate: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
+
+  let fetchQuery = supabase
+    .from("events")
+    .select("*")
+    .eq("id", sourceEventId)
+    .eq("user_id", user.id);
+  if (org?.orgId) fetchQuery = fetchQuery.eq("organization_id", org.orgId);
+  const { data: original } = await fetchQuery.single();
+
+  if (!original) return { error: "Event not found" };
+
+  const dates: string[] = [];
+  const start = new Date(config.startDate + "T00:00:00");
+
+  for (let i = 0; i < config.count; i++) {
+    const d = new Date(start);
+    if (config.frequency === "weekly") {
+      d.setDate(start.getDate() + i * 7);
+    } else if (config.frequency === "biweekly") {
+      d.setDate(start.getDate() + i * 14);
+    } else {
+      d.setMonth(start.getMonth() + i);
+    }
+    dates.push(d.toISOString().split("T")[0]);
+  }
+
+  const newEventIds: string[] = [];
+
+  for (const date of dates) {
+    const { data: newEvent, error } = await supabase
+      .from("events")
+      .insert({
+        user_id: user.id,
+        organization_id: org?.orgId || null,
+        name: `${original.name} — ${date}`,
+        client_name: original.client_name,
+        client_email: original.client_email,
+        client_phone: original.client_phone,
+        client_id: original.client_id,
+        event_date: date,
+        start_time: original.start_time,
+        end_time: original.end_time,
+        guest_count: original.guest_count,
+        venue: original.venue,
+        notes: original.notes,
+        status: "draft",
+        pricing_data: original.pricing_data,
+        payment_data: null,
+      })
+      .select()
+      .single();
+
+    if (error) return { error: error.message, createdSoFar: newEventIds };
+
+    await logActivity(newEvent.id, user.id, "event_created", `Recurring event from "${original.name}"`, {
+      source_event_id: sourceEventId,
+      frequency: config.frequency,
+    });
+
+    newEventIds.push(newEvent.id);
+  }
+
+  revalidatePath("/events");
+  return { success: true, eventIds: newEventIds };
+}
+
 export async function deleteTemplateAction(templateId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

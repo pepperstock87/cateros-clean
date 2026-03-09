@@ -1,19 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell } from "lucide-react";
+import { Bell, FileText, CreditCard, Eye, CheckCircle, XCircle, BookOpen, RotateCcw } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string | null;
-  link_url: string | null;
-  read: boolean;
-  created_at: string;
-}
+import type { Notification } from "@/types";
 
 function timeAgo(dateStr: string): string {
   const now = new Date();
@@ -30,7 +22,27 @@ function timeAgo(dateStr: string): string {
   return date.toLocaleDateString();
 }
 
-export function NotificationBell() {
+function notificationIcon(type: string) {
+  switch (type) {
+    case "proposal_viewed":
+      return <Eye className="w-3.5 h-3.5 text-blue-400" />;
+    case "proposal_approved":
+    case "proposal_accepted":
+    case "proposal_signed":
+    case "proposal_booked":
+      return <CheckCircle className="w-3.5 h-3.5 text-green-400" />;
+    case "proposal_declined":
+      return <XCircle className="w-3.5 h-3.5 text-red-400" />;
+    case "revision_requested":
+      return <RotateCcw className="w-3.5 h-3.5 text-yellow-400" />;
+    case "payment_received":
+      return <CreditCard className="w-3.5 h-3.5 text-emerald-400" />;
+    default:
+      return <FileText className="w-3.5 h-3.5 text-[#7A8BA8]" />;
+  }
+}
+
+export function NotificationBell({ collapsed = false }: { collapsed?: boolean }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -42,18 +54,16 @@ export function NotificationBell() {
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(10);
 
     if (data) {
       setNotifications(data);
-      setUnreadCount(data.filter((n) => !n.read).length);
+      setUnreadCount(data.filter((n: Notification) => !n.read).length);
     }
   };
 
   useEffect(() => {
     fetchNotifications();
-
-    // Poll every 30 seconds for new notifications
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -106,9 +116,13 @@ export function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all w-full"
+        title={collapsed ? "Notifications" : undefined}
+        className={cn(
+          "flex items-center rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-all",
+          collapsed ? "justify-center px-0 py-2.5 w-full" : "gap-2.5 px-3 py-2.5 w-full"
+        )}
       >
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full px-1">
@@ -116,11 +130,14 @@ export function NotificationBell() {
             </span>
           )}
         </div>
-        Notifications
+        {!collapsed && "Notifications"}
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-80 bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className={cn(
+          "absolute bottom-full mb-2 w-80 bg-[#182030] border border-[#2A3A5C] rounded-xl shadow-2xl z-50 overflow-hidden",
+          collapsed ? "left-full ml-2 bottom-0 mb-0" : "left-0"
+        )}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A3A5C]">
             <h3 className="text-sm font-semibold text-[#F4F1ED]">Notifications</h3>
@@ -152,27 +169,48 @@ export function NotificationBell() {
                       : "border-l-brand-400 bg-[#1e1a15]"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <p
-                      className={cn(
-                        "text-sm leading-tight",
-                        n.read ? "text-[#D4A373]" : "text-[#F4F1ED] font-medium"
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5 flex-shrink-0">
+                      {notificationIcon(n.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p
+                          className={cn(
+                            "text-sm leading-tight",
+                            n.read ? "text-[#7A8BA8]" : "text-[#F4F1ED] font-medium"
+                          )}
+                        >
+                          {n.title}
+                        </p>
+                        <span className="text-[#5A6A88] text-[11px] whitespace-nowrap flex-shrink-0">
+                          {timeAgo(n.created_at)}
+                        </span>
+                      </div>
+                      {n.message && (
+                        <p className={cn(
+                          "text-xs mt-1 line-clamp-2",
+                          n.read ? "text-[#5A6A88]" : "text-[#7A8BA8]"
+                        )}>
+                          {n.message}
+                        </p>
                       )}
-                    >
-                      {n.title}
-                    </p>
-                    <span className="text-[#7A8BA8] text-xs whitespace-nowrap flex-shrink-0">
-                      {timeAgo(n.created_at)}
-                    </span>
+                    </div>
                   </div>
-                  {n.message && (
-                    <p className="text-xs text-[#7A8BA8] mt-1 line-clamp-2">
-                      {n.message}
-                    </p>
-                  )}
                 </button>
               ))
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-[#2A3A5C] px-4 py-2.5">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium"
+            >
+              View all notifications
+            </Link>
           </div>
         </div>
       )}

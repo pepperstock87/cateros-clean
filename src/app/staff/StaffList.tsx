@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { createStaffAction, deleteStaffAction } from "@/lib/actions/staff";
+import { importStaff } from "@/lib/actions/import";
 import { formatCurrency } from "@/lib/utils";
 import type { StaffMember } from "@/types";
 import { Plus, Trash2, Phone, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { CSVImport } from "@/components/ui/CSVImport";
 
 function formatPay(s: StaffMember) {
   const payType = s.pay_type ?? "hourly";
@@ -175,9 +177,24 @@ export function StaffList({ initialStaff }: { initialStaff: StaffMember[] }) {
           </div>
         </form>
       ) : (
-        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />Add Staff Member
-        </button>
+        <div className="flex items-center gap-3">
+          <CSVImport
+            entityType="staff"
+            expectedColumns={["name", "role", "email", "phone", "hourly_rate", "pay_type"]}
+            sampleRow={{
+              name: "John Smith",
+              role: "Server",
+              email: "john@email.com",
+              phone: "(555) 123-4567",
+              hourly_rate: "25",
+              pay_type: "hourly",
+            }}
+            onImport={importStaff}
+          />
+          <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />Add Staff Member
+          </button>
+        </div>
       )}
     </div>
   );

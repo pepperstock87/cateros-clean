@@ -542,3 +542,33 @@ export interface EventProductionSheet {
   generated_at: string;
   notes: string | null;
 }
+
+// ─── Template Library ───
+
+export type TemplateCategory = 'menu' | 'pricing' | 'pack_list' | 'timeline' | 'full_event';
+
+export interface EventTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  category: TemplateCategory;
+  template_data: Record<string, any>;
+  tags: string[];
+  organization_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Notifications ───
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  link_url: string | null;
+  read: boolean;
+  created_at: string;
+}
