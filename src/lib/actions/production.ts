@@ -367,3 +367,332 @@ export async function unlinkMenuItemRecipe(id: string) {
   await supabase.from("menu_item_recipes").delete().eq("id", id);
   revalidatePath("/events");
 }
+
+// ═══════════════════════════════════════════════════════════════
+// Prep Breakdown — aggregated ingredient + dish + kitchen views
+// ═══════════════════════════════════════════════════════════════
+
+export type IngredientBreakdownItem = {
+  ingredientName: string;
+  totalQuantity: number;
+  unit: string;
+  dishes: { dishName: string; quantity: number }[];
+  inventoryStatus: "in_stock" | "low" | "not_in_stock" | "unknown";
+  inventoryAvailable: number;
+  needsOrdering: boolean;
+};
+
+export type DishBreakdownItem = {
+  dishName: string;
+  category: string;
+  quantityNeeded: number;
+  scaleFactor: number;
+  recipeServings: number;
+  guestCount: number;
+  ingredients: { name: string; quantity: number; unit: string }[];
+  prepNotes: string | null;
+  station: string | null;
+  recipeId: string | null;
+};
+
+export type KitchenTask = {
+  id: string;
+  taskName: string;
+  station: string;
+  dishName: string;
+  batchQuantity: number;
+  unit: string;
+  ingredients: { name: string; quantity: number; unit: string }[];
+  prepNotes: string | null;
+  completed: boolean;
+  sortOrder: number;
+};
+
+export type PrepBreakdownData = {
+  byIngredient: IngredientBreakdownItem[];
+  byDish: DishBreakdownItem[];
+  kitchenTasks: KitchenTask[];
+  eventName: string;
+  eventDate: string;
+  guestCount: number;
+  clientName: string;
+  venue: string | null;
+};
+
+/**
+ * Get a full prep breakdown for an event — aggregated by ingredient,
+ * by dish, and as kitchen production tasks.
+ */
+export async function getEventPrepBreakdown(eventId: string): Promise<PrepBreakdownData> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Fetch event
+  const { data: event } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!event) throw new Error("Event not found");
+
+  const pricingData = event.pricing_data as any;
+  const guestCount = pricingData?.guestCount || event.guest_count || 100;
+  const menuItems = (pricingData?.menuItems ?? []) as Array<{
+    id: string; name: string; quantity: number; costPerPerson: number; category?: string;
+  }>;
+
+  // Get org
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_organization_id")
+    .eq("id", user.id)
+    .single();
+  const orgId = profile?.current_organization_id;
+
+  // Fetch recipe mappings
+  let mappingQuery = supabase
+    .from("menu_item_recipes")
+    .select("*, recipe:recipes(*)")
+    .eq("user_id", user.id);
+  if (orgId) mappingQuery = mappingQuery.or(`organization_id.eq.${orgId},organization_id.is.null`);
+  const { data: mappings } = await mappingQuery;
+
+  // Fetch all recipes for fallback
+  let recipesQuery = supabase.from("recipes").select("*").eq("user_id", user.id);
+  if (orgId) recipesQuery = recipesQuery.or(`organization_id.eq.${orgId},organization_id.is.null`);
+  const { data: allRecipes } = await recipesQuery;
+
+  // Fetch existing prep items
+  const { data: prepItems } = await supabase
+    .from("event_prep_items")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("group_order");
+
+  // Fetch shopping items
+  const { data: shoppingItems } = await supabase
+    .from("event_shopping_items")
+    .select("*")
+    .eq("event_id", eventId);
+
+  // Fetch inventory
+  let invQuery = supabase.from("inventory").select("*").eq("user_id", user.id);
+  if (orgId) invQuery = invQuery.eq("organization_id", orgId);
+  const { data: inventory } = await invQuery;
+
+  // Build ingredient map: ingredientKey -> { totalQty, unit, dishes[] }
+  const ingredientMap = new Map<string, {
+    name: string; totalQuantity: number; unit: string;
+    dishes: { dishName: string; quantity: number }[];
+  }>();
+
+  // Build dish breakdown
+  const byDish: DishBreakdownItem[] = [];
+  let taskOrder = 0;
+  const kitchenTasks: KitchenTask[] = [];
+
+  for (const menuItem of menuItems) {
+    const servingsNeeded = menuItem.quantity || guestCount;
+
+    // Find recipe for this menu item
+    const itemMappings = (mappings || []).filter(
+      (m: any) => m.menu_item_name.toLowerCase() === menuItem.name.toLowerCase()
+    );
+
+    let matchedRecipes: { recipe: any; scaleFactor: number; qtyPerServing: number; station: string | null; notes: string | null }[] = [];
+
+    if (itemMappings.length > 0) {
+      for (const mapping of itemMappings) {
+        const recipe = mapping.recipe as any;
+        if (!recipe) continue;
+        const recipeServings = recipe.servings || 1;
+        const scaleFactor = servingsNeeded / recipeServings;
+        const qtyPerServing = mapping.quantity_per_serving || 1;
+        matchedRecipes.push({
+          recipe,
+          scaleFactor,
+          qtyPerServing,
+          station: mapping.station || recipe.station || null,
+          notes: mapping.notes || null,
+        });
+      }
+    } else {
+      const fallback = (allRecipes || []).find(
+        (r: any) => r.name.toLowerCase() === menuItem.name.toLowerCase()
+      );
+      if (fallback) {
+        const recipeServings = fallback.servings || 1;
+        const scaleFactor = servingsNeeded / recipeServings;
+        matchedRecipes.push({
+          recipe: fallback,
+          scaleFactor,
+          qtyPerServing: 1,
+          station: fallback.station || null,
+          notes: null,
+        });
+      }
+    }
+
+    if (matchedRecipes.length > 0) {
+      for (const { recipe, scaleFactor, qtyPerServing, station, notes } of matchedRecipes) {
+        const ingredients = (recipe.ingredients || []) as Array<{ name: string; quantity: number; unit: string }>;
+        const scaledIngredients = ingredients.map((ing) => ({
+          name: ing.name,
+          quantity: Math.ceil((ing.quantity || 0) * scaleFactor * 100) / 100,
+          unit: ing.unit || "each",
+        }));
+
+        byDish.push({
+          dishName: menuItem.name,
+          category: menuItem.category || "Other",
+          quantityNeeded: servingsNeeded,
+          scaleFactor,
+          recipeServings: recipe.servings || 1,
+          guestCount,
+          ingredients: scaledIngredients,
+          prepNotes: notes || recipe.description || null,
+          station,
+          recipeId: recipe.id,
+        });
+
+        // Aggregate into ingredient map
+        for (const ing of scaledIngredients) {
+          const key = `${ing.name.toLowerCase()}|${ing.unit.toLowerCase()}`;
+          const existing = ingredientMap.get(key);
+          if (existing) {
+            existing.totalQuantity += ing.quantity;
+            if (!existing.dishes.find((d) => d.dishName === menuItem.name)) {
+              existing.dishes.push({ dishName: menuItem.name, quantity: ing.quantity });
+            } else {
+              const d = existing.dishes.find((d) => d.dishName === menuItem.name)!;
+              d.quantity += ing.quantity;
+            }
+          } else {
+            ingredientMap.set(key, {
+              name: ing.name,
+              totalQuantity: ing.quantity,
+              unit: ing.unit,
+              dishes: [{ dishName: menuItem.name, quantity: ing.quantity }],
+            });
+          }
+        }
+
+        // Kitchen task
+        kitchenTasks.push({
+          id: `task-${taskOrder}`,
+          taskName: recipe.name || menuItem.name,
+          station: station || "prep_kitchen",
+          dishName: menuItem.name,
+          batchQuantity: Math.ceil(scaleFactor * qtyPerServing * 100) / 100,
+          unit: "batch",
+          ingredients: scaledIngredients,
+          prepNotes: notes || recipe.description || null,
+          completed: false,
+          sortOrder: taskOrder++,
+        });
+      }
+    } else {
+      // No recipe found
+      byDish.push({
+        dishName: menuItem.name,
+        category: menuItem.category || "Other",
+        quantityNeeded: servingsNeeded,
+        scaleFactor: 1,
+        recipeServings: servingsNeeded,
+        guestCount,
+        ingredients: [],
+        prepNotes: "No recipe linked — add recipe or manual prep notes",
+        station: null,
+        recipeId: null,
+      });
+
+      kitchenTasks.push({
+        id: `task-${taskOrder}`,
+        taskName: menuItem.name,
+        station: "prep_kitchen",
+        dishName: menuItem.name,
+        batchQuantity: servingsNeeded,
+        unit: "portions",
+        ingredients: [],
+        prepNotes: "No recipe linked",
+        completed: false,
+        sortOrder: taskOrder++,
+      });
+    }
+  }
+
+  // Also pull in any existing manual prep items that aren't from menu items
+  if (prepItems) {
+    for (const pi of prepItems as any[]) {
+      if (pi.is_manual) {
+        const existingDish = byDish.find((d) => d.dishName === pi.menu_item_name);
+        if (!existingDish) {
+          kitchenTasks.push({
+            id: pi.id,
+            taskName: pi.component_name,
+            station: pi.station || "prep_kitchen",
+            dishName: pi.menu_item_name,
+            batchQuantity: pi.required_quantity,
+            unit: pi.unit,
+            ingredients: [],
+            prepNotes: pi.prep_notes,
+            completed: false,
+            sortOrder: taskOrder++,
+          });
+        }
+      }
+    }
+  }
+
+  // Build ingredient breakdown with inventory status
+  const byIngredient: IngredientBreakdownItem[] = Array.from(ingredientMap.values()).map((ing) => {
+    const invItem = (inventory ?? []).find(
+      (inv: any) => inv.ingredient_name.toLowerCase() === ing.name.toLowerCase()
+    );
+    const available = invItem ? (invItem.quantity_on_hand as number) : 0;
+    let status: "in_stock" | "low" | "not_in_stock" | "unknown" = "unknown";
+    if (inventory) {
+      if (!invItem || available === 0) {
+        status = "not_in_stock";
+      } else if (available < ing.totalQuantity) {
+        status = "low";
+      } else {
+        status = "in_stock";
+      }
+    }
+    return {
+      ingredientName: ing.name,
+      totalQuantity: Math.ceil(ing.totalQuantity * 100) / 100,
+      unit: ing.unit,
+      dishes: ing.dishes,
+      inventoryStatus: status,
+      inventoryAvailable: available,
+      needsOrdering: status === "not_in_stock" || status === "low",
+    };
+  }).sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
+
+  // Sort kitchen tasks by station
+  const stationOrder: Record<string, number> = {
+    butchery: 0, garde_manger: 1, prep_kitchen: 2, hot_line: 3, pastry: 4, beverage: 5, packing: 6,
+  };
+  kitchenTasks.sort((a, b) => {
+    const aOrd = stationOrder[a.station] ?? 99;
+    const bOrd = stationOrder[b.station] ?? 99;
+    if (aOrd !== bOrd) return aOrd - bOrd;
+    return a.sortOrder - b.sortOrder;
+  });
+
+  return {
+    byIngredient,
+    byDish,
+    kitchenTasks,
+    eventName: event.name,
+    eventDate: event.event_date,
+    guestCount,
+    clientName: event.client_name,
+    venue: event.venue,
+  };
+}

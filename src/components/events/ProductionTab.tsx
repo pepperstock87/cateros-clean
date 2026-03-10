@@ -23,6 +23,7 @@ import {
   Bookmark,
   LayoutTemplate,
   Boxes,
+  UtensilsCrossed,
 } from "lucide-react";
 import {
   generateProduction,
@@ -53,6 +54,7 @@ import type {
 } from "@/types";
 import { SaveTemplateModal } from "./SaveTemplateModal";
 import { LoadTemplateModal } from "./LoadTemplateModal";
+import { PrepBreakdownSection } from "./PrepBreakdownSection";
 
 // ─── Station Colors ───
 const STATION_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -83,13 +85,14 @@ const PHASES = [
   { key: "load_out", label: "Load Out" },
 ] as const;
 
-type SubTab = "beo" | "prep_by_item" | "consolidated" | "by_station" | "shopping" | "pack_list" | "timeline";
+type SubTab = "beo" | "prep_by_item" | "consolidated" | "by_station" | "prep_breakdown" | "shopping" | "pack_list" | "timeline";
 
 const SUB_TABS: { key: SubTab; label: string; icon: React.ReactNode }[] = [
   { key: "beo", label: "BEO", icon: <ClipboardList className="w-3.5 h-3.5" /> },
   { key: "prep_by_item", label: "Prep by Item", icon: <ChefHat className="w-3.5 h-3.5" /> },
   { key: "consolidated", label: "Consolidated", icon: <Layers className="w-3.5 h-3.5" /> },
   { key: "by_station", label: "By Station", icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+  { key: "prep_breakdown", label: "Prep Breakdown", icon: <UtensilsCrossed className="w-3.5 h-3.5" /> },
   { key: "shopping", label: "Shopping", icon: <ShoppingCart className="w-3.5 h-3.5" /> },
   { key: "pack_list", label: "Pack List", icon: <Package className="w-3.5 h-3.5" /> },
   { key: "timeline", label: "Timeline", icon: <Clock className="w-3.5 h-3.5" /> },
@@ -208,6 +211,7 @@ export function ProductionTab({ eventId, event, prepItems, shoppingItems, packIt
             {activeSubTab === "prep_by_item" && <PrepByItemSection event={event} prepItems={prepItems} />}
             {activeSubTab === "consolidated" && <ConsolidatedSection event={event} prepItems={prepItems} />}
             {activeSubTab === "by_station" && <ByStationSection event={event} prepItems={prepItems} />}
+            {activeSubTab === "prep_breakdown" && <PrepBreakdownSection eventId={eventId} event={event} />}
             {activeSubTab === "shopping" && <ShoppingSection eventId={eventId} event={event} items={shoppingItems} />}
             {activeSubTab === "pack_list" && <PackListSection eventId={eventId} event={event} items={packItems} />}
             {activeSubTab === "timeline" && <TimelineSection eventId={eventId} items={timelineItems} />}
