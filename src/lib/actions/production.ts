@@ -696,3 +696,254 @@ export async function getEventPrepBreakdown(eventId: string): Promise<PrepBreakd
     venue: event.venue,
   };
 }
+
+// ═══════════════════════════════════════════════════════════════
+// Consolidated Cross-Event Prep Breakdown
+// ═══════════════════════════════════════════════════════════════
+
+export type ConsolidatedIngredient = {
+  ingredientName: string;
+  totalQuantity: number;
+  unit: string;
+  inventoryAvailable: number;
+  shortfall: number;
+  status: "sufficient" | "partial" | "need_to_order";
+  category: string;
+  events: { eventId: string; eventName: string; eventDate: string; quantity: number }[];
+};
+
+export type ConsolidatedEventSummary = {
+  eventId: string;
+  eventName: string;
+  eventDate: string;
+  clientName: string;
+  guestCount: number;
+  venue: string | null;
+  menuItemCount: number;
+  status: string;
+};
+
+export type ConsolidatedPrepData = {
+  ingredients: ConsolidatedIngredient[];
+  events: ConsolidatedEventSummary[];
+  totalIngredients: number;
+  totalNeedOrdering: number;
+  totalEvents: number;
+};
+
+/**
+ * Get a consolidated prep breakdown across all events in a date range.
+ * Aggregates ingredients, checks inventory, and returns shortfall data.
+ */
+export async function getConsolidatedPrepBreakdown(data: {
+  startDate: string;
+  endDate: string;
+}): Promise<ConsolidatedPrepData> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Get org
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_organization_id")
+    .eq("id", user.id)
+    .single();
+  const orgId = profile?.current_organization_id;
+
+  // Fetch all events in date range
+  let eventsQuery = supabase
+    .from("events")
+    .select("*")
+    .eq("user_id", user.id)
+    .gte("event_date", data.startDate)
+    .lte("event_date", data.endDate)
+    .in("status", ["draft", "proposed", "confirmed"])
+    .order("event_date");
+  if (orgId) eventsQuery = eventsQuery.eq("organization_id", orgId);
+  const { data: events } = await eventsQuery;
+
+  if (!events || events.length === 0) {
+    return { ingredients: [], events: [], totalIngredients: 0, totalNeedOrdering: 0, totalEvents: 0 };
+  }
+
+  // Fetch recipe mappings
+  let mappingQuery = supabase
+    .from("menu_item_recipes")
+    .select("*, recipe:recipes(*)")
+    .eq("user_id", user.id);
+  if (orgId) mappingQuery = mappingQuery.or(`organization_id.eq.${orgId},organization_id.is.null`);
+  const { data: mappings } = await mappingQuery;
+
+  // Fetch all recipes for fallback
+  let recipesQuery = supabase.from("recipes").select("*").eq("user_id", user.id);
+  if (orgId) recipesQuery = recipesQuery.or(`organization_id.eq.${orgId},organization_id.is.null`);
+  const { data: allRecipes } = await recipesQuery;
+
+  // Fetch inventory
+  let invQuery = supabase.from("inventory").select("*").eq("user_id", user.id);
+  if (orgId) invQuery = invQuery.eq("organization_id", orgId);
+  const { data: inventory } = await invQuery;
+
+  // Aggregate ingredients across all events
+  // key: "ingredientName|unit" -> { totalQuantity, events[] }
+  const ingredientMap = new Map<string, {
+    name: string;
+    totalQuantity: number;
+    unit: string;
+    events: { eventId: string; eventName: string; eventDate: string; quantity: number }[];
+  }>();
+
+  const eventSummaries: ConsolidatedEventSummary[] = [];
+
+  for (const event of events) {
+    const pricingData = event.pricing_data as any;
+    const guestCount = pricingData?.guestCount || event.guest_count || 100;
+    const menuItems = (pricingData?.menuItems ?? []) as Array<{
+      id: string; name: string; quantity: number; costPerPerson: number; category?: string;
+    }>;
+
+    eventSummaries.push({
+      eventId: event.id,
+      eventName: event.name,
+      eventDate: event.event_date,
+      clientName: event.client_name,
+      guestCount,
+      venue: event.venue,
+      menuItemCount: menuItems.length,
+      status: event.status,
+    });
+
+    for (const menuItem of menuItems) {
+      const servingsNeeded = menuItem.quantity || guestCount;
+
+      // Find recipe mappings
+      const itemMappings = (mappings || []).filter(
+        (m: any) => m.menu_item_name.toLowerCase() === menuItem.name.toLowerCase()
+      );
+
+      let matchedRecipes: { recipe: any; scaleFactor: number }[] = [];
+
+      if (itemMappings.length > 0) {
+        for (const mapping of itemMappings) {
+          const recipe = mapping.recipe as any;
+          if (!recipe) continue;
+          const recipeServings = recipe.servings || 1;
+          const scaleFactor = servingsNeeded / recipeServings;
+          matchedRecipes.push({ recipe, scaleFactor });
+        }
+      } else {
+        const fallback = (allRecipes || []).find(
+          (r: any) => r.name.toLowerCase() === menuItem.name.toLowerCase()
+        );
+        if (fallback) {
+          const recipeServings = fallback.servings || 1;
+          const scaleFactor = servingsNeeded / recipeServings;
+          matchedRecipes.push({ recipe: fallback, scaleFactor });
+        }
+      }
+
+      for (const { recipe, scaleFactor } of matchedRecipes) {
+        const ingredients = (recipe.ingredients || []) as Array<{ name: string; quantity: number; unit: string }>;
+        for (const ing of ingredients) {
+          const scaledQty = Math.ceil((ing.quantity || 0) * scaleFactor * 100) / 100;
+          const key = `${ing.name.toLowerCase()}|${(ing.unit || "each").toLowerCase()}`;
+          const existing = ingredientMap.get(key);
+          if (existing) {
+            existing.totalQuantity += scaledQty;
+            const eventEntry = existing.events.find((e) => e.eventId === event.id);
+            if (eventEntry) {
+              eventEntry.quantity += scaledQty;
+            } else {
+              existing.events.push({
+                eventId: event.id,
+                eventName: event.name,
+                eventDate: event.event_date,
+                quantity: scaledQty,
+              });
+            }
+          } else {
+            ingredientMap.set(key, {
+              name: ing.name,
+              totalQuantity: scaledQty,
+              unit: ing.unit || "each",
+              events: [{
+                eventId: event.id,
+                eventName: event.name,
+                eventDate: event.event_date,
+                quantity: scaledQty,
+              }],
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // Build final ingredient list with inventory checks
+  const CATEGORY_MAP: Record<string, string> = {
+    chicken: "Proteins", beef: "Proteins", pork: "Proteins", fish: "Proteins", salmon: "Proteins",
+    shrimp: "Proteins", lamb: "Proteins", turkey: "Proteins", bacon: "Proteins", sausage: "Proteins",
+    milk: "Dairy", cream: "Dairy", butter: "Dairy", cheese: "Dairy", yogurt: "Dairy", egg: "Dairy",
+    lettuce: "Produce", tomato: "Produce", onion: "Produce", garlic: "Produce", potato: "Produce",
+    carrot: "Produce", pepper: "Produce", mushroom: "Produce", spinach: "Produce", celery: "Produce",
+    lemon: "Produce", lime: "Produce", avocado: "Produce", cucumber: "Produce", zucchini: "Produce",
+    broccoli: "Produce", shallot: "Produce", ginger: "Produce", scallion: "Produce", herb: "Produce",
+    basil: "Herbs", thyme: "Herbs", rosemary: "Herbs", parsley: "Herbs", cilantro: "Herbs",
+    oregano: "Herbs", dill: "Herbs", chive: "Herbs", mint: "Herbs", sage: "Herbs",
+    salt: "Spices", cumin: "Spices", paprika: "Spices", cinnamon: "Spices", turmeric: "Spices",
+    flour: "Dry Goods", sugar: "Dry Goods", rice: "Dry Goods", pasta: "Dry Goods", bread: "Dry Goods",
+    oil: "Oils & Vinegars", vinegar: "Oils & Vinegars", olive: "Oils & Vinegars",
+  };
+
+  function categorizeIngredient(name: string): string {
+    const lower = name.toLowerCase();
+    for (const [keyword, cat] of Object.entries(CATEGORY_MAP)) {
+      if (lower.includes(keyword)) return cat;
+    }
+    // Check inventory for category
+    const invItem = (inventory ?? []).find(
+      (inv: any) => inv.ingredient_name.toLowerCase() === lower
+    );
+    if (invItem?.category) return invItem.category;
+    return "Miscellaneous";
+  }
+
+  let totalNeedOrdering = 0;
+  const ingredients: ConsolidatedIngredient[] = Array.from(ingredientMap.values()).map((ing) => {
+    const invItem = (inventory ?? []).find(
+      (inv: any) => inv.ingredient_name.toLowerCase() === ing.name.toLowerCase()
+    );
+    const available = invItem ? (invItem.quantity_on_hand as number) : 0;
+    const totalNeeded = Math.ceil(ing.totalQuantity * 100) / 100;
+    const shortfall = Math.max(0, Math.ceil((totalNeeded - available) * 100) / 100);
+
+    let status: "sufficient" | "partial" | "need_to_order" = "sufficient";
+    if (available === 0 || available < totalNeeded * 0.25) {
+      status = "need_to_order";
+      totalNeedOrdering++;
+    } else if (available < totalNeeded) {
+      status = "partial";
+      totalNeedOrdering++;
+    }
+
+    return {
+      ingredientName: ing.name,
+      totalQuantity: totalNeeded,
+      unit: ing.unit,
+      inventoryAvailable: available,
+      shortfall,
+      status,
+      category: categorizeIngredient(ing.name),
+      events: ing.events.map((e) => ({ ...e, quantity: Math.ceil(e.quantity * 100) / 100 })),
+    };
+  }).sort((a, b) => a.ingredientName.localeCompare(b.ingredientName));
+
+  return {
+    ingredients,
+    events: eventSummaries,
+    totalIngredients: ingredients.length,
+    totalNeedOrdering,
+    totalEvents: events.length,
+  };
+}

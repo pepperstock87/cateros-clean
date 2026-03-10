@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
-import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell, Shield, Wallet } from "lucide-react";
+import { ChefHat, LayoutDashboard, CalendarDays, BookOpen, FileText, CreditCard, LogOut, Settings, Calendar, Menu, X, Palette, Sparkles, Receipt, Users, Package, ShoppingCart, Contact, LayoutTemplate, BarChart3, MapPin, Store, ChevronsLeft, ChevronsRight, Bell, Shield, Wallet, UtensilsCrossed } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
@@ -25,6 +25,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
   { href: "/recipes/analytics", icon: BarChart3, label: "Recipe Analytics", sub: true },
   { href: "/inventory", icon: Package, label: "Inventory" },
+  { href: "/prep", icon: UtensilsCrossed, label: "Prep" },
   { href: "/staff", icon: Users, label: "Staff" },
   { href: "/rentals", icon: Package, label: "Rentals" },
   { href: "/venues", icon: MapPin, label: "Venues" },
