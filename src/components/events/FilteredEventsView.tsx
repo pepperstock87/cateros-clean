@@ -4,11 +4,12 @@ import { useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { EventFilters, type EventFilterState } from "./EventFilters";
 import { EventsTable } from "./EventsTable";
-import type { Event } from "@/types";
+import type { Event, DepositStatus } from "@/types";
 
 type Props = {
   events: Event[];
   companyName?: string;
+  depositStatusMap?: Record<string, DepositStatus>;
 };
 
 function getQuarterRange(date: Date): { start: Date; end: Date } {
@@ -50,7 +51,7 @@ function filterByDateRange(events: Event[], dateRange: string): Event[] {
   }
 }
 
-export function FilteredEventsView({ events, companyName }: Props) {
+export function FilteredEventsView({ events, companyName, depositStatusMap }: Props) {
   const searchParams = useSearchParams();
   const clientParam = searchParams.get("client") ?? "";
 
@@ -102,7 +103,7 @@ export function FilteredEventsView({ events, companyName }: Props) {
           <p className="text-[#7A8BA8] text-sm">No events match your filters.</p>
         </div>
       ) : (
-        <EventsTable events={filteredEvents} />
+        <EventsTable events={filteredEvents} depositStatusMap={depositStatusMap} />
       )}
     </div>
   );

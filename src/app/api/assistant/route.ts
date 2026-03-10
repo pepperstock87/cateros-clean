@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (!anthropicKey) {
       return new Response(
-        JSON.stringify({ error: "Anthropic API key not configured" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({ error: "AI features require configuration. Please set up your ANTHROPIC_API_KEY.", code: "AI_NOT_CONFIGURED" }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
       );
     }
 

@@ -36,7 +36,8 @@ import { ProductionTab } from "@/components/events/ProductionTab";
 import { getCurrentOrg } from "@/lib/organizations";
 import { getOrgEntitlements } from "@/lib/orgEntitlements";
 import { FeatureGate, FeatureGateInline } from "@/components/ui/FeatureGate";
-import type { Event, PricingData, PaymentData, EventPrepItem, EventShoppingItem, EventPackItem, EventTimelineItem } from "@/types";
+import { getDepositStatus } from "@/lib/utils";
+import type { Event, PricingData, PaymentData, PaymentScheduleItem, EventPrepItem, EventShoppingItem, EventPackItem, EventTimelineItem } from "@/types";
 
 type ActivityItem = {
   id: string;
@@ -82,7 +83,11 @@ export default async function EventDetailPage({ params }: Props) {
   const packQuery = supabase.from("event_pack_items").select("*").eq("event_id", id).order("category");
   const timelineQuery = supabase.from("event_timeline_items").select("*").eq("event_id", id).order("sort_order");
 
-  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes, eventOrgsRes, prepRes, shoppingRes, packRes, timelineRes] = await Promise.all([
+  // Payment schedule query for deposit status
+  let scheduleQuery = supabase.from("payment_schedules").select("id, installment_name, status, due_date, sort_order").eq("event_id", id).order("sort_order", { ascending: true });
+  if (org?.orgId) scheduleQuery = scheduleQuery.eq("organization_id", org.orgId);
+
+  const [proposalsRes, receiptsRes, invoicesRes, assignmentsRes, staffRes, eventOrgsRes, prepRes, shoppingRes, packRes, timelineRes, scheduleRes] = await Promise.all([
     proposalsQuery.order("created_at", { ascending: false }),
     receiptsQuery.order("receipt_date", { ascending: false }),
     invoicesQuery,
@@ -93,6 +98,7 @@ export default async function EventDetailPage({ params }: Props) {
     shoppingQuery,
     packQuery,
     timelineQuery,
+    scheduleQuery,
   ]);
 
   const proposals = proposalsRes.data ?? [];
@@ -105,6 +111,7 @@ export default async function EventDetailPage({ params }: Props) {
   const shoppingItems = (shoppingRes.data ?? []) as EventShoppingItem[];
   const packItems = (packRes.data ?? []) as EventPackItem[];
   const timelineItems = (timelineRes.data ?? []) as EventTimelineItem[];
+  const scheduleItems = (scheduleRes.data ?? []) as Pick<PaymentScheduleItem, "id" | "installment_name" | "status" | "due_date" | "sort_order">[];
   const spendingTotal = receipts.reduce((s: number, r: any) => s + (Number(r.total_amount) || 0), 0);
   const pricing = e.pricing_data as PricingData | null;
 
@@ -156,10 +163,7 @@ export default async function EventDetailPage({ params }: Props) {
   // Checklist & alert props
   const hasProposal = proposals.length > 0;
   const hasStaff = assignments.length > 0;
-  const depositPaid = (() => {
-    if (!paymentData || !paymentData.depositRequired) return true; // no deposit required counts as paid
-    return (paymentData.totalPaid ?? 0) >= paymentData.depositRequired;
-  })();
+  const depositStatus = getDepositStatus(scheduleItems);
   const daysUntilEvent = Math.ceil(
     (new Date(e.event_date).getTime() - Date.now()) / 86400000
   );
@@ -181,7 +185,7 @@ export default async function EventDetailPage({ params }: Props) {
                 hasStaff={hasStaff}
                 hasPricing={!!pricing}
                 hasProposal={hasProposal}
-                depositPaid={depositPaid}
+                depositStatus={depositStatus}
               />
             </div>
           </div>
@@ -222,7 +226,7 @@ export default async function EventDetailPage({ params }: Props) {
       </div>
 
       {/* Event Alerts */}
-      <EventAlerts event={e} daysUntilEvent={daysUntilEvent} hasStaff={hasStaff} depositPaid={depositPaid} />
+      <EventAlerts event={e} daysUntilEvent={daysUntilEvent} hasStaff={hasStaff} depositStatus={depositStatus} />
 
       {/* Tabbed Content */}
       <EventDetailTabs>
@@ -353,7 +357,7 @@ export default async function EventDetailPage({ params }: Props) {
               )}
 
               {/* Readiness Checklist */}
-              <EventChecklist event={e} hasProposal={hasProposal} hasStaff={hasStaff} depositPaid={depositPaid} />
+              <EventChecklist event={e} hasProposal={hasProposal} hasStaff={hasStaff} depositStatus={depositStatus} />
             </div>
           ),
 

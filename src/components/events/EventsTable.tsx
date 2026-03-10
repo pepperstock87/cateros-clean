@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
-import type { Event, PricingData, PaymentData } from "@/types";
+import type { Event, PricingData, PaymentData, DepositStatus } from "@/types";
 
 const STATUS_CLASSES: Record<string, string> = {
   draft: "badge-draft",
@@ -37,7 +37,7 @@ function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payme
   );
 }
 
-export function EventsTable({ events }: { events: Event[] }) {
+export function EventsTable({ events, depositStatusMap }: { events: Event[]; depositStatusMap?: Record<string, DepositStatus> }) {
   return (
     <>
       {/* Mobile card view */}
@@ -114,17 +114,14 @@ export function EventsTable({ events }: { events: Event[] }) {
                       <td className="px-5 py-3.5">
                         {(() => {
                           const daysUntil = Math.ceil((new Date(event.event_date).getTime() - Date.now()) / 86400000);
-                          const depositPaid = (() => {
-                            if (!pay || !pay.depositRequired) return true;
-                            return (pay.totalPaid ?? 0) >= pay.depositRequired;
-                          })();
+                          const depositStatus: DepositStatus = depositStatusMap?.[event.id] ?? "none";
                           return (
                             <EventReadinessFlags
                               daysUntil={daysUntil}
                               hasStaff={false}
                               hasPricing={!!p}
                               hasProposal={false}
-                              depositPaid={depositPaid}
+                              depositStatus={depositStatus}
                             />
                           );
                         })()}

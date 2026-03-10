@@ -70,10 +70,15 @@ export default function NewRecipePage() {
               <label className="block text-sm font-medium mb-1.5">Category</label>
               <select name="category" required className="input">
                 <option value="">Select...</option>
-                <option value="Entrees">Entrees</option>
                 <option value="Appetizers">Appetizers</option>
+                <option value="Entrees">Entrees</option>
                 <option value="Sides">Sides</option>
+                <option value="Salads">Salads</option>
+                <option value="Soups">Soups</option>
                 <option value="Desserts">Desserts</option>
+                <option value="Breads">Breads</option>
+                <option value="Sauces & Dressings">Sauces & Dressings</option>
+                <option value="Beverages">Beverages</option>
                 <option value="Other">Other</option>
               </select>
             </div>

@@ -148,7 +148,10 @@ export default function RecipeEditPage({ params }: { params: Promise<{ id: strin
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-[#D4A373] mb-1">Category</label>
-            <input type="text" value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Entrée, Appetizer" className="input w-full" />
+            <select value={category} onChange={e => setCategory(e.target.value)} className="input w-full">
+              <option value="">Select...</option>
+              {["Appetizers", "Entrees", "Sides", "Salads", "Soups", "Desserts", "Breads", "Sauces & Dressings", "Beverages", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div>
             <label className="block text-xs text-[#D4A373] mb-1">Servings *</label>

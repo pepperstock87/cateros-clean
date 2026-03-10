@@ -6,7 +6,8 @@ import { FilteredEventsView } from "@/components/events/FilteredEventsView";
 import { EventsExport } from "@/components/events/EventsExport";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { getCurrentOrg } from "@/lib/organizations";
-import type { Event } from "@/types";
+import { getDepositStatus } from "@/lib/utils";
+import type { Event, DepositStatus, PaymentScheduleItem } from "@/types";
 
 export default async function EventsListPage() {
   const supabase = await createClient();
@@ -16,6 +17,7 @@ export default async function EventsListPage() {
 
   let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id);
   if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
+
   const [eventsRes, profileRes] = await Promise.all([
     eventsQuery.order("event_date", { ascending: false }),
     supabase.from("profiles").select("company_name").eq("id", user.id).single(),
@@ -23,6 +25,27 @@ export default async function EventsListPage() {
   const events: Event[] = eventsRes.data ?? [];
   const companyName = profileRes.data?.company_name ?? "My Company";
   const { isPro } = await getUserEntitlements();
+
+  // Fetch payment schedules for deposit status (filtered by event IDs)
+  const eventIds = events.map((e) => e.id);
+  let allSchedules: Pick<PaymentScheduleItem, "event_id" | "installment_name" | "status" | "due_date" | "sort_order">[] = [];
+  if (eventIds.length > 0) {
+    let schedulesQuery = supabase
+      .from("payment_schedules")
+      .select("event_id, installment_name, status, due_date, sort_order")
+      .in("event_id", eventIds)
+      .order("sort_order", { ascending: true });
+    if (org?.orgId) schedulesQuery = schedulesQuery.eq("organization_id", org.orgId);
+    const { data: schedulesData } = await schedulesQuery;
+    allSchedules = (schedulesData ?? []) as typeof allSchedules;
+  }
+
+  // Build deposit status map per event
+  const depositStatusMap: Record<string, DepositStatus> = {};
+  for (const event of events) {
+    const eventSchedules = allSchedules.filter((s) => s.event_id === event.id);
+    depositStatusMap[event.id] = getDepositStatus(eventSchedules);
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -45,7 +68,7 @@ export default async function EventsListPage() {
           <Link href="/events/new" className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" />Create first event</Link>
         </div>
       ) : (
-        <FilteredEventsView events={events} companyName={companyName} />
+        <FilteredEventsView events={events} companyName={companyName} depositStatusMap={depositStatusMap} />
       )}
     </div>
   );

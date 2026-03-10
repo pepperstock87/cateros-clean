@@ -179,7 +179,11 @@ export function ChatPanel({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorData = await response.json().catch(() => null);
+        if (errorData?.code === "AI_NOT_CONFIGURED") {
+          throw new Error("AI_NOT_CONFIGURED");
+        }
+        throw new Error(errorData?.error || "Failed to get response");
       }
 
       const reader = response.body?.getReader();
@@ -223,12 +227,15 @@ export function ChatPanel({
           }
         }
       }
-    } catch {
+    } catch (err: any) {
+      const isNotConfigured = err?.message === "AI_NOT_CONFIGURED";
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           role: "assistant",
-          content: "Sorry, I encountered an error. Please try again.",
+          content: isNotConfigured
+            ? "AI features require configuration. Please ask your administrator to set up the ANTHROPIC_API_KEY environment variable."
+            : "Sorry, I encountered an error. Please try again.",
         };
         return updated;
       });

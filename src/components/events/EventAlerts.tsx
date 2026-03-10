@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AlertTriangle, Info, X } from "lucide-react";
 import Link from "next/link";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, DepositStatus } from "@/types";
 
 type Alert = {
   id: string;
@@ -17,10 +17,10 @@ type Props = {
   event: Event;
   daysUntilEvent: number;
   hasStaff: boolean;
-  depositPaid: boolean;
+  depositStatus: DepositStatus;
 };
 
-export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Props) {
+export function EventAlerts({ event, daysUntilEvent, hasStaff, depositStatus }: Props) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const pricing = event.pricing_data as PricingData | null;
@@ -39,7 +39,7 @@ export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Pr
       id: "no-pricing-urgent",
       severity: "red",
       message: `No pricing set \u2014 event in ${daysUntilEvent} day${daysUntilEvent !== 1 ? "s" : ""}`,
-      link: `/events/${event.id}?tab=pricing`,
+      link: `/events/${event.id}#pricing`,
       linkLabel: "Set pricing",
     });
   }
@@ -49,17 +49,25 @@ export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Pr
       id: "no-staff",
       severity: "amber",
       message: `Staff not assigned \u2014 event in ${daysUntilEvent} day${daysUntilEvent !== 1 ? "s" : ""}`,
-      link: `/events/${event.id}?tab=staff`,
+      link: `/events/${event.id}#staff`,
       linkLabel: "Assign staff",
     });
   }
 
-  if (daysUntilEvent <= 14 && daysUntilEvent >= 0 && !depositPaid) {
+  if (daysUntilEvent <= 14 && daysUntilEvent >= 0 && depositStatus === "overdue") {
     alerts.push({
-      id: "no-deposit",
-      severity: "amber",
-      message: `Deposit unpaid \u2014 event in ${daysUntilEvent} day${daysUntilEvent !== 1 ? "s" : ""}`,
-      link: `/events/${event.id}?tab=payments`,
+      id: "deposit-overdue",
+      severity: "red",
+      message: `Deposit overdue \u2014 event in ${daysUntilEvent} day${daysUntilEvent !== 1 ? "s" : ""}`,
+      link: `/events/${event.id}#payments`,
+      linkLabel: "Track payment",
+    });
+  } else if (daysUntilEvent <= 14 && daysUntilEvent >= 0 && (depositStatus === "pending" || depositStatus === "failed")) {
+    alerts.push({
+      id: "deposit-pending",
+      severity: depositStatus === "failed" ? "red" : "amber",
+      message: `Deposit ${depositStatus === "failed" ? "failed" : "unpaid"} \u2014 event in ${daysUntilEvent} day${daysUntilEvent !== 1 ? "s" : ""}`,
+      link: `/events/${event.id}#payments`,
       linkLabel: "Track payment",
     });
   }
@@ -69,7 +77,7 @@ export function EventAlerts({ event, daysUntilEvent, hasStaff, depositPaid }: Pr
       id: "low-margin",
       severity: "amber",
       message: `Low margin warning: ${pricing.projectedMargin.toFixed(1)}%`,
-      link: `/events/${event.id}?tab=pricing`,
+      link: `/events/${event.id}#pricing`,
       linkLabel: "Adjust pricing",
     });
   }

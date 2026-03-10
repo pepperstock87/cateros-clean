@@ -297,6 +297,9 @@ export type OrgContext = {
   role: OrgMemberRole;
 };
 
+// Deposit status for readiness flags
+export type DepositStatus = 'none' | 'pending' | 'overdue' | 'paid' | 'failed';
+
 // Payment Schedule types
 export type PaymentScheduleStatus = 'pending' | 'due' | 'paid' | 'failed' | 'waived' | 'refunded';
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle, Shield } from "lucide-react";
-import type { Event, PricingData } from "@/types";
+import type { Event, PricingData, DepositStatus } from "@/types";
 
 type ChecklistItem = {
   label: string;
@@ -13,10 +13,18 @@ type Props = {
   event: Event;
   hasProposal: boolean;
   hasStaff: boolean;
-  depositPaid: boolean;
+  depositStatus: DepositStatus;
 };
 
-export function EventChecklist({ event, hasProposal, hasStaff, depositPaid }: Props) {
+const DEPOSIT_CHECKLIST: Record<DepositStatus, { complete: boolean; status: string }> = {
+  none: { complete: true, status: "No deposit required" },
+  pending: { complete: false, status: "Awaiting deposit" },
+  overdue: { complete: false, status: "Deposit overdue" },
+  paid: { complete: true, status: "Deposit collected" },
+  failed: { complete: false, status: "Deposit payment failed" },
+};
+
+export function EventChecklist({ event, hasProposal, hasStaff, depositStatus }: Props) {
   const pricing = event.pricing_data as PricingData | null;
 
   const items: ChecklistItem[] = [
@@ -53,8 +61,8 @@ export function EventChecklist({ event, hasProposal, hasStaff, depositPaid }: Pr
     },
     {
       label: "Deposit received",
-      complete: depositPaid,
-      status: depositPaid ? "Deposit collected" : "Awaiting deposit",
+      complete: DEPOSIT_CHECKLIST[depositStatus].complete,
+      status: DEPOSIT_CHECKLIST[depositStatus].status,
     },
   ];
 

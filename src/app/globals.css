@@ -29,17 +29,20 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #F8F6F3;
+  --brand-gold: #C4935A;
+  --bg-primary: #FAF8F5;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-hover: #F0EDE8;
-  --border: #E2DDD5;
-  --border-hover: #D4CFC7;
-  --text-primary: #1A1A1A;
-  --text-secondary: #C4935F;
-  --text-muted: #6B6B6B;
-  --scrollbar-track: #F8F6F3;
-  --scrollbar-thumb: #D4CFC7;
+  --bg-hover: #F0EBE4;
+  --border: #E8E0D4;
+  --border-hover: #D9D0C3;
+  --text-primary: #2D2A26;
+  --text-secondary: #C4935A;
+  --text-muted: #6B6560;
+  --text-faint: #9C9590;
+  --scrollbar-track: #FAF8F5;
+  --scrollbar-thumb: #D9D0C3;
+  --sidebar-bg: #F0EBE4;
 }
 
 * { box-sizing: border-box; }
@@ -97,6 +100,13 @@ body {
     color: var(--text-primary);
     @apply placeholder-[#7A8BA8] rounded-lg px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none transition-colors;
   }
+  .input-field {
+    width: 100%;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    @apply placeholder-[#7A8BA8] rounded-lg px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none transition-colors;
+  }
   .label {
     display: block;
     color: var(--text-secondary);
@@ -143,6 +153,35 @@ body {
 [data-theme="light"] .badge-canceled { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
 [data-theme="light"] .btn-danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); color: #dc2626; }
 [data-theme="light"] .btn-danger:hover { background: rgba(239, 68, 68, 0.18); }
+
+/* Light mode: card shadows for depth */
+[data-theme="light"] .card {
+  box-shadow: 0 1px 3px rgba(45, 42, 38, 0.06), 0 1px 2px rgba(45, 42, 38, 0.04);
+}
+
+/* Light mode: sidebar gets a slightly warmer tone */
+[data-theme="light"] aside {
+  background-color: var(--sidebar-bg) !important;
+}
+
+/* Light mode: input/select text contrast */
+[data-theme="light"] .input,
+[data-theme="light"] .input-field,
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  color: #2D2A26;
+}
+[data-theme="light"] .input::placeholder,
+[data-theme="light"] .input-field::placeholder,
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #9C9590;
+}
+[data-theme="light"] select option {
+  background: #FFFFFF;
+  color: #2D2A26;
+}
 
 @media print {
   body { background: white !important; color: black !important; }

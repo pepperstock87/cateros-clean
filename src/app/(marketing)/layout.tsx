@@ -68,8 +68,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D4A373] mb-3">Legal</h4>
               <ul className="space-y-2">
-                <li><span className="text-sm text-[#7A8BA8]">Privacy Policy</span></li>
-                <li><span className="text-sm text-[#7A8BA8]">Terms of Service</span></li>
+                <li><Link href="/privacy" className="text-sm text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-sm text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>

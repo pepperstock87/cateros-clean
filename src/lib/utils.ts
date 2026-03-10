@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { DepositStatus, PaymentScheduleItem } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,7 +48,37 @@ export function canCreateEvents(profile: any): boolean {
   if (hasActiveSubscription(profile) && (profile?.plan_tier === "basic" || profile?.plan_tier === "pro")) {
     return true;
   }
-  
+
   // Free users are limited (this is checked elsewhere)
   return false;
+}
+
+/**
+ * Determine the deposit status for an event based on its payment schedule items.
+ *
+ * Looks for any installment whose name contains "deposit" (case-insensitive).
+ * If none exists, the status is "none" (no deposit due).
+ * Otherwise the status is derived from the schedule item's status and due_date.
+ */
+export function getDepositStatus(scheduleItems: Pick<PaymentScheduleItem, "installment_name" | "status" | "due_date">[]): DepositStatus {
+  // Find deposit installment(s) — use the first match sorted by sort_order (caller should pre-sort)
+  const depositItem = scheduleItems.find(
+    (item) => item.installment_name.toLowerCase().includes("deposit")
+  );
+
+  if (!depositItem) return "none";
+
+  if (depositItem.status === "paid" || depositItem.status === "waived") return "paid";
+  if (depositItem.status === "failed") return "failed";
+
+  // Status is 'pending' or 'due' — check if overdue
+  if (depositItem.due_date) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(depositItem.due_date);
+    dueDate.setHours(0, 0, 0, 0);
+    if (dueDate < today) return "overdue";
+  }
+
+  return "pending";
 }

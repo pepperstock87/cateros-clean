@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Package,
@@ -28,14 +28,30 @@ import {
 import { formatCurrency } from "@/lib/utils";
 
 const CATEGORIES = [
-  "Produce",
-  "Protein",
+  "Proteins",
   "Dairy",
+  "Produce",
+  "Herbs",
   "Dry Goods",
   "Spices",
+  "Oils & Vinegars",
+  "Bakery",
   "Beverages",
-  "Supplies",
-  "General",
+  "Paper Goods",
+  "Cleaning & Sanitation",
+  "Smallwares",
+  "Miscellaneous",
+];
+
+const LOCATIONS = [
+  "Walk-in Cooler",
+  "Walk-in Freezer",
+  "Dry Storage",
+  "Prep Kitchen",
+  "Bar",
+  "Front of House",
+  "Off-site Storage",
+  "Other",
 ];
 
 type SimpleEvent = { id: string; name: string; event_date: string; status: string };
@@ -52,7 +68,7 @@ const emptyForm = {
   par_level: null as number | null,
   vendor: null as string | null,
   cost_per_unit: null as number | null,
-  category: "General",
+  category: "Miscellaneous",
   location: null as string | null,
 };
 
@@ -175,6 +191,28 @@ export function InventoryClient({ items, events }: Props) {
     });
   }
 
+  // Press-and-hold acceleration for +/- buttons
+  const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startHold = useCallback((id: string, adj: number) => {
+    stopHold();
+    let count = 0;
+    const tick = () => {
+      handleAdjust(id, adj);
+      count += 1;
+      const nextDelay = count < 3 ? 300 : count < 8 ? 150 : 50;
+      holdRef.current = setTimeout(tick, nextDelay);
+    };
+    holdRef.current = setTimeout(tick, 400);
+  }, []);
+
+  const stopHold = useCallback(() => {
+    if (holdRef.current) {
+      clearTimeout(holdRef.current);
+      holdRef.current = null;
+    }
+  }, []);
+
   async function handleDeduct() {
     if (!selectedEventId) return;
     setDeducting(true);
@@ -195,7 +233,7 @@ export function InventoryClient({ items, events }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Ingredient Inventory</h1>
-          <p className="text-sm text-[#D4A373] mt-1">
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
             {totalItems} items tracked · Manage stock levels, par levels, and costs
           </p>
         </div>
@@ -226,8 +264,8 @@ export function InventoryClient({ items, events }: Props) {
               <Boxes className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-xs text-[#7A8BA8] uppercase tracking-wider">Total Items</p>
-              <p className="text-xl font-semibold text-[#F4F1ED]">{totalItems}</p>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Total Items</p>
+              <p className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{totalItems}</p>
             </div>
           </div>
         </div>
@@ -237,7 +275,7 @@ export function InventoryClient({ items, events }: Props) {
               <AlertTriangle className={`w-5 h-5 ${lowStockItems > 0 ? "text-amber-400" : "text-emerald-400"}`} />
             </div>
             <div>
-              <p className="text-xs text-[#7A8BA8] uppercase tracking-wider">Low Stock</p>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Low Stock</p>
               <p className={`text-xl font-semibold ${lowStockItems > 0 ? "text-amber-400" : "text-emerald-400"}`}>
                 {lowStockItems}
               </p>
@@ -250,8 +288,8 @@ export function InventoryClient({ items, events }: Props) {
               <DollarSign className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-xs text-[#7A8BA8] uppercase tracking-wider">Total Value</p>
-              <p className="text-xl font-semibold text-[#F4F1ED]">{formatCurrency(totalValue)}</p>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Total Value</p>
+              <p className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(totalValue)}</p>
             </div>
           </div>
         </div>
@@ -260,7 +298,7 @@ export function InventoryClient({ items, events }: Props) {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8BA8]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <input
             type="text"
             value={search}
@@ -280,14 +318,14 @@ export function InventoryClient({ items, events }: Props) {
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8BA8] pointer-events-none" />
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
         </div>
         <button
           onClick={() => setLowStockOnly(!lowStockOnly)}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
             lowStockOnly
               ? "bg-amber-900/40 text-amber-300 border-amber-700"
-              : "bg-[#1A2538] text-[#D4A373] border-[#2A3A5C] hover:bg-[#223050]"
+              : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)]"
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
@@ -298,11 +336,11 @@ export function InventoryClient({ items, events }: Props) {
       {/* Inventory Table */}
       {filtered.length === 0 ? (
         <div className="card p-16 text-center">
-          <Package className="w-10 h-10 text-[#7A8BA8] mx-auto mb-4" />
+          <Package className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-4" />
           <h2 className="font-medium text-lg mb-2">
             {items.length === 0 ? "No inventory items yet" : "No items match your filters"}
           </h2>
-          <p className="text-sm text-[#D4A373] mb-6">
+          <p className="text-sm text-[var(--text-secondary)] mb-6">
             {items.length === 0
               ? "Add ingredients to track stock levels, par levels, and costs."
               : "Try adjusting your search or filters."}
@@ -319,7 +357,7 @@ export function InventoryClient({ items, events }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wider text-[#7A8BA8] border-b border-[#2A3A5C]">
+                <tr className="text-left text-[10px] uppercase tracking-wider border-b" style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
                   <th className="px-4 py-3 font-medium">Ingredient</th>
                   <th className="px-4 py-3 font-medium">On Hand</th>
                   <th className="px-4 py-3 font-medium">Unit</th>
@@ -332,7 +370,7 @@ export function InventoryClient({ items, events }: Props) {
                   <th className="px-4 py-3 font-medium w-32">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A3A5C]">
+              <tbody className="divide-y divide-[var(--border)]">
                 {filtered.map((item) => {
                   const low = isLowStock(item);
                   return (
@@ -341,58 +379,68 @@ export function InventoryClient({ items, events }: Props) {
                       className={`transition-colors ${
                         low
                           ? "bg-amber-950/20 hover:bg-amber-950/30"
-                          : "hover:bg-[#182030]"
+                          : "hover:bg-[var(--bg-hover)]"
                       }`}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {low && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
-                          <span className="text-[#F4F1ED] font-medium">{item.ingredient_name}</span>
+                          <span className="text-[var(--text-primary)] font-medium">{item.ingredient_name}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => handleAdjust(item.id, -1)}
+                            onMouseDown={() => startHold(item.id, -1)}
+                            onMouseUp={stopHold}
+                            onMouseLeave={stopHold}
+                            onTouchStart={() => startHold(item.id, -1)}
+                            onTouchEnd={stopHold}
                             disabled={isPending}
-                            className="w-6 h-6 rounded border border-[#2A3A5C] flex items-center justify-center text-[#7A8BA8] hover:text-[#F4F1ED] hover:border-[#D4A373] transition-colors"
+                            className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors select-none"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className={`min-w-[40px] text-center font-medium ${low ? "text-amber-400" : "text-[#D4A373]"}`}>
+                          <span className={`min-w-[40px] text-center font-medium ${low ? "text-amber-400" : "text-[var(--text-secondary)]"}`}>
                             {item.quantity_on_hand}
                           </span>
                           <button
                             onClick={() => handleAdjust(item.id, 1)}
+                            onMouseDown={() => startHold(item.id, 1)}
+                            onMouseUp={stopHold}
+                            onMouseLeave={stopHold}
+                            onTouchStart={() => startHold(item.id, 1)}
+                            onTouchEnd={stopHold}
                             disabled={isPending}
-                            className="w-6 h-6 rounded border border-[#2A3A5C] flex items-center justify-center text-[#7A8BA8] hover:text-[#F4F1ED] hover:border-[#D4A373] transition-colors"
+                            className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors select-none"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[#7A8BA8]">{item.unit}</td>
-                      <td className="px-4 py-3 text-[#7A8BA8]">
+                      <td className="px-4 py-3 text-[var(--text-muted)]">{item.unit}</td>
+                      <td className="px-4 py-3 text-[var(--text-muted)]">
                         {item.par_level !== null ? item.par_level : "—"}
                       </td>
-                      <td className="px-4 py-3 text-[#7A8BA8]">{item.vendor ?? "—"}</td>
-                      <td className="px-4 py-3 text-[#7A8BA8]">
+                      <td className="px-4 py-3 text-[var(--text-muted)]">{item.vendor ?? "—"}</td>
+                      <td className="px-4 py-3 text-[var(--text-muted)]">
                         {item.cost_per_unit !== null ? formatCurrency(item.cost_per_unit) : "—"}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1A2538] text-[#D4A373] border border-[#2A3A5C]">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)]">
                           {item.category}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[#7A8BA8]">{item.location ?? "—"}</td>
-                      <td className="px-4 py-3 text-[#7A8BA8] text-xs">
+                      <td className="px-4 py-3 text-[var(--text-muted)]">{item.location ?? "—"}</td>
+                      <td className="px-4 py-3 text-[var(--text-muted)] text-xs">
                         {new Date(item.last_updated).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => openEdit(item)}
-                            className="p-1.5 rounded hover:bg-[#223050] text-[#7A8BA8] hover:text-[#F4F1ED] transition-colors"
+                            className="p-1.5 rounded hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                             title="Edit"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -407,7 +455,7 @@ export function InventoryClient({ items, events }: Props) {
                               </button>
                               <button
                                 onClick={() => setDeletingId(null)}
-                                className="text-[10px] px-2 py-0.5 rounded text-[#7A8BA8] hover:text-[#F4F1ED]"
+                                className="text-[10px] px-2 py-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                               >
                                 Cancel
                               </button>
@@ -415,7 +463,7 @@ export function InventoryClient({ items, events }: Props) {
                           ) : (
                             <button
                               onClick={() => setDeletingId(item.id)}
-                              className="p-1.5 rounded hover:bg-red-900/30 text-[#7A8BA8] hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded hover:bg-red-900/30 text-[var(--text-muted)] hover:text-red-400 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -436,7 +484,7 @@ export function InventoryClient({ items, events }: Props) {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="card w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A3A5C]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <h2 className="font-display text-lg font-semibold">
                 {editingItem ? "Edit Item" : "Add Inventory Item"}
               </h2>
@@ -445,14 +493,14 @@ export function InventoryClient({ items, events }: Props) {
                   setShowAddModal(false);
                   setEditingItem(null);
                 }}
-                className="p-1 hover:bg-[#223050] rounded transition-colors"
+                className="p-1 hover:bg-[var(--bg-hover)] rounded transition-colors"
               >
-                <X className="w-5 h-5 text-[#7A8BA8]" />
+                <X className="w-5 h-5 text-[var(--text-muted)]" />
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                   Ingredient Name *
                 </label>
                 <input
@@ -465,7 +513,7 @@ export function InventoryClient({ items, events }: Props) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Quantity on Hand *
                   </label>
                   <input
@@ -481,7 +529,7 @@ export function InventoryClient({ items, events }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Unit *
                   </label>
                   <input
@@ -495,7 +543,7 @@ export function InventoryClient({ items, events }: Props) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Par Level
                   </label>
                   <input
@@ -514,7 +562,7 @@ export function InventoryClient({ items, events }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Cost per Unit
                   </label>
                   <input
@@ -535,7 +583,7 @@ export function InventoryClient({ items, events }: Props) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Category *
                   </label>
                   <div className="relative">
@@ -550,11 +598,11 @@ export function InventoryClient({ items, events }: Props) {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8BA8] pointer-events-none" />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                  <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                     Vendor
                   </label>
                   <input
@@ -568,17 +616,26 @@ export function InventoryClient({ items, events }: Props) {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-[#7A8BA8] block mb-1">
+                <label className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                   Storage Location
                 </label>
-                <input
-                  value={form.location ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, location: e.target.value || null }))
-                  }
-                  className="input-field w-full"
-                  placeholder="e.g. Walk-in cooler, Dry storage"
-                />
+                <div className="relative">
+                  <select
+                    value={form.location ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, location: e.target.value || null }))
+                    }
+                    className="input-field w-full appearance-none cursor-pointer"
+                  >
+                    <option value="">Select location...</option>
+                    {LOCATIONS.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+                </div>
               </div>
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
@@ -605,22 +662,22 @@ export function InventoryClient({ items, events }: Props) {
       {showDeductModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="card w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A3A5C]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <h2 className="font-display text-lg font-semibold">Deduct from Event</h2>
               <button
                 onClick={() => {
                   setShowDeductModal(false);
                   setDeductResult(null);
                 }}
-                className="p-1 hover:bg-[#223050] rounded transition-colors"
+                className="p-1 hover:bg-[var(--bg-hover)] rounded transition-colors"
               >
-                <X className="w-5 h-5 text-[#7A8BA8]" />
+                <X className="w-5 h-5 text-[var(--text-muted)]" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               {!deductResult ? (
                 <>
-                  <p className="text-sm text-[#7A8BA8]">
+                  <p className="text-sm text-[var(--text-muted)]">
                     Select an event to deduct its shopping list quantities from your inventory.
                   </p>
                   <div className="relative">
@@ -636,7 +693,7 @@ export function InventoryClient({ items, events }: Props) {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8BA8] pointer-events-none" />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                   </div>
                   <div className="flex justify-end gap-3">
                     <button
@@ -668,7 +725,7 @@ export function InventoryClient({ items, events }: Props) {
                             key={i}
                             className="flex items-center justify-between px-3 py-2 rounded bg-emerald-900/20 border border-emerald-800/40 text-sm"
                           >
-                            <span className="text-[#F4F1ED]">{d.ingredient_name}</span>
+                            <span className="text-[var(--text-primary)]">{d.ingredient_name}</span>
                             <span className="text-emerald-400">
                               -{d.deducted} {d.unit}
                             </span>
@@ -688,7 +745,7 @@ export function InventoryClient({ items, events }: Props) {
                             key={i}
                             className="flex items-center justify-between px-3 py-2 rounded bg-amber-900/20 border border-amber-800/40 text-sm"
                           >
-                            <span className="text-[#F4F1ED]">{s.ingredient_name}</span>
+                            <span className="text-[var(--text-primary)]">{s.ingredient_name}</span>
                             <span className="text-amber-400">
                               Need {s.needed} {s.unit}
                               {s.available > 0 && ` (had ${s.available})`}
@@ -699,7 +756,7 @@ export function InventoryClient({ items, events }: Props) {
                     </div>
                   )}
                   {deductResult.deducted.length === 0 && deductResult.shortfall.length === 0 && (
-                    <p className="text-sm text-[#7A8BA8] text-center py-4">
+                    <p className="text-sm text-[var(--text-muted)] text-center py-4">
                       No shopping items found for this event. Generate production first.
                     </p>
                   )}
