@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { CreditCard, CheckCircle, Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const BASIC_FEATURES = [
   "Unlimited events",
-  "PDF proposal generation", 
+  "PDF proposal generation",
   "Recipe cost library",
   "Profit dashboard",
 ];
@@ -24,11 +25,40 @@ export default function BillingPage() {
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("*").maybeSingle().then(({ data }) => setProfile(data));
-  }, []);
+
+    async function load() {
+      const { data } = await supabase.from("profiles").select("*").maybeSingle();
+      setProfile(data);
+
+      // If redirected from Stripe checkout, sync subscription status
+      const isSuccess = searchParams.get("success") === "1";
+      const isActive = data?.subscription_status === "active" || data?.subscription_status === "trialing";
+
+      if (isSuccess && !isActive) {
+        setSyncing(true);
+        try {
+          const res = await fetch("/api/stripe/sync", { method: "POST" });
+          const result = await res.json();
+          if (result.synced) {
+            // Reload profile with updated subscription
+            const { data: updated } = await supabase.from("profiles").select("*").maybeSingle();
+            setProfile(updated);
+          }
+        } catch {
+          // Webhook may still arrive — profile will update on next load
+        } finally {
+          setSyncing(false);
+        }
+      }
+    }
+
+    load();
+  }, [searchParams]);
 
   async function handleSubscribe(plan: "basic" | "pro") {
     setLoading(plan);
@@ -84,6 +114,20 @@ export default function BillingPage() {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
+
+      {syncing && (
+        <div className="bg-brand-900/30 border border-brand-800 text-brand-300 p-4 rounded-lg mb-6 flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
+          Activating your subscription...
+        </div>
+      )}
+
+      {searchParams.get("success") === "1" && !syncing && isActive && (
+        <div className="bg-green-900/30 border border-green-800 text-green-400 p-4 rounded-lg mb-6 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          Subscription activated! You now have access to all {currentPlan === "pro" ? "Pro" : "Basic"} features.
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-900/30 border border-red-800 text-red-400 p-4 rounded-lg mb-6">
