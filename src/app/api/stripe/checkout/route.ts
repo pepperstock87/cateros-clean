@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
   const plan = body.plan || "pro";
 
   const rawPriceId = plan === "basic"
-    ? (process.env.STRIPE_PRICE_ID_BASIC || process.env.STRIPE_PRICE_ID_MONTHLY)
-    : (process.env.STRIPE_PRICE_ID_PRO || process.env.STRIPE_PRICE_ID_MONTHLY);
+    ? process.env.STRIPE_PRICE_ID_BASIC
+    : process.env.STRIPE_PRICE_ID_PRO;
 
   const priceId = rawPriceId?.trim();
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
   }
 
-  const host = req.headers.get("host") || "cateros-clean.vercel.app";
+  const host = req.headers.get("host") || "cateros.com";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || req.headers.get("origin") || `https://${host}`;
 
   try {

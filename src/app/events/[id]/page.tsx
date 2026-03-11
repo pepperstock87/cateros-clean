@@ -35,7 +35,7 @@ import { EventInviteManager } from "@/components/events/EventInviteManager";
 import { ProductionTab } from "@/components/events/ProductionTab";
 import { getCurrentOrg } from "@/lib/organizations";
 import { getOrgEntitlements } from "@/lib/orgEntitlements";
-import { FeatureGate, FeatureGateInline } from "@/components/ui/FeatureGate";
+import { FeatureGate } from "@/components/ui/FeatureGate";
 import { getDepositStatus } from "@/lib/utils";
 import type { Event, PricingData, PaymentData, PaymentScheduleItem, EventPrepItem, EventShoppingItem, EventPackItem, EventTimelineItem } from "@/types";
 
