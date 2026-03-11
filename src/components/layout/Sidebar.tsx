@@ -16,6 +16,7 @@ const SIDEBAR_COLLAPSED_KEY = "cateros-sidebar-collapsed";
 
 const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: boolean }[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/cain", icon: Sparkles, label: "C.A.I.N" },
   { href: "/reports", icon: BarChart3, label: "Reports" },
   { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/events", icon: CalendarDays, label: "Events" },
