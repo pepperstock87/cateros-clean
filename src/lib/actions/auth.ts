@@ -16,7 +16,7 @@ const signupSchema = loginSchema.extend({
 
 export type AuthState = { error?: string; success?: string };
 
-export async function loginAction(_prevState: AuthState, formData: FormData): Promise<AuthState> {
+export async function loginAction(formData: FormData): Promise<AuthState> {
   const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
   if (!parsed.success) return { error: parsed.error.errors[0].message };
   const supabase = await createClient();
@@ -25,7 +25,7 @@ export async function loginAction(_prevState: AuthState, formData: FormData): Pr
   redirect("/dashboard");
 }
 
-export async function signupAction(_prevState: AuthState, formData: FormData): Promise<AuthState> {
+export async function signupAction(formData: FormData): Promise<AuthState> {
   const parsed = signupSchema.safeParse({
     email: formData.get("email"), password: formData.get("password"),
     full_name: formData.get("full_name"), company_name: formData.get("company_name"),

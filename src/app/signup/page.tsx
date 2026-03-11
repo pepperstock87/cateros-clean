@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
 import { signupAction } from "@/lib/actions/auth";
 import Link from "next/link";
 import { ChefHat, Loader2 } from "lucide-react";
@@ -8,7 +8,24 @@ import { ChefHat, Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default function SignupPage() {
-  const [state, action, pending] = useActionState(signupAction, { error: "" });
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError("");
+    const formData = new FormData(e.currentTarget);
+    try {
+      const result = await signupAction(formData);
+      if (result?.error) {
+        setError(result.error);
+        setPending(false);
+      }
+    } catch {
+      // redirect() throws — expected
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0C1220] flex items-center justify-center p-6">
@@ -25,7 +42,7 @@ export default function SignupPage() {
         </div>
 
         <div className="card p-6">
-          <form action={action} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Full Name</label>
               <input type="text" name="full_name" required className="input" placeholder="John Doe" />
@@ -46,9 +63,9 @@ export default function SignupPage() {
               <input type="password" name="password" required minLength={6} className="input" placeholder="••••••••" />
             </div>
 
-            {state?.error && (
+            {error && (
               <div className="card p-3 bg-red-900/20 border-red-800/50">
-                <p className="text-sm text-red-300">{state.error}</p>
+                <p className="text-sm text-red-300">{error}</p>
               </div>
             )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
 import { loginAction } from "@/lib/actions/auth";
 import Link from "next/link";
 import { ChefHat, Loader2 } from "lucide-react";
@@ -8,7 +8,25 @@ import { ChefHat, Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
-  const [state, action, pending] = useActionState(loginAction, { error: "" });
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError("");
+    const formData = new FormData(e.currentTarget);
+    try {
+      const result = await loginAction(formData);
+      if (result?.error) {
+        setError(result.error);
+        setPending(false);
+      }
+      // If no error, redirect happens server-side
+    } catch {
+      // redirect() throws — this is expected
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0C1220] flex items-center justify-center p-6">
@@ -25,7 +43,7 @@ export default function LoginPage() {
         </div>
 
         <div className="card p-6">
-          <form action={action} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Email</label>
               <input type="email" name="email" required className="input" placeholder="you@example.com" />
@@ -36,9 +54,9 @@ export default function LoginPage() {
               <input type="password" name="password" required className="input" placeholder="••••••••" />
             </div>
 
-            {state?.error && (
+            {error && (
               <div className="card p-3 bg-red-900/20 border-red-800/50">
-                <p className="text-sm text-red-300">{state.error}</p>
+                <p className="text-sm text-red-300">{error}</p>
               </div>
             )}
 
