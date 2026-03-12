@@ -164,6 +164,92 @@ export interface PayrollPaidPayload {
   paidAt: string;
 }
 
+// Distributor integration events
+export interface DistributorCatalogSyncedPayload {
+  distributorId: string;
+  distributorName: string;
+  orgId: string | null;
+  userId: string;
+  jobId: string;
+  productsUpserted: number;
+  priceChanges: number;
+}
+
+export interface DistributorPricebookUpdatedPayload {
+  distributorId: string;
+  distributorName: string;
+  orgId: string | null;
+  userId: string;
+  priceChanges: Array<{ sku: string; name: string; oldPrice: number; newPrice: number }>;
+}
+
+export interface DistributorOrderSubmittedPayload {
+  distributorId: string;
+  distributorName: string;
+  orgId: string | null;
+  userId: string;
+  orderId: string;
+  orderNumber: string | null;
+  total: number;
+  eventIds: string[];
+}
+
+export interface DistributorOrderStatusChangedPayload {
+  distributorId: string;
+  orgId: string | null;
+  userId: string;
+  orderId: string;
+  fromStatus: string;
+  toStatus: string;
+}
+
+export interface VendorInvoiceReceivedPayload {
+  distributorId: string;
+  distributorName: string;
+  orgId: string | null;
+  userId: string;
+  jobId: string;
+  invoiceCount: number;
+  lineItemCount: number;
+}
+
+export interface VendorInvoiceReconciledPayload {
+  distributorId: string;
+  orgId: string | null;
+  userId: string;
+  invoiceId: string;
+  orderId: string;
+  varianceCount: number;
+  totalVarianceAmount: number;
+}
+
+export interface VendorCreditReceivedPayload {
+  distributorId: string;
+  orgId: string | null;
+  userId: string;
+  creditId: string;
+  amount: number;
+  reason: string | null;
+}
+
+export interface VendorSyncFailedPayload {
+  distributorId: string;
+  distributorName: string;
+  orgId: string | null;
+  userId: string;
+  jobId: string;
+  jobType: string;
+  error: string;
+  attempts: number;
+}
+
+export interface VendorMappingUpdatedPayload {
+  distributorId: string;
+  orgId: string | null;
+  userId: string;
+  mappingsChanged: number;
+}
+
 // ─── Domain Event Map ───
 
 export interface DomainEventMap {
@@ -183,6 +269,15 @@ export interface DomainEventMap {
   "cain.plan.committed": CainPlanCommittedPayload;
   "payroll.exported": PayrollExportedPayload;
   "payroll.paid": PayrollPaidPayload;
+  "distributor.catalog.synced": DistributorCatalogSyncedPayload;
+  "distributor.pricebook.updated": DistributorPricebookUpdatedPayload;
+  "distributor.order.submitted": DistributorOrderSubmittedPayload;
+  "distributor.order.status_changed": DistributorOrderStatusChangedPayload;
+  "vendor.invoice.received": VendorInvoiceReceivedPayload;
+  "vendor.invoice.reconciled": VendorInvoiceReconciledPayload;
+  "vendor.credit.received": VendorCreditReceivedPayload;
+  "vendor.sync.failed": VendorSyncFailedPayload;
+  "vendor.mapping.updated": VendorMappingUpdatedPayload;
 }
 
 export type DomainEventName = keyof DomainEventMap;

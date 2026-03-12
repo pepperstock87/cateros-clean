@@ -5,6 +5,9 @@ import { getConnection as getQBConnection } from "@/lib/quickbooks/auth";
 import { getRecentSyncLogs } from "@/lib/quickbooks/queue";
 import { getConnection as getPayrollConnection } from "@/lib/payroll/auth";
 import { getAllMappings as getPayrollMappings } from "@/lib/payroll/mapping";
+import { getProductOptions } from "@/lib/distributors/mapping";
+import { getSpendingSummary } from "@/lib/distributors/reconciliation";
+import { getRecentSyncJobs } from "@/lib/distributors/sync";
 import type { CainEventPlan } from "../types";
 
 // ---------- Anthropic tool definitions ----------
@@ -157,6 +160,59 @@ export const cainTools = [
     input_schema: {
       type: "object" as const,
       properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "compare_distributor_prices",
+    description:
+      "Compare prices for an ingredient across all connected distributors. Returns each distributor's SKU, price, pack size, and whether it's the preferred vendor. Use when the user asks about pricing, wants to find the cheapest option, or when building purchase orders.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        inventory_item_id: {
+          type: "string",
+          description: "The inventory item ID to compare prices for",
+        },
+        ingredient_name: {
+          type: "string",
+          description: "Ingredient name to search for (alternative to inventory_item_id)",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_distributor_spending",
+    description:
+      "Get spending summary across distributors for a date range. Returns invoice counts, total spend, credits, and net spend per distributor. Use when analyzing vendor costs, budgeting, or comparing distributor value.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        start_date: {
+          type: "string",
+          description: "Start date in YYYY-MM-DD format",
+        },
+        end_date: {
+          type: "string",
+          description: "End date in YYYY-MM-DD format",
+        },
+      },
+      required: ["start_date", "end_date"],
+    },
+  },
+  {
+    name: "get_distributor_sync_status",
+    description:
+      "Check the sync status and recent activity for distributor integrations. Returns connected distributors, recent sync jobs, and any failures. Use when the user asks about their distributor connections or import history.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        distributor_id: {
+          type: "string",
+          description: "Optional — filter to a specific distributor",
+        },
+      },
       required: [],
     },
   },
@@ -513,6 +569,143 @@ async function getPayrollStatus(ctx: ToolContext): Promise<string> {
   );
 }
 
+async function compareDistributorPrices(
+  ctx: ToolContext,
+  input: { inventory_item_id?: string; ingredient_name?: string }
+): Promise<string> {
+  const supabase = await createClient();
+
+  let inventoryItemId = input.inventory_item_id;
+
+  // If searching by name, find the inventory item first
+  if (!inventoryItemId && input.ingredient_name) {
+    let q = supabase
+      .from("inventory")
+      .select("id, ingredient_name")
+      .eq("user_id", ctx.userId)
+      .ilike("ingredient_name", `%${input.ingredient_name}%`)
+      .limit(1);
+    if (ctx.orgId) q = q.eq("organization_id", ctx.orgId);
+
+    const { data } = await q;
+    if (data && data.length > 0) {
+      inventoryItemId = data[0].id;
+    } else {
+      return `No inventory item found matching "${input.ingredient_name}".`;
+    }
+  }
+
+  if (!inventoryItemId) {
+    return "Please provide either inventory_item_id or ingredient_name.";
+  }
+
+  const options = await getProductOptions({
+    orgId: ctx.orgId,
+    inventoryItemId,
+  });
+
+  if (options.length === 0) {
+    return "No distributor products are mapped to this ingredient. Map products first in the distributor settings.";
+  }
+
+  return JSON.stringify(
+    options.map((o) => ({
+      distributor: o.distributorName,
+      sku: o.product.sku,
+      productName: o.product.name,
+      brand: o.product.brand,
+      packSize: o.product.pack_size,
+      unitPrice: o.product.unit_price,
+      unit: o.product.unit,
+      conversionFactor: o.conversion_factor,
+      conversionUnit: o.conversion_unit,
+      isPreferred: o.is_preferred,
+      pricePerUnit: o.product.unit_price && o.conversion_factor
+        ? Math.round((o.product.unit_price / o.conversion_factor) * 100) / 100
+        : null,
+    })),
+    null,
+    2
+  );
+}
+
+async function getDistributorSpending(
+  ctx: ToolContext,
+  input: { start_date: string; end_date: string }
+): Promise<string> {
+  const summary = await getSpendingSummary({
+    userId: ctx.userId,
+    orgId: ctx.orgId,
+    startDate: input.start_date,
+    endDate: input.end_date,
+  });
+
+  if (summary.length === 0) {
+    return `No distributor invoices found between ${input.start_date} and ${input.end_date}.`;
+  }
+
+  const totalSpend = summary.reduce((s, d) => s + d.netSpend, 0);
+
+  return JSON.stringify(
+    {
+      period: { start: input.start_date, end: input.end_date },
+      totalNetSpend: Math.round(totalSpend * 100) / 100,
+      distributors: summary,
+    },
+    null,
+    2
+  );
+}
+
+async function getDistributorSyncStatus(
+  ctx: ToolContext,
+  input: { distributor_id?: string }
+): Promise<string> {
+  const supabase = await createClient();
+
+  // Get connected distributors
+  let dq = supabase
+    .from("distributors")
+    .select("id, name, connector_type, transport, is_active, last_synced_at")
+    .eq("user_id", ctx.userId)
+    .eq("is_active", true);
+  if (ctx.orgId) dq = dq.eq("organization_id", ctx.orgId);
+
+  const { data: distributors } = await dq;
+
+  // Get recent sync jobs
+  const jobs = await getRecentSyncJobs({
+    userId: ctx.userId,
+    orgId: ctx.orgId,
+    distributorId: input.distributor_id,
+    limit: 15,
+  });
+
+  return JSON.stringify(
+    {
+      connectedDistributors: (distributors ?? []).map((d) => ({
+        id: d.id,
+        name: d.name,
+        connectorType: d.connector_type,
+        transport: d.transport,
+        lastSynced: d.last_synced_at,
+      })),
+      recentSyncJobs: jobs.map((j) => ({
+        id: j.id,
+        distributorId: j.distributor_id,
+        jobType: j.job_type,
+        status: j.status,
+        error: j.error_message,
+        attempts: j.attempts,
+        createdAt: j.created_at,
+        completedAt: j.completed_at,
+      })),
+    },
+    null,
+    2
+  );
+}
+
 function finalizePlan(
   _ctx: ToolContext,
   input: { plan: CainEventPlan }
@@ -566,6 +759,12 @@ export async function executeTool(
       return { result: await getQBSyncStatus(ctx) };
     case "get_payroll_status":
       return { result: await getPayrollStatus(ctx) };
+    case "compare_distributor_prices":
+      return { result: await compareDistributorPrices(ctx, input as { inventory_item_id?: string; ingredient_name?: string }) };
+    case "get_distributor_spending":
+      return { result: await getDistributorSpending(ctx, input as { start_date: string; end_date: string }) };
+    case "get_distributor_sync_status":
+      return { result: await getDistributorSyncStatus(ctx, input as { distributor_id?: string }) };
     case "finalize_plan": {
       const planInput = input as { plan: CainEventPlan };
       const result = finalizePlan(ctx, planInput);
