@@ -16,19 +16,28 @@ export function CainPageClient() {
   const [plan, setPlan] = useState<CainEventPlan | null>(null);
   const [progressEvents, setProgressEvents] = useState<CainProgressEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [lastBrief, setLastBrief] = useState("");
+  const [lastConstraints, setLastConstraints] = useState<{ maxBudget?: number; dietaryRestrictions?: string } | undefined>();
 
   const handleSubmit = useCallback(
     async (brief: string, constraints?: { maxBudget?: number; dietaryRestrictions?: string }) => {
+      setLastBrief(brief);
+      setLastConstraints(constraints);
       setPhase("generating");
       setProgressEvents([]);
       setError(null);
       setPlan(null);
+
+      // Timeout after 55s (just under Vercel's 60s limit)
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 55000);
 
       try {
         const res = await fetch("/api/cain/event-builder", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ brief, ...constraints }),
+          signal: controller.signal,
         });
 
         if (!res.ok) {
@@ -74,9 +83,14 @@ export function CainPageClient() {
           }
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Something went wrong";
+        const isAbort = err instanceof DOMException && err.name === "AbortError";
+        const message = isAbort
+          ? "Generation timed out. Try a simpler brief or fewer constraints."
+          : err instanceof Error ? err.message : "Something went wrong";
         setError(message);
         toast.error(message);
+      } finally {
+        clearTimeout(timeout);
       }
     },
     []
@@ -112,6 +126,7 @@ export function CainPageClient() {
     setError(null);
     setProgressEvents([]);
     setPlan(null);
+    // lastBrief and lastConstraints are preserved so the input form can restore them
   }, []);
 
   return (
@@ -139,7 +154,11 @@ export function CainPageClient() {
 
       {/* Phase Content */}
       {phase === "input" && (
-        <EventBriefInput onSubmit={handleSubmit} />
+        <EventBriefInput
+          onSubmit={handleSubmit}
+          initialBrief={lastBrief}
+          initialConstraints={lastConstraints}
+        />
       )}
 
       {phase === "generating" && (

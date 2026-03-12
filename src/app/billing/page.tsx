@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { CreditCard, CheckCircle, Zap, ArrowRight } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from "@stripe/react-stripe-js";
+import { CreditCard, CheckCircle, Zap, ArrowRight, X } from "lucide-react";
 import Link from "next/link";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 const BASIC_FEATURES = [
   "Unlimited events",
@@ -23,9 +30,10 @@ const PRO_FEATURES = [
 
 export default function BillingPage() {
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
-  const [loading, setLoading] = useState<string | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<"basic" | "pro" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -35,7 +43,6 @@ export default function BillingPage() {
       const { data } = await supabase.from("profiles").select("*").maybeSingle();
       setProfile(data);
 
-      // If redirected from Stripe checkout, sync subscription status
       const isSuccess = searchParams.get("success") === "1";
       const isActive = data?.subscription_status === "active" || data?.subscription_status === "trialing";
 
@@ -45,12 +52,11 @@ export default function BillingPage() {
           const res = await fetch("/api/stripe/sync", { method: "POST" });
           const result = await res.json();
           if (result.synced) {
-            // Reload profile with updated subscription
             const { data: updated } = await supabase.from("profiles").select("*").maybeSingle();
             setProfile(updated);
           }
         } catch {
-          // Webhook may still arrive — profile will update on next load
+          // Webhook may still arrive
         } finally {
           setSyncing(false);
         }
@@ -60,33 +66,20 @@ export default function BillingPage() {
     load();
   }, [searchParams]);
 
-  async function handleSubscribe(plan: "basic" | "pro") {
-    setLoading(plan);
-    setError(null);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError("Failed to create checkout session");
-      }
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(null);
-    }
-  }
+  const fetchClientSecret = useCallback(async () => {
+    if (!checkoutPlan) throw new Error("No plan selected");
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: checkoutPlan }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.clientSecret;
+  }, [checkoutPlan]);
 
   async function handlePortal() {
-    setLoading("portal");
+    setPortalLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
@@ -95,11 +88,44 @@ export default function BillingPage() {
     } catch (e: any) {
       setError(e.message);
     }
-    setLoading(null);
+    setPortalLoading(false);
   }
 
   const isActive = profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
   const currentPlan = profile?.plan_tier || "basic";
+
+  // Show embedded checkout
+  if (checkoutPlan) {
+    return (
+      <div className="p-4 md:p-8 max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-display text-xl md:text-2xl font-semibold">
+              Subscribe to {checkoutPlan === "pro" ? "Pro" : "Basic"}
+            </h1>
+            <p className="text-sm text-[#D4A373] mt-1">
+              {checkoutPlan === "pro" ? "$149" : "$65"}/mo — 14-day free trial
+            </p>
+          </div>
+          <button
+            onClick={() => setCheckoutPlan(null)}
+            className="p-2 rounded-lg hover:bg-[#1a1f2e] transition-colors text-[#7A8BA8] hover:text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="rounded-xl overflow-hidden border border-[#232b3e]">
+          <EmbeddedCheckoutProvider
+            stripe={stripePromise}
+            options={{ fetchClientSecret }}
+          >
+            <EmbeddedCheckout />
+          </EmbeddedCheckoutProvider>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -147,14 +173,13 @@ export default function BillingPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={handlePortal} disabled={!!loading} className="btn-secondary flex items-center gap-2">
+            <button onClick={handlePortal} disabled={portalLoading} className="btn-secondary flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
-              Manage subscription & billing
+              {portalLoading ? "Loading..." : "Manage subscription & billing"}
             </button>
             {currentPlan === "basic" && (
               <button
-                onClick={() => handleSubscribe("pro")}
-                disabled={!!loading}
+                onClick={() => setCheckoutPlan("pro")}
                 className="btn-primary flex items-center gap-2"
               >
                 <Zap className="w-4 h-4" />
@@ -185,11 +210,10 @@ export default function BillingPage() {
           </ul>
           {!isActive && (
             <button
-              onClick={() => handleSubscribe("basic")}
-              disabled={!!loading}
+              onClick={() => setCheckoutPlan("basic")}
               className="btn-secondary w-full"
             >
-              {loading === "basic" ? "Loading..." : "Start Basic Trial"}
+              Start Basic Trial
             </button>
           )}
         </div>
@@ -214,11 +238,10 @@ export default function BillingPage() {
           </ul>
           {!isActive || currentPlan === "basic" ? (
             <button
-              onClick={() => handleSubscribe("pro")}
-              disabled={!!loading}
+              onClick={() => setCheckoutPlan("pro")}
               className="btn-primary w-full"
             >
-              {loading === "pro" ? "Loading..." : currentPlan === "basic" ? "Upgrade to Pro" : "Start Pro Trial"}
+              {currentPlan === "basic" ? "Upgrade to Pro" : "Start Pro Trial"}
             </button>
           ) : null}
         </div>

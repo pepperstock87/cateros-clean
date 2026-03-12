@@ -22,7 +22,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; label: string; sub?: bo
   { href: "/events", icon: CalendarDays, label: "Events" },
   { href: "/templates", icon: LayoutTemplate, label: "Templates" },
   { href: "/clients", icon: Contact, label: "Clients" },
-  { href: "/schedule", icon: Calendar, label: "Schedule" },
+  { href: "/schedule", icon: Calendar, label: "Workforce" },
   { href: "/recipes", icon: BookOpen, label: "Recipe Library" },
   { href: "/recipes/analytics", icon: BarChart3, label: "Recipe Analytics", sub: true },
   { href: "/inventory", icon: Package, label: "Inventory" },

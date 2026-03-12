@@ -77,11 +77,14 @@ export async function getEventInvitesAction(eventId: string) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: invites, error } = await supabase
+  const org = await getCurrentOrg();
+
+  let query = supabase
     .from("event_invites")
     .select("*")
-    .eq("event_id", eventId)
-    .order("created_at", { ascending: false });
+    .eq("event_id", eventId);
+  if (org?.orgId) query = query.eq("organization_id", org.orgId);
+  const { data: invites, error } = await query.order("created_at", { ascending: false });
 
   if (error) return { error: error.message, invites: [] };
 

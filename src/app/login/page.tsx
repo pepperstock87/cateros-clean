@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { loginAction } from "@/lib/actions/auth";
 import Link from "next/link";
 import { ChefHat, Loader2 } from "lucide-react";
@@ -8,23 +9,33 @@ import { ChefHat, Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
     setError("");
     const formData = new FormData(e.currentTarget);
+    if (redirectTo) formData.set("redirectTo", redirectTo);
     try {
       const result = await loginAction(formData);
       if (result?.error) {
         setError(result.error);
         setPending(false);
       }
-      // If no error, redirect happens server-side
     } catch {
-      // redirect() throws — this is expected
+      // redirect() throws — expected
     }
   }
 
@@ -66,8 +77,13 @@ export default function LoginPage() {
           </form>
 
           <p className="text-sm text-[#D4A373] text-center mt-4">
-            Don't have an account?{" "}
-            <Link href="/signup" className="text-brand-400 hover:text-brand-300 font-medium">Sign up</Link>
+            Don&apos;t have an account?{" "}
+            <Link
+              href={redirectTo ? `/signup?redirect=${encodeURIComponent(redirectTo)}` : "/signup"}
+              className="text-brand-400 hover:text-brand-300 font-medium"
+            >
+              Sign up
+            </Link>
           </p>
         </div>
       </div>

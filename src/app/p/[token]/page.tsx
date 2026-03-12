@@ -27,6 +27,18 @@ export default async function PublicProposalPage({ params }: Props) {
 
   if (!proposal) notFound();
 
+  // Check expiration
+  if (proposal.expires_at && new Date(proposal.expires_at) < new Date()) {
+    return (
+      <div className="min-h-screen bg-[#0C1220] flex items-center justify-center p-6">
+        <div className="card p-8 max-w-md text-center">
+          <h1 className="font-display text-xl font-semibold mb-2">Proposal Expired</h1>
+          <p className="text-sm text-[var(--text-muted)]">This proposal is no longer available. Please contact the caterer for an updated proposal.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Fetch business settings for branding
   const { data: settings } = await supabase
     .from("business_settings")

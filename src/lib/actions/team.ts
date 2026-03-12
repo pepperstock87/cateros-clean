@@ -386,7 +386,7 @@ export async function getPendingInvites() {
 
   const { data: invites } = await supabase
     .from("organization_invites")
-    .select("id, invited_email, role, status, created_at, expires_at, invited_by, inviter:profiles!organization_invites_invited_by_fkey(full_name, email)")
+    .select("id, invited_email, role, status, created_at, expires_at, invited_by, invite_token, inviter:profiles!organization_invites_invited_by_fkey(full_name, email)")
     .eq("organization_id", profile.current_organization_id)
     .in("status", ["pending"])
     .order("created_at", { ascending: false });

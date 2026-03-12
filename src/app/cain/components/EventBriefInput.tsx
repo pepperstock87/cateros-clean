@@ -8,13 +8,21 @@ interface EventBriefInputProps {
     brief: string,
     constraints?: { maxBudget?: number; dietaryRestrictions?: string }
   ) => void;
+  initialBrief?: string;
+  initialConstraints?: { maxBudget?: number; dietaryRestrictions?: string };
 }
 
-export function EventBriefInput({ onSubmit }: EventBriefInputProps) {
-  const [brief, setBrief] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [maxBudget, setMaxBudget] = useState<string>("");
-  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
+export function EventBriefInput({ onSubmit, initialBrief, initialConstraints }: EventBriefInputProps) {
+  const [brief, setBrief] = useState(initialBrief || "");
+  const [showAdvanced, setShowAdvanced] = useState(
+    !!(initialConstraints?.maxBudget || initialConstraints?.dietaryRestrictions)
+  );
+  const [maxBudget, setMaxBudget] = useState<string>(
+    initialConstraints?.maxBudget ? String(initialConstraints.maxBudget) : ""
+  );
+  const [dietaryRestrictions, setDietaryRestrictions] = useState(
+    initialConstraints?.dietaryRestrictions || ""
+  );
 
   const canSubmit = brief.trim().length > 10;
 

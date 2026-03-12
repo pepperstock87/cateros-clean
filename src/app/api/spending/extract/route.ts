@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
     const mimeType = file.type;
-    const isImage = mimeType.startsWith("image/");
+    const allowedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
+    const isImage = allowedImageTypes.includes(mimeType);
     const isPdf = mimeType === "application/pdf";
 
     if (!isImage && !isPdf) {
-      return NextResponse.json({ error: "Unsupported file type. Upload JPG, PNG, or PDF." }, { status: 400 });
+      return NextResponse.json({ error: "Unsupported file type. Upload JPG, PNG, WebP, or PDF." }, { status: 400 });
     }
 
     let prompt: string;

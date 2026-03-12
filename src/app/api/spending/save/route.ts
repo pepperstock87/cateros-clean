@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { startOfWeek, endOfWeek, format } from "date-fns";
+import { getCurrentOrg } from "@/lib/organizations";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -8,6 +9,8 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const org = await getCurrentOrg();
 
   try {
     const body = await req.json();
@@ -28,6 +31,7 @@ export async function POST(req: NextRequest) {
 
       const { error: insertError } = await supabase.from("receipts").insert({
         user_id: user.id,
+        organization_id: org?.orgId || null,
         vendor,
         date,
         amount,
@@ -52,6 +56,7 @@ export async function POST(req: NextRequest) {
 
       const { error: insertError } = await supabase.from("distributor_invoices").insert({
         user_id: user.id,
+        organization_id: org?.orgId || null,
         distributor,
         invoice_date,
         invoice_number: invoice_number || null,

@@ -19,12 +19,10 @@ export async function POST(req: NextRequest) {
   const priceId = rawPriceId?.trim();
 
   if (!priceId) {
-    console.error("No Stripe price ID found for plan:", plan);
-    return NextResponse.json({ error: `No Stripe price configured for "${plan}" plan. Check STRIPE_PRICE_ID_${plan.toUpperCase()} env var.` }, { status: 500 });
+    return NextResponse.json({ error: `No Stripe price configured for "${plan}" plan.` }, { status: 500 });
   }
 
   if (!priceId.startsWith("price_")) {
-    console.error("Invalid Stripe price ID format for plan:", plan);
     return NextResponse.json({ error: `Invalid price ID format for "${plan}" plan.` }, { status: 500 });
   }
 
@@ -34,34 +32,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You already have an active subscription." }, { status: 400 });
   }
 
-  let customerId = profile?.stripe_customer_id;
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({ email: user.email!, metadata: { supabase_uid: user.id } });
-    customerId = customer.id;
-    await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
-  }
-
-  const host = req.headers.get("host") || "cateros.com";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || req.headers.get("origin") || `https://${host}`;
-
   try {
+    let customerId = profile?.stripe_customer_id;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email: user.email!, metadata: { supabase_uid: user.id } });
+      customerId = customer.id;
+      await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", user.id);
+    }
+
+    const host = req.headers.get("host") || "cateros.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || req.headers.get("origin") || `https://${host}`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
-      payment_method_types: ["card"],
+      ui_mode: "embedded",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/billing?success=1`,
-      cancel_url: `${appUrl}/billing?canceled=1`,
+      return_url: `${appUrl}/billing?success=1&session_id={CHECKOUT_SESSION_ID}`,
       client_reference_id: user.id,
       subscription_data: { trial_period_days: 14 },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ clientSecret: session.client_secret });
   } catch (err: any) {
-    console.error("Stripe checkout error:", err.message || "Unknown error");
+    console.error("Stripe checkout error:", err);
     return NextResponse.json(
-      { error: "Unable to create checkout session. Please try again or contact support." },
+      { error: err.message || "Unable to create checkout session." },
       { status: 500 }
     );
   }

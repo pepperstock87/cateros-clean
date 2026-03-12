@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { inviteTeamMember, cancelInvite, updateMemberRole, removeTeamMember, updateOrganization, getPendingInvites } from "@/lib/actions/team";
-import { UserPlus, ChevronDown, Trash2, Loader2, Crown, Shield, Users, Eye, Briefcase, Clock, X, Mail, Building2, ImagePlus, Settings, Send } from "lucide-react";
+import { UserPlus, ChevronDown, Trash2, Loader2, Crown, Shield, Users, Eye, Briefcase, Clock, X, Mail, Building2, ImagePlus, Settings, Send, Copy, Check, RefreshCw, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { OrgMemberRole } from "@/types";
@@ -26,6 +26,7 @@ type PendingInvite = {
   created_at: string;
   expires_at: string | null;
   invited_by: string;
+  invite_token: string | null;
   inviter: { full_name: string | null; email: string } | null;
 };
 
@@ -88,6 +89,10 @@ export function TeamClient({
   const [loadingInvites, setLoadingInvites] = useState(false);
   const [cancellingInvite, setCancellingInvite] = useState<string | null>(null);
 
+  // Invite link
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
+
   // Org settings
   const [showOrgSettings, setShowOrgSettings] = useState(false);
   const [orgName, setOrgName] = useState(organization?.name ?? "");
@@ -123,10 +128,18 @@ export function TeamClient({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(result.success || "Invite sent");
+        const inviteUrl = result.inviteToken
+          ? `${window.location.origin}/join/${result.inviteToken}`
+          : null;
+        setLastInviteLink(inviteUrl);
+        if (inviteUrl) {
+          navigator.clipboard.writeText(inviteUrl).catch(() => {});
+          toast.success("Invite created! Link copied to clipboard.");
+        } else {
+          toast.success(result.success || "Invite sent");
+        }
         setInviteEmail("");
         setInviteRole("staff");
-        setShowInviteForm(false);
         fetchInvites();
         router.refresh();
       }
@@ -272,56 +285,88 @@ export function TeamClient({
                   Invite Member
                 </button>
               ) : (
-                <form onSubmit={handleInvite} className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-5">
-                  <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                    <UserPlus className="w-4 h-4 text-[#D4A373]" />
-                    Invite a Team Member
-                  </h3>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="email"
-                      placeholder="Email address"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      required
-                      autoFocus
-                      className="flex-1 px-3 py-2 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:border-brand-600 transition-colors"
-                    />
-                    <div className="relative">
-                      <select
-                        value={inviteRole}
-                        onChange={(e) => setInviteRole(e.target.value as OrgMemberRole)}
-                        className="appearance-none px-3 py-2 pr-8 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] focus:outline-none focus:border-brand-600 transition-colors cursor-pointer"
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="staff">Staff</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                      <ChevronDown className="w-3.5 h-3.5 text-[#7A8BA8] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <>
+                  <form onSubmit={handleInvite} className="rounded-xl border border-[#2A3A5C] bg-[#182030] p-5">
+                    <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                      <UserPlus className="w-4 h-4 text-[#D4A373]" />
+                      Invite a Team Member
+                    </h3>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        type="email"
+                        placeholder="Email address"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        required
+                        autoFocus
+                        className="flex-1 px-3 py-2 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] placeholder:text-[#7A8BA8] focus:outline-none focus:border-brand-600 transition-colors"
+                      />
+                      <div className="relative">
+                        <select
+                          value={inviteRole}
+                          onChange={(e) => setInviteRole(e.target.value as OrgMemberRole)}
+                          className="appearance-none px-3 py-2 pr-8 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-sm text-[#F4F1ED] focus:outline-none focus:border-brand-600 transition-colors cursor-pointer"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="manager">Manager</option>
+                          <option value="staff">Staff</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-[#7A8BA8] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={inviting}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                        >
+                          {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          {inviting ? "Sending..." : "Send Invite"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setShowInviteForm(false); setInviteEmail(""); setLastInviteLink(null); }}
+                          className="px-3 py-2 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                    <p className="text-[11px] text-[#7A8BA8] mt-3">
+                      A shareable invite link will be generated. Send it to your team member — they can join with one click.
+                    </p>
+                  </form>
+                  {lastInviteLink && (
+                    <div className="mt-3 rounded-lg border border-green-800/50 bg-green-900/20 p-4">
+                      <p className="text-xs text-green-400 font-medium mb-2">Invite link created! Share it with your team member:</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={lastInviteLink}
+                          className="flex-1 px-3 py-2 rounded-lg bg-[#0C1220] border border-[#2A3A5C] text-xs text-[#F4F1ED] font-mono"
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(lastInviteLink);
+                            setCopiedLink("last");
+                            setTimeout(() => setCopiedLink(null), 2000);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-900/40 text-green-400 text-xs font-medium hover:bg-green-900/60 transition-colors"
+                        >
+                          {copiedLink === "last" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedLink === "last" ? "Copied" : "Copy"}
+                        </button>
+                      </div>
                       <button
-                        type="submit"
-                        disabled={inviting}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                        onClick={() => setLastInviteLink(null)}
+                        className="text-[11px] text-[#7A8BA8] hover:text-[#D4A373] mt-2 transition-colors"
                       >
-                        {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                        {inviting ? "Sending..." : "Send Invite"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowInviteForm(false); setInviteEmail(""); }}
-                        className="px-3 py-2 rounded-lg text-sm text-[#D4A373] hover:text-[#F4F1ED] hover:bg-[#1A2538] transition-colors"
-                      >
-                        Cancel
+                        Dismiss
                       </button>
                     </div>
-                  </div>
-                  <p className="text-[11px] text-[#7A8BA8] mt-3">
-                    An invite will be created. If the user already has an account, they can accept it from the Team Invites page. Otherwise, they will need to sign up first.
-                  </p>
-                </form>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -497,18 +542,36 @@ export function TeamClient({
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleCancelInvite(invite.id)}
-                        disabled={cancellingInvite === invite.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#7A8BA8] hover:text-red-400 hover:bg-red-900/20 transition-colors disabled:opacity-50 flex-shrink-0"
-                      >
-                        {cancellingInvite === invite.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <X className="w-3 h-3" />
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {invite.invite_token && (
+                          <button
+                            onClick={() => {
+                              const url = `${window.location.origin}/join/${invite.invite_token}`;
+                              navigator.clipboard.writeText(url);
+                              setCopiedLink(invite.id);
+                              setTimeout(() => setCopiedLink(null), 2000);
+                              toast.success("Invite link copied!");
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#D4A373] hover:text-brand-300 hover:bg-brand-900/20 transition-colors"
+                            title="Copy invite link"
+                          >
+                            {copiedLink === invite.id ? <Check className="w-3 h-3" /> : <LinkIcon className="w-3 h-3" />}
+                            {copiedLink === invite.id ? "Copied" : "Copy Link"}
+                          </button>
                         )}
-                        Cancel
-                      </button>
+                        <button
+                          onClick={() => handleCancelInvite(invite.id)}
+                          disabled={cancellingInvite === invite.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#7A8BA8] hover:text-red-400 hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                        >
+                          {cancellingInvite === invite.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <X className="w-3 h-3" />
+                          )}
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

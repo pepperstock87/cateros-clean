@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/organizations";
-import { commitCainPlan } from "@/lib/cain/commit";
+import { createCainSession, commitPlan } from "@/lib/cain/service";
+import { registerDomainEventHandlers } from "@/lib/events";
 import type { CainEventPlan } from "@/lib/cain/types";
+
+// Register domain event handlers on module load
+registerDomainEventHandlers();
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,13 +41,11 @@ export async function POST(request: NextRequest) {
 
     const org = await getCurrentOrg();
 
-    const result = await commitCainPlan({
-      plan,
-      userId: user.id,
-      orgId: org?.orgId || null,
-    });
+    // Use CAIN service layer with permissions and domain events
+    const session = await createCainSession(user.id, org?.orgId || null);
+    const result = await commitPlan(session, plan);
 
-    if ("error" in result) {
+    if (!result.success) {
       return new Response(JSON.stringify({ error: result.error }), {
         status: 500,
         headers: { "Content-Type": "application/json" },

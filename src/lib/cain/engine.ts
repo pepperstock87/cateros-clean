@@ -13,6 +13,12 @@ export async function runCainEventBuilder(params: {
   orgId: string | null;
   brief: string;
   companyName?: string;
+  constraints?: {
+    maxBudget?: number;
+    dietaryRestrictions?: string;
+  };
+  /** Pre-built context string from CAIN memory (client history, event state, etc.) */
+  contextString?: string;
 }): Promise<ReadableStream<Uint8Array>> {
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
@@ -66,6 +72,8 @@ export async function runCainEventBuilder(params: {
         recipeCount: recipeRes.count ?? 0,
         staffCount: staffRes.count ?? 0,
         inventoryItemCount: inventoryRes.count ?? 0,
+        maxBudget: params.constraints?.maxBudget,
+        dietaryRestrictions: params.constraints?.dietaryRestrictions,
       });
 
       // --- Initialize Anthropic client ---
@@ -83,9 +91,27 @@ export async function runCainEventBuilder(params: {
 
       await pushEvent({ type: "thinking", message: "Analyzing your event brief..." });
 
+      // --- Build user message with constraints ---
+      let userMessage = params.brief;
+      const constraintParts: string[] = [];
+      if (params.constraints?.maxBudget) {
+        constraintParts.push(`Maximum budget: $${params.constraints.maxBudget.toLocaleString()}`);
+      }
+      if (params.constraints?.dietaryRestrictions) {
+        constraintParts.push(`Dietary restrictions: ${params.constraints.dietaryRestrictions}`);
+      }
+      if (constraintParts.length > 0) {
+        userMessage += `\n\n**Constraints:**\n${constraintParts.join("\n")}`;
+      }
+
+      // Inject pre-built context if available (client history, event state, etc.)
+      if (params.contextString) {
+        userMessage += `\n\n---\n\n${params.contextString}`;
+      }
+
       // --- Agentic tool-use loop ---
       const messages: Anthropic.MessageParam[] = [
-        { role: "user", content: params.brief },
+        { role: "user", content: userMessage },
       ];
 
       let finalPlan: CainEventPlan | null = null;

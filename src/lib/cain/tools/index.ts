@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULTS } from "@/lib/constants";
+import { getEventLaborReport } from "@/lib/payroll/labor-report";
+import { getConnection as getQBConnection } from "@/lib/quickbooks/auth";
+import { getRecentSyncLogs } from "@/lib/quickbooks/queue";
+import { getConnection as getPayrollConnection } from "@/lib/payroll/auth";
+import { getAllMappings as getPayrollMappings } from "@/lib/payroll/mapping";
 import type { CainEventPlan } from "../types";
 
 // ---------- Anthropic tool definitions ----------
@@ -96,9 +101,59 @@ export const cainTools = [
     },
   },
   {
+    name: "lookup_staff_availability",
+    description:
+      "Check which staff members are already assigned to events on a specific date. Returns staff names and the events they're booked for. Use this to avoid double-booking.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        date: {
+          type: "string",
+          description: "Date to check in YYYY-MM-DD format",
+        },
+      },
+      required: ["date"],
+    },
+  },
+  {
     name: "get_business_defaults",
     description:
       "Get business default rates for admin fees, tax, margins, and other settings.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_labor_report",
+    description:
+      "Get the labor cost report for a specific event. Returns staff breakdown, labor cost, labor as percentage of revenue, and margin impact. Use this when analyzing event profitability or when the user asks about labor costs.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        event_id: {
+          type: "string",
+          description: "The event ID to get the labor report for",
+        },
+      },
+      required: ["event_id"],
+    },
+  },
+  {
+    name: "get_qb_sync_status",
+    description:
+      "Check the QuickBooks sync status for the current user. Returns connection state, company name, and recent sync activity. Use this when the user asks about their QuickBooks integration or accounting sync.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_payroll_status",
+    description:
+      "Check the payroll integration status. Returns connection state, mapped employees, and recent exports. Use this when the user asks about payroll or staff payment status.",
     input_schema: {
       type: "object" as const,
       properties: {},
@@ -241,6 +296,52 @@ async function lookupStaff(
   );
 }
 
+async function lookupStaffAvailability(
+  ctx: ToolContext,
+  input: { date: string }
+): Promise<string> {
+  const supabase = await createClient();
+
+  // Find all assignments on this date by joining through events
+  let q = supabase
+    .from("event_staff_assignments")
+    .select("staff_member_id, role, start_time, end_time, confirmed, staff_members(id, name, role), events!inner(id, name, event_date)")
+    .eq("events.event_date", input.date);
+
+  if (ctx.orgId) q = q.eq("organization_id", ctx.orgId);
+
+  const { data, error } = await q;
+  if (error) return `Error checking staff availability: ${error.message}`;
+  if (!data || data.length === 0) return `No staff are booked on ${input.date}. All staff are available.`;
+
+  // Group by staff member
+  const byStaff: Record<string, { name: string; role: string; events: Array<{ eventName: string; shiftTime: string; confirmed: boolean }> }> = {};
+  for (const row of data) {
+    const staff = row.staff_members as any;
+    const event = row.events as any;
+    if (!staff?.id) continue;
+
+    if (!byStaff[staff.id]) {
+      byStaff[staff.id] = { name: staff.name, role: staff.role, events: [] };
+    }
+    byStaff[staff.id].events.push({
+      eventName: event?.name || "Unknown event",
+      shiftTime: row.start_time && row.end_time ? `${row.start_time}-${row.end_time}` : "Full day",
+      confirmed: row.confirmed ?? false,
+    });
+  }
+
+  return JSON.stringify(
+    Object.values(byStaff).map((s) => ({
+      name: s.name,
+      role: s.role,
+      bookedEvents: s.events,
+    })),
+    null,
+    2
+  );
+}
+
 async function lookupClients(
   ctx: ToolContext,
   input: { query: string }
@@ -348,6 +449,70 @@ async function getBusinessDefaults(ctx: ToolContext): Promise<string> {
   return JSON.stringify(defaults, null, 2);
 }
 
+async function getLaborReport(
+  ctx: ToolContext,
+  input: { event_id: string }
+): Promise<string> {
+  const report = await getEventLaborReport({
+    userId: ctx.userId,
+    orgId: ctx.orgId,
+    eventId: input.event_id,
+  });
+
+  if ("error" in report) return `Error: ${report.error}`;
+  return JSON.stringify(report, null, 2);
+}
+
+async function getQBSyncStatus(ctx: ToolContext): Promise<string> {
+  const conn = await getQBConnection(ctx.userId, ctx.orgId);
+  if (!conn) {
+    return JSON.stringify({ connected: false, message: "QuickBooks is not connected." });
+  }
+
+  const logs = await getRecentSyncLogs({ userId: ctx.userId, orgId: ctx.orgId, limit: 10 });
+  return JSON.stringify(
+    {
+      connected: true,
+      companyName: conn.company_name,
+      lastSynced: conn.last_synced_at,
+      recentActivity: logs.map((l) => ({
+        entityType: l.entityType,
+        direction: l.direction,
+        status: l.status,
+        error: l.errorMessage,
+        date: l.createdAt,
+      })),
+    },
+    null,
+    2
+  );
+}
+
+async function getPayrollStatus(ctx: ToolContext): Promise<string> {
+  const conn = await getPayrollConnection(ctx.userId, ctx.orgId);
+  if (!conn) {
+    return JSON.stringify({ connected: false, message: "Payroll (Gusto) is not connected." });
+  }
+
+  const mappings = await getPayrollMappings(ctx.userId, ctx.orgId);
+  return JSON.stringify(
+    {
+      connected: true,
+      provider: conn.provider,
+      companyName: conn.company_name,
+      mappedEmployees: mappings.length,
+      employees: mappings.map((m) => ({
+        staffMemberId: m.staff_member_id,
+        name: m.employee_name,
+        type: m.employee_type,
+        active: m.is_active,
+      })),
+    },
+    null,
+    2
+  );
+}
+
 function finalizePlan(
   _ctx: ToolContext,
   input: { plan: CainEventPlan }
@@ -380,6 +545,8 @@ export async function executeTool(
       };
     case "lookup_staff":
       return { result: await lookupStaff(ctx, input as { role?: string }) };
+    case "lookup_staff_availability":
+      return { result: await lookupStaffAvailability(ctx, input as { date: string }) };
     case "lookup_clients":
       return {
         result: await lookupClients(ctx, input as { query: string }),
@@ -393,6 +560,12 @@ export async function executeTool(
       };
     case "get_business_defaults":
       return { result: await getBusinessDefaults(ctx) };
+    case "get_labor_report":
+      return { result: await getLaborReport(ctx, input as { event_id: string }) };
+    case "get_qb_sync_status":
+      return { result: await getQBSyncStatus(ctx) };
+    case "get_payroll_status":
+      return { result: await getPayrollStatus(ctx) };
     case "finalize_plan": {
       const planInput = input as { plan: CainEventPlan };
       const result = finalizePlan(ctx, planInput);

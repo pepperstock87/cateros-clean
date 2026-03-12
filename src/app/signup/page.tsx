@@ -1,21 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { signupAction } from "@/lib/actions/auth";
 import Link from "next/link";
-import { ChefHat, Loader2 } from "lucide-react";
+import { ChefHat, Loader2, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "";
+  const isInvite = searchParams.get("invite") === "1";
+  const prefilledEmail = searchParams.get("email") || "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
     setError("");
     const formData = new FormData(e.currentTarget);
+    if (redirectTo) formData.set("redirectTo", redirectTo);
+    if (isInvite) formData.set("invite", "1");
     try {
       const result = await signupAction(formData);
       if (result?.error) {
@@ -37,8 +52,20 @@ export default function SignupPage() {
             </div>
             <span className="font-display text-xl font-semibold">Cateros</span>
           </div>
-          <h1 className="font-display text-2xl font-semibold mb-2">Create your account</h1>
-          <p className="text-sm text-[#D4A373]">Start your 14-day trial</p>
+          {isInvite ? (
+            <>
+              <h1 className="font-display text-2xl font-semibold mb-2">Join your team</h1>
+              <div className="inline-flex items-center gap-1.5 text-sm text-[#D4A373]">
+                <Users className="w-4 h-4" />
+                Create your free account to join
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-display text-2xl font-semibold mb-2">Create your account</h1>
+              <p className="text-sm text-[#D4A373]">Start your 14-day trial</p>
+            </>
+          )}
         </div>
 
         <div className="card p-6">
@@ -48,14 +75,26 @@ export default function SignupPage() {
               <input type="text" name="full_name" required className="input" placeholder="John Doe" />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Company Name</label>
-              <input type="text" name="company_name" required className="input" placeholder="Your Restaurant" />
-            </div>
+            {!isInvite && (
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Company Name</label>
+                <input type="text" name="company_name" required className="input" placeholder="Your Restaurant" />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-1.5">Email</label>
-              <input type="email" name="email" required className="input" placeholder="you@example.com" />
+              <input
+                type="email"
+                name="email"
+                required
+                className="input"
+                placeholder="you@example.com"
+                defaultValue={prefilledEmail}
+              />
+              {isInvite && prefilledEmail && (
+                <p className="text-[11px] text-[#7A8BA8] mt-1">Use the email address the invite was sent to.</p>
+              )}
             </div>
 
             <div>
@@ -70,13 +109,24 @@ export default function SignupPage() {
             )}
 
             <button type="submit" disabled={pending} className="btn-primary w-full flex items-center justify-center gap-2">
-              {pending ? <><Loader2 className="w-4 h-4 animate-spin" />Creating account...</> : "Create account"}
+              {pending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" />Creating account...</>
+              ) : isInvite ? (
+                "Create account & join team"
+              ) : (
+                "Create account"
+              )}
             </button>
           </form>
 
           <p className="text-sm text-[#D4A373] text-center mt-4">
             Already have an account?{" "}
-            <Link href="/login" className="text-brand-400 hover:text-brand-300 font-medium">Sign in</Link>
+            <Link
+              href={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"}
+              className="text-brand-400 hover:text-brand-300 font-medium"
+            >
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
