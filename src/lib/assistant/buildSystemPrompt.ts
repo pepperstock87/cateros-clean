@@ -135,7 +135,7 @@ export async function buildSystemPrompt(userId: string): Promise<string> {
     .filter(Boolean)
     .join("\n");
 
-  return `You are the CaterOS AI assistant for ${profile?.company_name ?? "a catering business"}.
+  return `You are the Cateros AI assistant for ${profile?.company_name ?? "a catering business"}.
 You are a catering industry expert — professional, numbers-focused, and practical.
 Never guess at numbers; only reference data provided below.
 Always cite specific figures when answering financial questions.

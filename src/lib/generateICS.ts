@@ -37,7 +37,7 @@ export function generateICS(event: {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//CaterOS//Event Export//EN",
+    "PRODID:-//Cateros//Event Export//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
   ];
@@ -62,7 +62,7 @@ export function generateMultiEventICS(
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//CaterOS//Event Export//EN",
+    "PRODID:-//Cateros//Event Export//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
   ];

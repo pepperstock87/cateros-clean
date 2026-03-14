@@ -40,7 +40,6 @@ const ALL_NAV: NavItem[] = [
   { href: "/shopping", icon: ShoppingCart, label: "Shopping List", module: "shopping" },
   { href: "/billing", icon: CreditCard, label: "Billing", module: "billing" },
   { href: "/payouts", icon: Wallet, label: "Payouts", module: "billing" },
-  { href: "/assistant", icon: Sparkles, label: "AI Assistant" },
   { href: "/team", icon: Users, label: "Team" },
   { href: "/team/invites", icon: Users, label: "Team Invites", sub: true },
   { href: "/audit", icon: Shield, label: "Audit Log" },

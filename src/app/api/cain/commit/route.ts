@@ -59,8 +59,10 @@ export async function POST(request: NextRequest) {
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("CAIN commit failed:", message);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

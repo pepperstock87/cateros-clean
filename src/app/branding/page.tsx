@@ -62,6 +62,23 @@ export default function BrandingPage() {
   }
 
   const isPro = entitlements?.isPro || false;
+  const loading = entitlements === null;
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <div className="mb-6 md:mb-8">
+          <div className="h-7 w-40 bg-[var(--bg-hover)] rounded animate-pulse" />
+          <div className="h-4 w-64 bg-[var(--bg-hover)] rounded animate-pulse mt-2" />
+        </div>
+        <div className="card p-6 space-y-4">
+          <div className="h-4 w-48 bg-[var(--bg-hover)] rounded animate-pulse" />
+          <div className="h-10 w-full bg-[var(--bg-hover)] rounded animate-pulse" />
+          <div className="h-10 w-full bg-[var(--bg-hover)] rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">

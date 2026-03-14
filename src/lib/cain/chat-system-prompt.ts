@@ -10,6 +10,7 @@ export function buildCainChatSystemPrompt(context: {
   dietaryRestrictions?: string;
 }): string {
   const company = context.companyName || "the catering company";
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   let constraintSection = "";
   if (context.maxBudget || context.dietaryRestrictions) {
@@ -23,6 +24,8 @@ export function buildCainChatSystemPrompt(context: {
   }
 
   return `You are C.A.I.N. (Catering AI Nerve-center), the AI event planning assistant for ${company}. You help caterers plan events through natural conversation.
+
+Today's date is ${today}.
 
 ## Your Personality
 

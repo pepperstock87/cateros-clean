@@ -1,4 +1,4 @@
-# CaterOS — Catering Pricing & Proposal Software
+# Cateros — Catering Pricing & Proposal Software
 
 A production-ready SaaS MVP for catering companies. Price events accurately, generate professional PDF proposals, manage recipe food costs, and track profitability.
 

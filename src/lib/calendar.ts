@@ -33,7 +33,7 @@ export function generateICSFile(event: Event): string {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//CaterOS//Event Export//EN",
+    "PRODID:-//Cateros//Event Export//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

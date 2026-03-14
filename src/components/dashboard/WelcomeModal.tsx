@@ -87,7 +87,7 @@ export function WelcomeModal({ hasSeenWelcome }: WelcomeModalProps) {
             <ChefHat className="w-8 h-8 text-brand-400" />
           </div>
           <h2 className="font-display text-2xl font-semibold text-[#F4F1ED] mb-2">
-            Welcome to CaterOS
+            Welcome to Cateros
           </h2>
           <p className="text-sm text-[#D4A373] max-w-sm mx-auto leading-relaxed">
             Your catering command center is ready. Here are a few things to get
