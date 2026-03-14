@@ -184,6 +184,65 @@ export function registerDomainEventHandlers() {
     );
   });
 
+  // ─── Payroll Events ───
+
+  domainEvents.on("staffing.hours.approved", async (e) => {
+    const p = e.payload;
+    await logActivity(
+      p.eventId,
+      p.userId,
+      "hours_approved",
+      `Hours approved: ${p.approvedHours.length} staff, $${p.totalLaborCost.toFixed(2)} total labor`,
+      { staffCount: p.approvedHours.length, totalLaborCost: p.totalLaborCost }
+    );
+    logAudit({
+      userId: p.userId,
+      action: "approve",
+      entity: "hours_export",
+      entityId: p.eventId,
+      details: { staffCount: p.approvedHours.length, totalLaborCost: p.totalLaborCost },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("payroll.exported", async (e) => {
+    const p = e.payload;
+    await logActivity(
+      p.eventId,
+      p.userId,
+      "payroll_exported",
+      `Payroll exported: ${p.staffCount} staff, ${p.totalHours}h, $${p.totalLaborCost.toFixed(2)}`,
+      { externalPayrollId: p.externalPayrollId, staffCount: p.staffCount, totalHours: p.totalHours }
+    );
+    logAudit({
+      userId: p.userId,
+      action: "export",
+      entity: "payroll",
+      entityId: p.externalPayrollId,
+      details: { eventId: p.eventId, staffCount: p.staffCount, totalLaborCost: p.totalLaborCost },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("payroll.paid", async (e) => {
+    const p = e.payload;
+    await logActivity(
+      p.eventId,
+      p.userId,
+      "payroll_paid",
+      `Payroll processed by provider (${p.externalPayrollId})`,
+      { externalPayrollId: p.externalPayrollId, paidAt: p.paidAt }
+    );
+    logAudit({
+      userId: p.userId,
+      action: "payment_received",
+      entity: "payroll",
+      entityId: p.externalPayrollId,
+      details: { eventId: p.eventId, paidAt: p.paidAt },
+      organizationId: p.orgId,
+    });
+  });
+
   // ─── CAIN Events ───
 
   domainEvents.on("cain.plan.committed", async (e) => {
@@ -195,6 +254,85 @@ export function registerDomainEventHandlers() {
       entityId: p.eventId,
       entityName: p.eventName,
       details: { source: "cain", planId: p.planId, suggestedPrice: p.suggestedPrice },
+      organizationId: p.orgId,
+    });
+  });
+
+  // ─── Distributor Events ───
+
+  domainEvents.on("distributor.catalog.synced", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "import",
+      entity: "distributor",
+      entityId: p.distributorId,
+      entityName: p.distributorName,
+      details: { jobId: p.jobId, productsUpserted: p.productsUpserted, priceChanges: p.priceChanges },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("distributor.pricebook.updated", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "update",
+      entity: "distributor",
+      entityId: p.distributorId,
+      entityName: p.distributorName,
+      details: { priceChangeCount: p.priceChanges.length },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("distributor.order.submitted", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "export",
+      entity: "distributor",
+      entityId: p.orderId,
+      entityName: p.distributorName,
+      details: { orderNumber: p.orderNumber, total: p.total, eventIds: p.eventIds },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("vendor.invoice.received", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "import",
+      entity: "distributor",
+      entityId: p.distributorId,
+      entityName: p.distributorName,
+      details: { jobId: p.jobId, invoiceCount: p.invoiceCount, lineItemCount: p.lineItemCount },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("vendor.invoice.reconciled", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "approve",
+      entity: "distributor",
+      entityId: p.invoiceId,
+      details: { orderId: p.orderId, varianceCount: p.varianceCount, totalVarianceAmount: p.totalVarianceAmount },
+      organizationId: p.orgId,
+    });
+  });
+
+  domainEvents.on("vendor.sync.failed", async (e) => {
+    const p = e.payload;
+    logAudit({
+      userId: p.userId,
+      action: "import",
+      entity: "distributor",
+      entityId: p.distributorId,
+      entityName: p.distributorName,
+      details: { jobId: p.jobId, jobType: p.jobType, error: p.error, attempts: p.attempts },
       organizationId: p.orgId,
     });
   });

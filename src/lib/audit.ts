@@ -9,7 +9,8 @@ export type AuditAction =
 
 export type AuditEntity =
   | 'event' | 'client' | 'recipe' | 'staff'
-  | 'proposal' | 'payment' | 'template' | 'production';
+  | 'proposal' | 'payment' | 'template' | 'production'
+  | 'hours_export' | 'payroll' | 'distributor';
 
 export async function logAudit(data: {
   userId: string;

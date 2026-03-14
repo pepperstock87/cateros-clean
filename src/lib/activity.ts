@@ -12,7 +12,10 @@ export type ActivityType =
   | "event_created"
   | "event_updated"
   | "refund_initiated"
-  | "payment_reminder_sent";
+  | "payment_reminder_sent"
+  | "hours_approved"
+  | "payroll_exported"
+  | "payroll_paid";
 
 export async function logActivity(
   eventId: string,

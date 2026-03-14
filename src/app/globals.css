@@ -376,77 +376,187 @@ body {
 
 /* ================================================================
    LIGHT MODE — Hardcoded dark-mode color overrides
-   These catch Tailwind classes using hardcoded hex values throughout
-   71+ component files. Bulk override approach until components are
-   individually migrated to CSS variables.
+   Comprehensive bulk override for 100+ component files using
+   hardcoded hex dark-mode colors in Tailwind classes.
    ================================================================ */
 
-/* --- Background overrides --- */
+/* --- Background overrides (all dark surface variants) --- */
+[data-theme="light"] .bg-\[\#0B1120\] { background-color: var(--bg-primary) !important; }
 [data-theme="light"] .bg-\[\#0C1220\] { background-color: var(--bg-primary) !important; }
+[data-theme="light"] .bg-\[\#111827\] { background-color: var(--bg-primary) !important; }
 [data-theme="light"] .bg-\[\#1A2538\] { background-color: var(--bg-secondary) !important; }
 [data-theme="light"] .bg-\[\#182030\] { background-color: var(--bg-secondary) !important; }
 [data-theme="light"] .bg-\[\#1F2A44\] { background-color: var(--bg-hover) !important; }
-[data-theme="light"] .bg-\[\#111827\] { background-color: var(--bg-primary) !important; }
+[data-theme="light"] .bg-\[\#3a3228\] { background-color: var(--bg-inset) !important; }
+[data-theme="light"] .bg-\[\#1a1510\] { background-color: var(--bg-inset) !important; }
+[data-theme="light"] .bg-\[\#1e1a14\] { background-color: var(--bg-inset) !important; }
+[data-theme="light"] .bg-\[\#2a2118\] { background-color: var(--border-subtle) !important; }
+[data-theme="light"] .bg-\[\#4a3f34\] { background-color: var(--bg-hover) !important; }
 
 /* --- Border overrides --- */
 [data-theme="light"] .border-\[\#2A3A5C\] { border-color: var(--border) !important; }
 [data-theme="light"] .border-\[\#1A2538\] { border-color: var(--border-subtle) !important; }
 [data-theme="light"] .border-\[\#344570\] { border-color: var(--border-hover) !important; }
+[data-theme="light"] .border-\[\#2a2118\] { border-color: var(--border-subtle) !important; }
+[data-theme="light"] .border-\[\#1e1a14\] { border-color: var(--border-subtle) !important; }
+
+/* --- Divide overrides --- */
+[data-theme="light"] .divide-\[\#2A3A5C\] > :not([hidden]) ~ :not([hidden]) { border-color: var(--border) !important; }
+[data-theme="light"] .divide-\[\#1A2538\] > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-subtle) !important; }
 
 /* --- Text overrides --- */
 [data-theme="light"] .text-\[\#F4F1ED\] { color: var(--text-primary) !important; }
 [data-theme="light"] .text-\[\#D4A373\] { color: var(--text-secondary) !important; }
 [data-theme="light"] .text-\[\#7A8BA8\] { color: var(--text-muted) !important; }
 [data-theme="light"] .text-\[\#9C9590\] { color: var(--text-faint) !important; }
+[data-theme="light"] .text-\[\#4a3f34\] { color: var(--text-muted) !important; }
 
-/* --- Placeholder overrides --- */
+/* --- Placeholder & opacity text overrides --- */
 [data-theme="light"] .placeholder-\[\#7A8BA8\]::placeholder { color: var(--input-placeholder) !important; }
+[data-theme="light"] .placeholder\:text-\[\#F4F1ED\]\/30::placeholder { color: var(--input-placeholder) !important; }
+[data-theme="light"] .placeholder\:text-\[\#7A8BA8\]::placeholder { color: var(--input-placeholder) !important; }
+
+/* --- Text opacity overrides --- */
+[data-theme="light"] .text-\[\#F4F1ED\]\/60 { color: var(--text-muted) !important; }
+[data-theme="light"] .text-\[\#F4F1ED\]\/50 { color: var(--text-muted) !important; }
+[data-theme="light"] .text-\[\#F4F1ED\]\/40 { color: var(--text-faint) !important; }
+[data-theme="light"] .text-\[\#F4F1ED\]\/30 { color: var(--text-faint) !important; }
+[data-theme="light"] .text-\[\#F4F1ED\]\/80 { color: var(--text-secondary) !important; }
+[data-theme="light"] .text-\[\#F4F1ED\]\/70 { color: var(--text-secondary) !important; }
+[data-theme="light"] .text-\[\#D4A373\]\/50 { color: var(--text-muted) !important; }
+[data-theme="light"] .text-\[\#D4A373\]\/30 { color: var(--text-faint) !important; }
 
 /* --- Hover state overrides --- */
 [data-theme="light"] .hover\:text-\[\#F4F1ED\]:hover { color: var(--text-primary) !important; }
 [data-theme="light"] .hover\:bg-\[\#1F2A44\]:hover { background-color: var(--bg-hover) !important; }
 [data-theme="light"] .hover\:bg-\[\#1A2538\]:hover { background-color: var(--bg-hover) !important; }
+[data-theme="light"] .hover\:bg-\[\#2A3A5C\]:hover { background-color: var(--bg-hover) !important; }
 [data-theme="light"] .hover\:border-\[\#344570\]:hover { border-color: var(--border-hover) !important; }
+[data-theme="light"] .hover\:border-\[\#D4A373\]\/40:hover { border-color: var(--border-hover) !important; }
+
+/* --- Focus/ring overrides --- */
+[data-theme="light"] .focus\:ring-\[\#D4A373\]\/40:focus { --tw-ring-color: var(--input-ring) !important; }
+[data-theme="light"] .focus\:ring-\[\#D4A373\]\/50:focus { --tw-ring-color: var(--input-ring) !important; }
+[data-theme="light"] .focus\:ring-\[\#D4A373\]\/30:focus { --tw-ring-color: var(--input-ring) !important; }
+[data-theme="light"] .focus\:border-\[\#D4A373\]:focus { border-color: var(--input-border-focus) !important; }
+[data-theme="light"] .focus\:border-\[\#D4A373\]\/50:focus { border-color: var(--input-border-focus) !important; }
+[data-theme="light"] .focus\:ring-1:focus { --tw-ring-color: var(--input-ring) !important; }
 
 /* --- Semi-transparent dark backgrounds --- */
 [data-theme="light"] .bg-green-900\/40 { background: rgba(22, 163, 74, 0.08) !important; }
+[data-theme="light"] .bg-green-900\/30 { background: rgba(22, 163, 74, 0.06) !important; }
+[data-theme="light"] .bg-green-900\/20 { background: rgba(22, 163, 74, 0.05) !important; }
 [data-theme="light"] .bg-red-900\/40 { background: rgba(220, 38, 38, 0.06) !important; }
-[data-theme="light"] .bg-red-900\/20 { background: rgba(220, 38, 38, 0.06) !important; }
 [data-theme="light"] .bg-red-900\/30 { background: rgba(220, 38, 38, 0.06) !important; }
+[data-theme="light"] .bg-red-900\/20 { background: rgba(220, 38, 38, 0.05) !important; }
 [data-theme="light"] .bg-blue-900\/40 { background: rgba(59, 130, 246, 0.08) !important; }
+[data-theme="light"] .bg-blue-900\/30 { background: rgba(59, 130, 246, 0.06) !important; }
 [data-theme="light"] .bg-yellow-900\/40 { background: rgba(202, 138, 4, 0.08) !important; }
 [data-theme="light"] .bg-orange-900\/40 { background: rgba(194, 65, 12, 0.08) !important; }
 [data-theme="light"] .bg-brand-900\/40 { background: rgba(168, 123, 61, 0.1) !important; }
+[data-theme="light"] .bg-brand-900\/30 { background: rgba(168, 123, 61, 0.08) !important; }
 [data-theme="light"] .bg-brand-950 { background: rgba(168, 123, 61, 0.08) !important; }
 [data-theme="light"] .bg-brand-950\/50 { background: rgba(168, 123, 61, 0.06) !important; }
 
-/* --- Dark bg text that needs inversion --- */
+/* --- Brand solid backgrounds (buttons, accents) --- */
+[data-theme="light"] .bg-\[\#D4A373\] { background-color: #9A6B3F !important; }
+[data-theme="light"] .bg-\[\#D4A373\]\/10 { background-color: rgba(154, 107, 63, 0.08) !important; }
+[data-theme="light"] .bg-\[\#D4A373\]\/20 { background-color: rgba(154, 107, 63, 0.12) !important; }
+[data-theme="light"] .hover\:bg-\[\#D4A373\]\/90:hover { background-color: #8B5E35 !important; }
+[data-theme="light"] .bg-\[\#635BFF\] { background-color: #5B54E8 !important; }
+[data-theme="light"] .hover\:bg-\[\#635BFF\]\/90:hover { background-color: #4F49D6 !important; }
+
+/* --- Dark bg text colors that need inversion --- */
 [data-theme="light"] .text-green-400 { color: #15803d !important; }
+[data-theme="light"] .text-green-300 { color: #16a34a !important; }
 [data-theme="light"] .text-red-400 { color: #b91c1c !important; }
-[data-theme="light"] .text-red-300 { color: #b91c1c !important; }
+[data-theme="light"] .text-red-300 { color: #dc2626 !important; }
 [data-theme="light"] .text-blue-400 { color: #1d4ed8 !important; }
+[data-theme="light"] .text-blue-300 { color: #2563eb !important; }
 [data-theme="light"] .text-yellow-400 { color: #a16207 !important; }
+[data-theme="light"] .text-yellow-300 { color: #ca8a04 !important; }
 [data-theme="light"] .text-orange-400 { color: #c2410c !important; }
+[data-theme="light"] .text-amber-400 { color: #b45309 !important; }
 [data-theme="light"] .text-brand-300 { color: #8B6429 !important; }
 [data-theme="light"] .text-brand-400 { color: #9A6B3F !important; }
+
+/* --- Green/red dot and progress colors --- */
+[data-theme="light"] .bg-green-400 { background-color: #16a34a !important; }
+[data-theme="light"] .bg-red-400 { background-color: #dc2626 !important; }
+[data-theme="light"] .bg-blue-400 { background-color: #2563eb !important; }
+[data-theme="light"] .bg-yellow-400 { background-color: #ca8a04 !important; }
+[data-theme="light"] .bg-brand-400 { background-color: #9A6B3F !important; }
+[data-theme="light"] .bg-brand-500 { background-color: #9A6B3F !important; }
+[data-theme="light"] .bg-brand-500\/10 { background-color: rgba(154, 107, 63, 0.08) !important; }
+[data-theme="light"] .bg-brand-500\/60 { background-color: rgba(154, 107, 63, 0.35) !important; }
 
 /* --- Dark border variants --- */
 [data-theme="light"] .border-red-900\/50 { border-color: rgba(220, 38, 38, 0.15) !important; }
 [data-theme="light"] .border-red-800\/50 { border-color: rgba(220, 38, 38, 0.15) !important; }
 [data-theme="light"] .border-red-800\/40 { border-color: rgba(220, 38, 38, 0.15) !important; }
+[data-theme="light"] .border-red-800\/60 { border-color: rgba(220, 38, 38, 0.18) !important; }
 [data-theme="light"] .border-green-800\/40 { border-color: rgba(22, 163, 74, 0.15) !important; }
-[data-theme="light"] .border-green-800\/60 { border-color: rgba(22, 163, 74, 0.15) !important; }
+[data-theme="light"] .border-green-800\/60 { border-color: rgba(22, 163, 74, 0.18) !important; }
+[data-theme="light"] .border-green-500\/20 { border-color: rgba(22, 163, 74, 0.15) !important; }
+[data-theme="light"] .border-green-500\/30 { border-color: rgba(22, 163, 74, 0.18) !important; }
 [data-theme="light"] .border-blue-800\/40 { border-color: rgba(59, 130, 246, 0.15) !important; }
-[data-theme="light"] .border-blue-800\/60 { border-color: rgba(59, 130, 246, 0.15) !important; }
+[data-theme="light"] .border-blue-800\/60 { border-color: rgba(59, 130, 246, 0.18) !important; }
 [data-theme="light"] .border-yellow-800\/40 { border-color: rgba(202, 138, 4, 0.15) !important; }
 [data-theme="light"] .border-brand-800\/40 { border-color: rgba(168, 123, 61, 0.2) !important; }
-[data-theme="light"] .border-brand-800\/60 { border-color: rgba(168, 123, 61, 0.2) !important; }
+[data-theme="light"] .border-brand-800\/60 { border-color: rgba(168, 123, 61, 0.25) !important; }
+[data-theme="light"] .border-brand-500\/30 { border-color: rgba(168, 123, 61, 0.2) !important; }
+[data-theme="light"] .border-brand-400 { border-color: rgba(168, 123, 61, 0.3) !important; }
+[data-theme="light"] .border-\[\#D4A373\] { border-color: #9A6B3F !important; }
+[data-theme="light"] .border-\[\#D4A373\]\/50 { border-color: rgba(154, 107, 63, 0.3) !important; }
 
 /* --- Hover link/brand colors --- */
 [data-theme="light"] .hover\:text-brand-300:hover { color: #7D5633 !important; }
 [data-theme="light"] .hover\:text-brand-400:hover { color: #8B6429 !important; }
 [data-theme="light"] .hover\:text-red-400:hover { color: #991b1b !important; }
+[data-theme="light"] .hover\:text-green-400:hover { color: #15803d !important; }
 [data-theme="light"] .hover\:bg-red-900\/20:hover { background: rgba(220, 38, 38, 0.1) !important; }
+[data-theme="light"] .hover\:bg-brand-400:hover { background: #8B5E35 !important; }
+[data-theme="light"] .hover\:border-brand-400:hover { border-color: rgba(168, 123, 61, 0.35) !important; }
+[data-theme="light"] .hover\:border-brand-500\/40:hover { border-color: rgba(168, 123, 61, 0.25) !important; }
+
+/* --- Onboarding-specific: dark page with colored date inputs --- */
+[data-theme="light"] .text-\[\#0B1120\] { color: var(--text-primary) !important; }
+[data-theme="light"] .\[color-scheme\:dark\] { color-scheme: light !important; }
+
+/* --- Slate/neutral dark-mode colors --- */
+[data-theme="light"] .bg-slate-500\/10 { background: rgba(100, 116, 139, 0.06) !important; }
+[data-theme="light"] .text-slate-400 { color: #64748b !important; }
+[data-theme="light"] .border-slate-500\/20 { border-color: rgba(100, 116, 139, 0.15) !important; }
+[data-theme="light"] .bg-amber-500\/10 { background: rgba(245, 158, 11, 0.06) !important; }
+[data-theme="light"] .text-amber-400 { color: #b45309 !important; }
+[data-theme="light"] .border-amber-500\/20 { border-color: rgba(245, 158, 11, 0.15) !important; }
+[data-theme="light"] .bg-green-500\/10 { background: rgba(22, 163, 74, 0.06) !important; }
+[data-theme="light"] .border-green-500\/10 { border-color: rgba(22, 163, 74, 0.1) !important; }
+[data-theme="light"] .bg-red-500\/10 { background: rgba(239, 68, 68, 0.06) !important; }
+[data-theme="light"] .border-red-500\/20 { border-color: rgba(239, 68, 68, 0.15) !important; }
+[data-theme="light"] .bg-blue-500\/10 { background: rgba(59, 130, 246, 0.06) !important; }
+
+/* --- Recharts / chart elements --- */
+[data-theme="light"] .recharts-cartesian-grid line { stroke: var(--border-subtle) !important; }
+[data-theme="light"] .recharts-text { fill: var(--text-muted) !important; }
+
+/* --- Scrollbar in light mode (for themed containers) --- */
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #C9C0B3; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #9A6B3F; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: #F2EEE8; }
+
+/* --- CAIN gradient buttons (gold gradients → deeper warm tones for light bg) --- */
+[data-theme="light"] .to-\[\#b8844f\] { --tw-gradient-to: #8B6A3E !important; }
+[data-theme="light"] .hover\:to-\[\#c99260\]:hover { --tw-gradient-to: #9A7848 !important; }
+[data-theme="light"] .hover\:from-\[\#e0b589\]:hover { --tw-gradient-from: #B8944A !important; }
+[data-theme="light"] .hover\:bg-\[\#c4935f\]:hover { background-color: #9A7848 !important; }
+
+/* --- Events BEO orange accent --- */
+[data-theme="light"] .bg-\[\#d4801f\] { background-color: #C07018 !important; }
+[data-theme="light"] .hover\:bg-\[\#b86d1a\]:hover { background-color: #A86215 !important; }
+
+/* --- Near-black BEO layout background --- */
+[data-theme="light"] .bg-\[\#0f0d0b\] { background-color: var(--bg-primary) !important; }
 
 @media print {
   body { background: white !important; color: black !important; }

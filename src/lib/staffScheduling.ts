@@ -5,6 +5,8 @@ export type ConflictInfo = {
   eventId: string;
   eventName: string;
   eventDate: string;
+  eventStartTime: string | null;
+  eventEndTime: string | null;
   role: string | null;
 };
 
@@ -28,43 +30,60 @@ export type StaffSuggestion = {
 };
 
 /**
- * Check if a staff member has a scheduling conflict on a given date.
- * Optionally exclude a specific event (useful when checking the event being edited).
+ * Check if a staff member has a scheduling conflict on a given date/time.
+ * When start_time and end_time are provided, checks for time-range overlap
+ * instead of just date collision. Optionally exclude a specific event.
  */
 export async function checkConflicts(
   staffId: string,
   eventDate: string,
-  eventId?: string
+  eventId?: string,
+  startTime?: string,
+  endTime?: string
 ): Promise<ConflictInfo | null> {
   const supabase = await createClient();
 
   // Find all assignments for this staff member
   const { data: assignments, error } = await supabase
     .from("event_staff_assignments")
-    .select("event_id, role, events!inner(id, name, event_date)")
+    .select("event_id, role, events!inner(id, name, event_date, start_time, end_time)")
     .eq("staff_member_id", staffId);
 
   if (error || !assignments) return null;
 
+  const checkDate = eventDate.split("T")[0];
+
   for (const assignment of assignments) {
-    const event = assignment.events as unknown as { id: string; name: string; event_date: string };
+    const event = assignment.events as unknown as {
+      id: string; name: string; event_date: string;
+      start_time: string | null; end_time: string | null;
+    };
     if (!event) continue;
 
     // Skip the current event if provided
     if (eventId && event.id === eventId) continue;
 
-    // Compare dates (normalize to YYYY-MM-DD)
+    // Compare dates first
     const assignedDate = event.event_date.split("T")[0];
-    const checkDate = eventDate.split("T")[0];
+    if (assignedDate !== checkDate) continue;
 
-    if (assignedDate === checkDate) {
-      return {
-        eventId: event.id,
-        eventName: event.name,
-        eventDate: event.event_date,
-        role: assignment.role,
-      };
+    // Same date — check time overlap if both events have time ranges
+    if (startTime && endTime && event.start_time && event.end_time) {
+      // No overlap if new event ends before or starts after existing event
+      if (endTime <= event.start_time || startTime >= event.end_time) {
+        continue; // No time overlap, not a conflict
+      }
     }
+
+    // Either times overlap, or one/both events lack time info (date conflict)
+    return {
+      eventId: event.id,
+      eventName: event.name,
+      eventDate: event.event_date,
+      eventStartTime: event.start_time,
+      eventEndTime: event.end_time,
+      role: assignment.role,
+    };
   }
 
   return null;

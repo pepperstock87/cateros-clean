@@ -7,6 +7,10 @@ import type { PricingData, PaymentData } from "@/types";
 import { logActivity } from "@/lib/activity";
 import { logAudit } from "@/lib/audit";
 import { getCurrentOrg } from "@/lib/organizations";
+import { domainEvents, registerDomainEventHandlers } from "@/lib/events";
+import { generateProduction } from "@/lib/actions/production";
+
+registerDomainEventHandlers();
 
 export async function createEventAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -133,6 +137,15 @@ export async function updateEventPricingAction(eventId: string, pricingData: Pri
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
+  // Fetch current event to check status and detect menu changes
+  let fetchQuery = supabase
+    .from("events")
+    .select("status, pricing_data")
+    .eq("id", eventId)
+    .eq("user_id", user.id);
+  if (org?.orgId) fetchQuery = fetchQuery.eq("organization_id", org.orgId);
+  const { data: currentEvent } = await fetchQuery.single();
+
   let pricingQuery = supabase
     .from("events")
     .update({ pricing_data: pricingData, updated_at: new Date().toISOString() })
@@ -145,6 +158,22 @@ export async function updateEventPricingAction(eventId: string, pricingData: Pri
 
   await logActivity(eventId, user.id, "pricing_update", "Pricing updated");
 
+  // Auto-regenerate production (shopping list + prep) when menu changes on confirmed events
+  if (currentEvent?.status === "confirmed") {
+    const oldMenu = (currentEvent.pricing_data as Record<string, unknown> | null)?.menuItems;
+    const newMenu = (pricingData as Record<string, unknown>)?.menuItems;
+    const menuChanged = JSON.stringify(oldMenu) !== JSON.stringify(newMenu);
+
+    if (menuChanged) {
+      try {
+        await generateProduction(eventId);
+      } catch (err) {
+        // Non-blocking — pricing was already saved
+        console.error("[events] Auto-regenerate production on menu change failed:", err instanceof Error ? err.message : err);
+      }
+    }
+  }
+
   revalidatePath(`/events/${eventId}`);
   return { success: true };
 }
@@ -154,6 +183,16 @@ export async function updateEventStatusAction(eventId: string, status: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
+
+  // Fetch current status before updating
+  const { data: currentEvent } = await supabase
+    .from("events")
+    .select("status")
+    .eq("id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  const fromStatus = currentEvent?.status || "unknown";
 
   let statusQuery = supabase
     .from("events")
@@ -168,6 +207,29 @@ export async function updateEventStatusAction(eventId: string, status: string) {
   await logActivity(eventId, user.id, "status_change", `Status changed to "${status}"`, {
     new_status: status,
   });
+
+  // Emit domain event
+  await domainEvents.emit(
+    "event.status_changed",
+    {
+      eventId,
+      userId: user.id,
+      orgId: org?.orgId || null,
+      fromStatus,
+      toStatus: status,
+    },
+    "actions/events"
+  );
+
+  // Auto-generate production sheets when event is confirmed
+  if (status === "confirmed" && fromStatus !== "confirmed") {
+    try {
+      await generateProduction(eventId);
+    } catch (err) {
+      // Non-blocking — event status was already updated
+      console.error("[events] Auto-generate production on confirm failed:", err instanceof Error ? err.message : err);
+    }
+  }
 
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/events");
@@ -430,6 +492,101 @@ export async function createRecurringEvents(sourceEventId: string, config: {
 
   revalidatePath("/events");
   return { success: true, eventIds: newEventIds };
+}
+
+/**
+ * Suggest baseline pricing from similar past events.
+ * Finds completed/confirmed events with similar guest count and event type,
+ * then returns average per-guest pricing as a suggestion.
+ */
+export async function suggestBaselinePricing(params: {
+  guestCount: number;
+  eventType?: string;
+  venue?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
+
+  // Find similar past events (within 50% guest count range)
+  const minGuests = Math.floor(params.guestCount * 0.5);
+  const maxGuests = Math.ceil(params.guestCount * 1.5);
+
+  let query = supabase
+    .from("events")
+    .select("id, name, guest_count, pricing_data, event_date, venue, status")
+    .eq("user_id", user.id)
+    .in("status", ["confirmed", "completed"])
+    .gte("guest_count", minGuests)
+    .lte("guest_count", maxGuests)
+    .not("pricing_data", "is", null)
+    .order("event_date", { ascending: false })
+    .limit(10);
+
+  if (org?.orgId) query = query.eq("organization_id", org.orgId);
+
+  const { data: events, error } = await query;
+  if (error || !events?.length) return { suggestions: null, pastEvents: [] };
+
+  // Calculate averages from past events
+  const validEvents = events.filter((e) => {
+    const pd = e.pricing_data as Record<string, unknown> | null;
+    return pd && typeof pd === "object" && "suggestedPrice" in pd;
+  });
+
+  if (!validEvents.length) return { suggestions: null, pastEvents: [] };
+
+  let totalPerGuest = 0;
+  let totalFoodCostPerGuest = 0;
+  let foodCostCount = 0;
+  const pastEventSummaries: Array<{
+    id: string;
+    name: string;
+    guestCount: number;
+    perGuest: number;
+    date: string;
+  }> = [];
+
+  for (const evt of validEvents) {
+    const pd = evt.pricing_data as Record<string, unknown>;
+    const suggestedPrice = Number(pd.suggestedPrice) || 0;
+    const guests = evt.guest_count || params.guestCount;
+    const perGuest = suggestedPrice / guests;
+    totalPerGuest += perGuest;
+
+    // Extract food cost if available
+    const menuItems = pd.menuItems as Array<{ costPerPerson?: number }> | undefined;
+    if (menuItems?.length) {
+      const foodCost = menuItems.reduce((sum, item) => sum + (Number(item.costPerPerson) || 0), 0);
+      totalFoodCostPerGuest += foodCost;
+      foodCostCount++;
+    }
+
+    pastEventSummaries.push({
+      id: evt.id,
+      name: evt.name,
+      guestCount: guests,
+      perGuest: Math.round(perGuest * 100) / 100,
+      date: evt.event_date,
+    });
+  }
+
+  const avgPerGuest = Math.round((totalPerGuest / validEvents.length) * 100) / 100;
+  const avgFoodCostPerGuest = foodCostCount > 0
+    ? Math.round((totalFoodCostPerGuest / foodCostCount) * 100) / 100
+    : null;
+
+  return {
+    suggestions: {
+      avgPerGuest,
+      avgFoodCostPerGuest,
+      suggestedTotal: Math.round(avgPerGuest * params.guestCount * 100) / 100,
+      basedOnCount: validEvents.length,
+      guestRange: { min: minGuests, max: maxGuests },
+    },
+    pastEvents: pastEventSummaries,
+  };
 }
 
 export async function deleteTemplateAction(templateId: string) {

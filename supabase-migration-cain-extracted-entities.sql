@@ -1,0 +1,1 @@
+ALTER TABLE cain_drafts ADD COLUMN IF NOT EXISTS extracted_entities JSONB DEFAULT NULL;

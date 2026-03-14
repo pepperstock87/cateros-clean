@@ -21,11 +21,18 @@ import {
   Utensils,
   RotateCcw,
   Loader2,
+  TrendingUp,
 } from "lucide-react";
-import type { CainEventPlan } from "@/lib/cain/types";
+import type { CainEventPlan, CainDraftRecipe } from "@/lib/cain/types";
 import type { MenuItem, StaffingLine, RentalLine, BarPackage } from "@/types";
 import { calculatePricing } from "@/lib/pricing";
 import { formatCurrency } from "@/lib/utils";
+import { RecipeDraftReview } from "./RecipeDraftReview";
+import { ShoppingPreview } from "./ShoppingPreview";
+import { PrepPreview } from "./PrepPreview";
+import { MarginInsight } from "./MarginInsight";
+import { TimelinePreview } from "./TimelinePreview";
+import { ProcurementPreview } from "./ProcurementPreview";
 
 interface PlanReviewProps {
   plan: CainEventPlan;
@@ -123,6 +130,7 @@ function ConfidenceBadge({ confidence }: { confidence: "exact" | "partial" | "no
 // ---- Main Component ----
 export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
   const [committing, setCommitting] = useState(false);
+  const [commitError, setCommitError] = useState<string | null>(null);
 
   // Editable event details
   const [eventDetails, setEventDetails] = useState({ ...plan.event });
@@ -149,6 +157,11 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
 
   // Recipe matches (read-only reference)
   const recipeMatches = plan.recipeMatches;
+
+  // Draft recipes (editable)
+  const [draftRecipes, setDraftRecipes] = useState<CainDraftRecipe[]>(
+    (plan.draftRecipes || []).map((d) => ({ ...d, recipe: { ...d.recipe, ingredients: [...d.recipe.ingredients] } }))
+  );
 
   // Calculated pricing
   const pricing = useMemo(
@@ -183,13 +196,19 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
         targetMarginPercent,
       },
       timeline,
+      draftRecipes,
     };
-  }, [plan, eventDetails, pricing, menuItems, staffing, rentals, barPackage, adminPercent, taxPercent, targetMarginPercent, timeline]);
+  }, [plan, eventDetails, pricing, menuItems, staffing, rentals, barPackage, adminPercent, taxPercent, targetMarginPercent, timeline, draftRecipes]);
 
   async function handleCommit() {
     setCommitting(true);
+    setCommitError(null);
     try {
       await onCommit(buildFinalPlan());
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create event";
+      setCommitError(message);
     } finally {
       setCommitting(false);
     }
@@ -360,7 +379,13 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
                       />
                     </td>
                     <td className="py-2 pr-2 text-center">
-                      {match ? <ConfidenceBadge confidence={match.confidence} /> : <span className="text-[var(--text-muted)]">--</span>}
+                      {match ? (
+                        match.draftRecipeId && draftRecipes.find((d) => d.id === match.draftRecipeId)?.approved
+                          ? <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400"><CheckCircle2 className="w-3 h-3" /> Draft OK</span>
+                          : match.draftRecipeId
+                            ? <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-400">Draft</span>
+                            : <ConfidenceBadge confidence={match.confidence} />
+                      ) : <span className="text-[var(--text-muted)]">--</span>}
                     </td>
                     <td className="py-2">
                       <button onClick={() => removeMenuItem(item.id)} className="p-1 text-[var(--text-muted)] hover:text-red-400 transition-colors">
@@ -380,6 +405,69 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
           </button>
         </div>
       </Section>
+
+      {/* ---- Draft Recipes ---- */}
+      {draftRecipes.length > 0 && (
+        <RecipeDraftReview
+          drafts={draftRecipes}
+          onApprove={(id) =>
+            setDraftRecipes((prev) =>
+              prev.map((d) => (d.id === id ? { ...d, approved: true } : d))
+            )
+          }
+          onDiscard={(id) =>
+            setDraftRecipes((prev) => prev.filter((d) => d.id !== id))
+          }
+          onUpdateRecipe={(id, updates) =>
+            setDraftRecipes((prev) =>
+              prev.map((d) =>
+                d.id === id
+                  ? { ...d, recipe: { ...d.recipe, ...updates } }
+                  : d
+              )
+            )
+          }
+          onApproveAll={() =>
+            setDraftRecipes((prev) =>
+              prev.map((d) => ({ ...d, approved: true }))
+            )
+          }
+        />
+      )}
+
+      {/* ---- Shopping Preview ---- */}
+      {plan.shoppingList && plan.shoppingList.items.length > 0 && (
+        <ShoppingPreview shoppingList={plan.shoppingList} />
+      )}
+
+      {/* ---- Procurement Draft ---- */}
+      {plan.procurementDraft && plan.procurementDraft.totalMappedItems > 0 && (
+        <Section title="Purchase Orders" icon={Package} badge={
+          plan.procurementDraft.unmappedItems.length > 0 ? (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-yellow-800/30 text-yellow-300">
+              {plan.procurementDraft.unmappedItems.length} unmapped
+            </span>
+          ) : undefined
+        }>
+          <ProcurementPreview draft={plan.procurementDraft} />
+        </Section>
+      )}
+
+      {/* ---- Prep Preview ---- */}
+      {plan.prepPreview && plan.prepPreview.totalTasks > 0 && (
+        <PrepPreview prepPreview={plan.prepPreview} />
+      )}
+
+      {/* ---- Timeline ---- */}
+      {plan.timeline && plan.timeline.length > 0 && (
+        <Section title="Event Timeline" icon={Clock} badge={
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-primary)] text-[var(--text-muted)]">
+            {plan.timeline.length} items
+          </span>
+        }>
+          <TimelinePreview items={plan.timeline} />
+        </Section>
+      )}
 
       {/* ---- Staffing ---- */}
       <Section title="Staffing" icon={Users}>
@@ -622,6 +710,23 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
         </div>
       </Section>
 
+      {/* ---- Margin Insight ---- */}
+      {plan.marginAnalysis && (
+        <Section title="Margin Analysis" icon={TrendingUp} badge={
+          plan.marginAnalysis.costFlags.length > 0 ? (
+            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+              plan.marginAnalysis.costFlags.some((f) => f.severity === "critical")
+                ? "bg-red-800/30 text-red-300"
+                : "bg-yellow-800/30 text-yellow-300"
+            }`}>
+              {plan.marginAnalysis.costFlags.length} flag{plan.marginAnalysis.costFlags.length !== 1 ? "s" : ""}
+            </span>
+          ) : undefined
+        }>
+          <MarginInsight analysis={plan.marginAnalysis} guestCount={eventDetails.guest_count} />
+        </Section>
+      )}
+
       {/* ---- Inventory Warnings ---- */}
       {plan.inventoryWarnings.length > 0 && (
         <Section title="Inventory Warnings" icon={AlertOctagon} defaultOpen={true}>
@@ -710,31 +815,44 @@ export function PlanReview({ plan, onCommit, onStartOver }: PlanReviewProps) {
       )}
 
       {/* ---- Actions ---- */}
-      <div className="flex items-center justify-between pt-4 pb-8">
-        <button
-          onClick={onStartOver}
-          className="flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-secondary)] transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Start Over
-        </button>
-        <button
-          onClick={handleCommit}
-          disabled={committing}
-          className="flex items-center gap-2 px-8 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#D4A373] to-[#b8844f] text-[#0B1120] hover:from-[#e0b589] hover:to-[#c99260] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#D4A373]/20"
-        >
-          {committing ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Creating Event...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="w-4 h-4" />
-              Create This Event
-            </>
-          )}
-        </button>
+      <div className="pt-4 pb-8 space-y-3">
+        {commitError && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-900/15 border border-red-800/30 text-sm text-red-300">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-red-400" />
+            <span>{commitError}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={onStartOver}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg-secondary)] transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Start Over
+          </button>
+          <button
+            onClick={handleCommit}
+            disabled={committing}
+            className="flex items-center gap-2 px-8 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#D4A373] to-[#b8844f] text-[#0B1120] hover:from-[#e0b589] hover:to-[#c99260] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#D4A373]/20"
+          >
+            {committing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Creating Event...
+              </>
+            ) : commitError ? (
+              <>
+                <RotateCcw className="w-4 h-4" />
+                Retry
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" />
+                Create This Event
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

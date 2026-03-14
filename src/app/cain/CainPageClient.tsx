@@ -3,9 +3,14 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Send, Loader2, RotateCcw, Sparkles } from "lucide-react";
-import type { CainEventPlan, CainProgressEvent } from "@/lib/cain/types";
+import { Send, Loader2, RotateCcw, Sparkles, PanelRight } from "lucide-react";
+import type { CainEventPlan, CainProgressEvent, CainDraftSnapshot, ExtractedEntities } from "@/lib/cain/types";
+import { createEntityState, mergeEntityUpdate } from "@/lib/cain/entity-extractor";
 import { PlanReview } from "./components/PlanReview";
+import { DraftStatusIndicator } from "./components/DraftStatusIndicator";
+import { ExtractionPanel, countEntities } from "./components/ExtractionPanel";
+import { useCainDraft } from "@/hooks/useCainDraft";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 interface ChatMessage {
   id: string;
@@ -30,16 +35,98 @@ const WELCOME_MESSAGE: ChatMessage = {
     "Hi, I'm C.A.I.N. — your AI event planning assistant. Tell me about the event you'd like to plan, and I'll help you build the menu, staffing, timeline, and pricing.\n\nWhat are you working on?",
 };
 
-export function CainPageClient() {
+export function CainPageClient({ userId }: { userId: string }) {
   const router = useRouter();
+  const {
+    draftId,
+    initialState,
+    saveStatus,
+    hasDraft,
+    loaded,
+    persistDraft,
+    clearDraft,
+    abandonDraft,
+  } = useCainDraft(userId);
+
+  const { markDirty, markClean } = useUnsavedChanges();
+
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [plan, setPlan] = useState<CainEventPlan | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [extractedEntities, setExtractedEntities] = useState<ExtractedEntities>(createEntityState());
+  const [showExtractionPanel, setShowExtractionPanel] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Restore from draft when initialState arrives
+  useEffect(() => {
+    if (!loaded || initialized) return;
+
+    if (initialState && initialState.messages.length > 0) {
+      setShowResumeBanner(true);
+    }
+    setInitialized(true);
+  }, [loaded, initialState, initialized]);
+
+  function resumeFromDraft() {
+    if (!initialState) return;
+    setMessages(initialState.messages.map((m) => ({ ...m })));
+    setPlan(initialState.plan);
+    setShowReview(initialState.showReview);
+    setInput(initialState.lastInput);
+    if (initialState.extractedEntities) {
+      setExtractedEntities(initialState.extractedEntities);
+      setShowExtractionPanel(true);
+    }
+    setShowResumeBanner(false);
+    markDirty();
+  }
+
+  function startFresh() {
+    setShowResumeBanner(false);
+    abandonDraft();
+    setMessages([WELCOME_MESSAGE]);
+    setPlan(null);
+    setShowReview(false);
+    setInput("");
+    setExtractedEntities(createEntityState());
+    setShowExtractionPanel(false);
+    markClean();
+  }
+
+  // Autosave on state changes (skip when only welcome message)
+  useEffect(() => {
+    if (!initialized || !loaded) return;
+    if (showResumeBanner) return; // Don't overwrite draft before user decides
+
+    const hasContent = messages.length > 1 || plan !== null;
+    if (!hasContent) return;
+
+    // Strip transient UI state for persistence
+    const cleanMessages = messages.map(({ id, role, content }) => ({
+      id,
+      role,
+      content,
+    }));
+
+    const snapshot: CainDraftSnapshot = {
+      draftId: draftId || "",
+      messages: cleanMessages,
+      plan,
+      showReview,
+      lastInput: input,
+      updatedAt: Date.now(),
+      extractedEntities: countEntities(extractedEntities) > 0 ? extractedEntities : null,
+    };
+
+    persistDraft(snapshot);
+    markDirty();
+  }, [messages, plan, showReview, input, initialized, loaded, showResumeBanner, draftId, persistDraft, markDirty]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -142,6 +229,9 @@ export function CainPageClient() {
                       : m
                   )
                 );
+              } else if (event.type === "entity_update") {
+                setExtractedEntities(event.fullSnapshot);
+                setShowExtractionPanel(true);
               } else if (event.type === "plan_ready") {
                 setPlan(event.plan);
                 // Add a message about the plan being ready
@@ -243,23 +333,65 @@ export function CainPageClient() {
 
         const { eventId } = await res.json();
         toast.success("Event created successfully");
+        markClean();
+        await clearDraft();
         router.push(`/events/${eventId}`);
       } catch (err: unknown) {
+        // Don't navigate, don't reset — draft is safe
         const message =
           err instanceof Error ? err.message : "Failed to create event";
-        toast.error(message);
+        throw new Error(message);
       }
     },
-    [router]
+    [router, clearDraft, markClean]
   );
 
   const handleStartOver = useCallback(() => {
+    abandonDraft();
     setMessages([WELCOME_MESSAGE]);
     setPlan(null);
     setShowReview(false);
     setInput("");
     setIsGenerating(false);
-  }, []);
+    setExtractedEntities(createEntityState());
+    setShowExtractionPanel(false);
+    markClean();
+  }, [abandonDraft, markClean]);
+
+  const handleCorrectEntity = useCallback(
+    (category: string, key: string, newValue: string) => {
+      setExtractedEntities((prev) => {
+        const correction = {
+          key,
+          value: newValue,
+          confidence: "confirmed" as const,
+          source: "user_correction",
+          updatedAt: Date.now(),
+        };
+
+        if (category === "budget" || category === "serviceStyle") {
+          return mergeEntityUpdate(prev, { [category]: correction });
+        }
+
+        if (category === "event" || category === "client") {
+          return mergeEntityUpdate(prev, {
+            [category]: { [key]: correction },
+          });
+        }
+
+        // Array categories
+        const arr = [...(prev[category as keyof Pick<ExtractedEntities, "menu" | "staffing" | "rentals" | "timeline">] || [])];
+        const idx = arr.findIndex((e) => e.key === key);
+        if (idx >= 0) {
+          arr[idx] = correction;
+        }
+        return mergeEntityUpdate(prev, { [category]: arr } as Partial<ExtractedEntities>);
+      });
+    },
+    []
+  );
+
+  const entityCount = countEntities(extractedEntities);
 
   // Show plan review overlay
   if (showReview && plan) {
@@ -284,7 +416,9 @@ export function CainPageClient() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl w-full h-[calc(100vh-80px)] flex flex-col px-4 sm:px-6">
+    <div className="flex h-[calc(100vh-80px)] w-full">
+    {/* Chat column */}
+    <div className={`flex-1 min-w-0 flex flex-col px-4 sm:px-6 mx-auto ${showExtractionPanel ? "max-w-3xl" : "max-w-3xl"}`}>
       {/* Header */}
       <div className="flex-shrink-0 py-5 border-b border-[var(--border)]">
         <div className="flex items-center justify-between">
@@ -300,18 +434,58 @@ export function CainPageClient() {
                 Catering AI Navigator
               </p>
             </div>
+            <DraftStatusIndicator status={saveStatus} />
           </div>
-          {messages.length > 1 && (
-            <button
-              onClick={handleStartOver}
-              className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1 rounded-lg hover:bg-[var(--bg-secondary)]"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              New conversation
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {entityCount > 0 && (
+              <button
+                onClick={() => setShowExtractionPanel(!showExtractionPanel)}
+                className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1 rounded-lg hover:bg-[var(--bg-secondary)] relative"
+              >
+                <PanelRight className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#D4A373]/15 text-[#D4A373]">
+                  {entityCount}
+                </span>
+              </button>
+            )}
+            {messages.length > 1 && (
+              <button
+                onClick={handleStartOver}
+                className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1 rounded-lg hover:bg-[var(--bg-secondary)]"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                New conversation
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Resume banner */}
+      {showResumeBanner && (
+        <div className="flex-shrink-0 mt-4 p-4 rounded-xl border border-[#D4A373]/30 bg-[#D4A373]/5">
+          <p className="text-sm text-[var(--text-primary)] font-medium mb-1">
+            You have an unfinished session
+          </p>
+          <p className="text-xs text-[var(--text-muted)] mb-3">
+            Pick up where you left off, or start fresh.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={resumeFromDraft}
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#D4A373] to-[#b8844f] text-[#0B1120] hover:from-[#e0b589] hover:to-[#c99260] transition-all"
+            >
+              Resume
+            </button>
+            <button
+              onClick={startFresh}
+              className="px-4 py-2 text-xs font-medium rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              Start Fresh
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div
@@ -330,7 +504,7 @@ export function CainPageClient() {
       </div>
 
       {/* Quick prompts — show only when just the welcome message exists */}
-      {messages.length === 1 && (
+      {messages.length === 1 && !showResumeBanner && (
         <div className="flex-shrink-0 pb-3">
           <div className="flex flex-wrap gap-2">
             {QUICK_PROMPTS.map((prompt) => (
@@ -378,6 +552,16 @@ export function CainPageClient() {
           for new line
         </p>
       </div>
+    </div>
+
+    {/* Extraction side panel */}
+    {showExtractionPanel && entityCount > 0 && (
+      <ExtractionPanel
+        entities={extractedEntities}
+        onClose={() => setShowExtractionPanel(false)}
+        onCorrectEntity={handleCorrectEntity}
+      />
+    )}
     </div>
   );
 }

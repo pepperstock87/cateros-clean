@@ -224,7 +224,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const org = await getCurrentOrg();
-  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome, onboarding_completed").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome, onboarding_completed, business_type, primary_goal").eq("id", user.id).single();
 
   if (profile && profile.onboarding_completed === false) {
     redirect("/onboarding");
@@ -232,6 +232,22 @@ export default async function DashboardPage() {
   const stats = await getDashboardData(user.id, org?.orgId ?? null);
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
+
+  // Role-aware terminology
+  const businessType = profile?.business_type || "caterer";
+  const ROLE_TERMS: Record<string, { event: string; proposal: string }> = {
+    caterer: { event: "Event", proposal: "Proposal" },
+    restaurant: { event: "Private Event", proposal: "Proposal" },
+    private_chef: { event: "Dinner", proposal: "Proposal" },
+    venue: { event: "Booking", proposal: "Quote" },
+    event_planner: { event: "Event", proposal: "Proposal" },
+    florist: { event: "Job", proposal: "Floral Quote" },
+    band_entertainment: { event: "Gig", proposal: "Contract" },
+    rental_company: { event: "Reservation", proposal: "Rental Quote" },
+    hospitality_management: { event: "Event", proposal: "Proposal" },
+    other: { event: "Event", proposal: "Proposal" },
+  };
+  const terms = ROLE_TERMS[businessType] || ROLE_TERMS.caterer;
 
   // Build smart alerts
   const alerts: AlertItem[] = [];
@@ -345,13 +361,13 @@ export default async function DashboardPage() {
           <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="How's my business?" />
           <Link href="/proposals" className="btn-secondary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
             <Send className="w-4 h-4" />
-            <span className="hidden sm:inline">New proposal</span>
-            <span className="sm:hidden">Proposal</span>
+            <span className="hidden sm:inline">New {terms.proposal.toLowerCase()}</span>
+            <span className="sm:hidden">{terms.proposal}</span>
           </Link>
           <Link href="/events/new" className="btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">New event</span>
-            <span className="sm:hidden">Event</span>
+            <span className="hidden sm:inline">New {terms.event.toLowerCase()}</span>
+            <span className="sm:hidden">{terms.event}</span>
           </Link>
         </div>
       </div>
@@ -360,7 +376,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         {[
           { icon: DollarSign, label: "Revenue", fullLabel: "Revenue this month", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
-          { icon: CalendarDays, label: "Events", fullLabel: "Events this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
+          { icon: CalendarDays, label: terms.event + "s", fullLabel: terms.event + "s this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
           { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
           { icon: FileText, label: "Proposals", fullLabel: "Pending Proposals", value: stats.pendingProposalsCount, prev: null, color: "text-[#D4A373]", raw: true, noDelta: true },
         ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw, noDelta }: any) => {
@@ -411,7 +427,7 @@ export default async function DashboardPage() {
               ) : (
                 <div className="flex items-center gap-1 mt-1.5">
                   <span className="text-[10px] md:text-xs text-[#7A8BA8]">
-                    {stats.proposedPipeline.count} proposed, {stats.confirmedPipeline.count} confirmed
+                    {stats.proposedPipeline.count} proposed, {stats.confirmedPipeline.count} confirmed {terms.event.toLowerCase()}s
                   </span>
                 </div>
               )}
@@ -452,7 +468,7 @@ export default async function DashboardPage() {
           </div>
           <div className="text-lg md:text-2xl font-semibold font-display">{formatCurrency(stats.proposedPipeline.total)}</div>
           <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
-            {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? "event" : "events"}
+            {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
           </div>
         </div>
         <div className="card p-4 md:p-5">
@@ -462,7 +478,7 @@ export default async function DashboardPage() {
           </div>
           <div className="text-lg md:text-2xl font-semibold font-display text-green-400">{formatCurrency(stats.confirmedPipeline.total)}</div>
           <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
-            {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? "event" : "events"}
+            {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
           </div>
         </div>
       </div>
@@ -549,15 +565,15 @@ export default async function DashboardPage() {
       {/* Recent Events */}
       <div className="card p-4 md:p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Recent Events</h2>
+          <h2 className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Recent {terms.event}s</h2>
           <Link href="/events" className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1">
             View all<ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         {stats.recentEvents.length === 0 ? (
           <p className="text-sm text-[#7A8BA8] text-center py-8">
-            No events yet.{" "}
-            <Link href="/events/new" className="text-brand-400 hover:text-brand-300 underline">Create your first event</Link>
+            No {terms.event.toLowerCase()}s yet.{" "}
+            <Link href="/events/new" className="text-brand-400 hover:text-brand-300 underline">Create your first {terms.event.toLowerCase()}</Link>
           </p>
         ) : (
           <div className="overflow-x-auto -mx-4 md:mx-0">
@@ -565,7 +581,7 @@ export default async function DashboardPage() {
               <table className="w-full text-xs md:text-sm">
                 <thead className="text-[#7A8BA8] border-b border-[#2A3A5C]">
                   <tr>
-                    <th className="text-left py-2 font-medium">Event</th>
+                    <th className="text-left py-2 font-medium">{terms.event}</th>
                     <th className="text-left py-2 font-medium hidden sm:table-cell">Client</th>
                     <th className="text-left py-2 font-medium">Date</th>
                     <th className="text-right py-2 font-medium hidden md:table-cell">Value</th>

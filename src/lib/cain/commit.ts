@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
 import { logActivity } from "@/lib/activity";
+import { generateProduction } from "@/lib/actions/production";
 import type { CainEventPlan } from "./types";
 import type { PricingData } from "@/types";
 
@@ -90,6 +91,34 @@ export async function commitCainPlan(params: {
         // Log but don't fail the whole operation — the event was already created
         console.error("Failed to insert timeline items:", timelineError.message);
       }
+    }
+
+    // Approve draft recipes that the user accepted
+    if (plan.draftRecipes && plan.draftRecipes.length > 0) {
+      for (const draft of plan.draftRecipes) {
+        if (!draft.approved) continue;
+
+        // If the draft was already saved to DB (has a real UUID), update its status
+        if (draft.id && !draft.id.startsWith("draft-recipe-")) {
+          const { error: recipeError } = await supabase
+            .from("recipes")
+            .update({ status: "approved" })
+            .eq("id", draft.id)
+            .eq("user_id", userId);
+
+          if (recipeError) {
+            console.error("Failed to approve draft recipe:", recipeError.message);
+          }
+        }
+      }
+    }
+
+    // Auto-generate production (prep items, shopping items, pack list)
+    try {
+      await generateProduction(event.id);
+    } catch (prodErr) {
+      console.error("Failed to auto-generate production:", prodErr instanceof Error ? prodErr.message : prodErr);
+      // Non-blocking — event was already created successfully
     }
 
     // Log activity

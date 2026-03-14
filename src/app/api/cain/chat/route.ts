@@ -4,10 +4,12 @@ import { getCurrentOrg } from "@/lib/organizations";
 import { createCainSession } from "@/lib/cain/service";
 import { runCainChat } from "@/lib/cain/chat-engine";
 import { registerDomainEventHandlers } from "@/lib/events";
+import { registerQBEventHandlers } from "@/lib/quickbooks";
 
 export const maxDuration = 60;
 
 registerDomainEventHandlers();
+registerQBEventHandlers();
 
 export async function POST(request: NextRequest) {
   try {

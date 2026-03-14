@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentOrg } from "@/lib/organizations";
+import type { BusinessType, PrimaryGoal } from "@/types";
 
 export async function dismissWelcomeAction() {
   const supabase = await createClient();
@@ -97,6 +98,41 @@ export async function createEventOnboarding(data: {
   }
 
   revalidatePath("/events");
+  return { success: true };
+}
+
+export async function saveRoleSelection(data: {
+  business_type: BusinessType;
+  primary_goal: PrimaryGoal;
+  secondary_business_types: BusinessType[];
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // Look up default modules for this business type
+  const { data: config } = await supabase
+    .from("business_type_configs")
+    .select("default_modules")
+    .eq("business_type", data.business_type)
+    .single();
+
+  const defaultModules = config?.default_modules || ["events", "crm", "calendar", "billing"];
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      business_type: data.business_type,
+      primary_goal: data.primary_goal,
+      secondary_business_types: data.secondary_business_types,
+      enabled_modules: defaultModules,
+      onboarding_role_completed: true,
+    })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/onboarding");
   return { success: true };
 }
 

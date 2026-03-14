@@ -1,3 +1,33 @@
+export type BusinessType =
+  | "caterer"
+  | "restaurant"
+  | "private_chef"
+  | "venue"
+  | "event_planner"
+  | "florist"
+  | "band_entertainment"
+  | "rental_company"
+  | "hospitality_management"
+  | "other";
+
+export type PrimaryGoal =
+  | "book_more_business"
+  | "manage_events"
+  | "create_proposals"
+  | "organize_staff"
+  | "track_costs"
+  | "coordinate_vendors"
+  | "run_production"
+  | "build_client_relationships";
+
+export type BusinessTypeConfig = {
+  business_type: BusinessType;
+  display_name: string;
+  default_modules: string[];
+  default_nav_order: string[];
+  terminology: Record<string, string>;
+};
+
 export type UserProfile = {
   id: string;
   email: string;
@@ -11,6 +41,11 @@ export type UserProfile = {
   stripe_connect_account_id: string | null;
   stripe_connect_onboarded: boolean;
   onboarding_completed: boolean;
+  business_type: BusinessType;
+  primary_goal: PrimaryGoal;
+  enabled_modules: string[];
+  secondary_business_types: BusinessType[];
+  onboarding_role_completed: boolean;
   created_at: string;
 };
 
@@ -110,6 +145,9 @@ export type Recipe = {
   case_unit_type: string | null;
   yield_percent: number | null;
   organization_id?: string | null;
+  source: "manual" | "ai_draft" | "imported";
+  status: "approved" | "draft" | "archived";
+  cover_image_url: string | null;
   created_at: string;
   updated_at: string;
 };

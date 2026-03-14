@@ -16,6 +16,8 @@ import type {
   DistributorTransport,
   OrderStatus,
 } from "@/lib/distributors/types";
+import { reconcileInvoice, type ReconciliationResult } from "@/lib/distributors/reconciliation";
+import { suggestMappings } from "@/lib/distributors/mapping";
 
 registerDomainEventHandlers();
 
@@ -452,4 +454,113 @@ export async function createCredit(formData: {
 
   revalidatePath("/distributors");
   return { id: data.id };
+}
+
+// ─── Reconciliation ───
+
+export async function reconcileDistributorInvoice(
+  invoiceId: string,
+  orderId: string
+): Promise<ReconciliationResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const org = await getCurrentOrg();
+
+  const result = await reconcileInvoice({
+    userId: user.id,
+    orgId: org?.orgId || null,
+    invoiceId,
+    orderId,
+  });
+
+  revalidatePath("/distributors");
+  return result;
+}
+
+// ─── Mapping Suggestions ───
+
+export async function getDistributorMappingSuggestions(distributorId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const org = await getCurrentOrg();
+
+  return suggestMappings({
+    userId: user.id,
+    orgId: org?.orgId || null,
+    distributorId,
+    limit: 50,
+  });
+}
+
+// ─── Sync Status for Settings ───
+
+export async function getDistributorSyncStatus(): Promise<{
+  distributorCount: number;
+  totalProducts: number;
+  recentJobs: Array<{
+    id: string;
+    distributorName: string;
+    jobType: string;
+    status: string;
+    createdAt: string;
+    error: string | null;
+  }>;
+  pendingOrders: number;
+  unreconciledInvoices: number;
+}> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { distributorCount: 0, totalProducts: 0, recentJobs: [], pendingOrders: 0, unreconciledInvoices: 0 };
+  }
+
+  const org = await getCurrentOrg();
+
+  const [distRes, prodRes, jobsRes, ordersRes, invoicesRes] = await Promise.all([
+    supabase
+      .from("distributors")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_active", true),
+    supabase
+      .from("distributor_products")
+      .select("id, distributors!inner(user_id)", { count: "exact", head: true })
+      .eq("distributors.user_id", user.id)
+      .eq("is_active", true),
+    supabase
+      .from("distributor_sync_jobs")
+      .select("id, job_type, status, error, created_at, distributors(name)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("distributor_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .in("status", ["draft", "submitted"]),
+    supabase
+      .from("distributor_invoices")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "pending"),
+  ]);
+
+  return {
+    distributorCount: distRes.count ?? 0,
+    totalProducts: prodRes.count ?? 0,
+    recentJobs: (jobsRes.data ?? []).map((j: any) => ({
+      id: j.id,
+      distributorName: j.distributors?.name || "Unknown",
+      jobType: j.job_type,
+      status: j.status,
+      createdAt: j.created_at,
+      error: j.error,
+    })),
+    pendingOrders: ordersRes.count ?? 0,
+    unreconciledInvoices: invoicesRes.count ?? 0,
+  };
 }

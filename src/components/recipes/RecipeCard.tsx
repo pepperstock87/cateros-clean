@@ -22,7 +22,17 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   }
 
   return (
-    <Link href={`/recipes/${recipe.id}`} className="card card-hover p-5 block cursor-pointer">
+    <Link href={`/recipes/${recipe.id}`} className="card card-hover block cursor-pointer overflow-hidden">
+      {recipe.cover_image_url && (
+        <div className="aspect-[16/7] overflow-hidden">
+          <img
+            src={recipe.cover_image_url}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      <div className="p-5">
       <div className="flex items-start justify-between mb-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -75,6 +85,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           ))}
         </div>
       )}
+      </div>
     </Link>
   );
 }

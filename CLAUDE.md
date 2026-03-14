@@ -1,5 +1,7 @@
 # Cateros — Claude Code Project Guide
 
+> **Before starting any task, read `MASTER_DIRECTIVE.md` in this project root.** It contains product vision, architecture principles, feature specs, coding standards, build priorities, and the directive format you should follow for all implementation work.
+
 ## What is Cateros?
 Cateros is a catering business management platform built with **Next.js 15**, **Supabase**, **Stripe**, and deployed on **Vercel**. It helps catering companies manage events, recipes, proposals, scheduling, branding, and billing.
 

@@ -12,10 +12,49 @@ import {
   ArrowLeft,
   Loader2,
   Sparkles,
+  Building2,
+  Target,
+  UtensilsCrossed,
+  Store,
+  ChefHat,
+  Landmark,
+  ClipboardList,
+  Flower2,
+  Music,
+  Truck,
+  Hotel,
+  Briefcase,
 } from "lucide-react";
-import { updateProfile, completeOnboarding, createEventOnboarding } from "@/lib/actions/onboarding";
+import { updateProfile, completeOnboarding, createEventOnboarding, saveRoleSelection } from "@/lib/actions/onboarding";
+import type { BusinessType, PrimaryGoal } from "@/types";
+
+const BUSINESS_TYPES: { value: BusinessType; label: string; icon: typeof Building2 }[] = [
+  { value: "caterer", label: "Caterer", icon: UtensilsCrossed },
+  { value: "restaurant", label: "Restaurant", icon: Store },
+  { value: "private_chef", label: "Private Chef", icon: ChefHat },
+  { value: "venue", label: "Venue", icon: Landmark },
+  { value: "event_planner", label: "Event Planner", icon: ClipboardList },
+  { value: "florist", label: "Florist", icon: Flower2 },
+  { value: "band_entertainment", label: "Band or Entertainment", icon: Music },
+  { value: "rental_company", label: "Rental Company", icon: Truck },
+  { value: "hospitality_management", label: "Hospitality Management", icon: Hotel },
+  { value: "other", label: "Other Vendor", icon: Briefcase },
+];
+
+const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
+  { value: "book_more_business", label: "Book More Business" },
+  { value: "manage_events", label: "Manage Events" },
+  { value: "create_proposals", label: "Create Proposals" },
+  { value: "organize_staff", label: "Organize Staff" },
+  { value: "track_costs", label: "Track Costs" },
+  { value: "coordinate_vendors", label: "Coordinate Vendors" },
+  { value: "run_production", label: "Run Production" },
+  { value: "build_client_relationships", label: "Build Client Relationships" },
+];
 
 const STEPS = [
+  { label: "Business", icon: Building2 },
+  { label: "Goal", icon: Target },
   { label: "Profile", icon: User },
   { label: "Stripe", icon: CreditCard },
   { label: "Event", icon: CalendarPlus },
@@ -33,15 +72,22 @@ export default function OnboardingClient({
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState(0);
 
-  // Step 1
+  // Step 0 — Business Type
+  const [businessType, setBusinessType] = useState<BusinessType | null>(null);
+  const [secondaryTypes, setSecondaryTypes] = useState<BusinessType[]>([]);
+
+  // Step 1 — Primary Goal
+  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(null);
+
+  // Step 2 — Profile
   const [fullName, setFullName] = useState(initialFullName);
   const [companyName, setCompanyName] = useState(initialCompanyName);
 
-  // Step 2
+  // Step 3 — Stripe
   const [stripeConnected, setStripeConnected] = useState(false);
   const [connectingStripe, setConnectingStripe] = useState(false);
 
-  // Step 3
+  // Step 4 — Event
   const [eventName, setEventName] = useState("");
   const [clientName, setClientName] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -51,11 +97,51 @@ export default function OnboardingClient({
   // Summary tracking
   const [profileSaved, setProfileSaved] = useState(false);
 
-  const canProceedStep0 =
+  const canProceedProfile =
     fullName.trim().length >= 2 && companyName.trim().length >= 2;
+
+  function toggleSecondaryType(type: BusinessType) {
+    if (type === businessType) return; // Can't select primary as secondary
+    setSecondaryTypes((prev) =>
+      prev.includes(type)
+        ? prev.filter((t) => t !== type)
+        : prev.length < 2
+          ? [...prev, type]
+          : prev
+    );
+  }
 
   function handleNext() {
     if (step === 0) {
+      // Business type — just advance (saved with goal in step 1)
+      if (!businessType) {
+        toast.error("Please select your business type");
+        return;
+      }
+      setStep(1);
+      return;
+    }
+    if (step === 1) {
+      // Save role selection
+      if (!primaryGoal) {
+        toast.error("Please select your primary goal");
+        return;
+      }
+      startTransition(async () => {
+        const result = await saveRoleSelection({
+          business_type: businessType!,
+          primary_goal: primaryGoal,
+          secondary_business_types: secondaryTypes,
+        });
+        if (result?.error) {
+          toast.error(result.error);
+          return;
+        }
+        setStep(2);
+      });
+      return;
+    }
+    if (step === 2) {
       // Save profile before moving on
       startTransition(async () => {
         const result = await updateProfile({
@@ -67,11 +153,11 @@ export default function OnboardingClient({
           return;
         }
         setProfileSaved(true);
-        setStep(1);
+        setStep(3);
       });
       return;
     }
-    if (step < 3) {
+    if (step < 5) {
       setStep(step + 1);
     }
   }
@@ -120,7 +206,7 @@ export default function OnboardingClient({
       }
       setEventCreated(true);
       toast.success("Event created!");
-      setStep(3);
+      setStep(5);
     });
   }
 
@@ -191,14 +277,122 @@ export default function OnboardingClient({
 
       {/* Content card */}
       <div className="bg-[#111827] border border-[#2A3A5C] rounded-2xl p-8 shadow-xl">
-        {/* Step 1: Welcome & Profile */}
+        {/* Step 0: Business Type */}
         {step === 0 && (
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-5 h-5 text-[#D4A373]" />
+                <span className="text-sm font-medium text-[#D4A373] uppercase tracking-wider">
+                  Step 1 of {STEPS.length}
+                </span>
+              </div>
+              <h1 className="text-2xl font-semibold text-[#F4F1ED]">
+                What best describes your business?
+              </h1>
+              <p className="mt-2 text-[#F4F1ED]/60">
+                We&apos;ll tailor the platform to fit your workflow.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {BUSINESS_TYPES.map((bt) => {
+                const Icon = bt.icon;
+                const isSelected = businessType === bt.value;
+                return (
+                  <button
+                    key={bt.value}
+                    onClick={() => {
+                      setBusinessType(bt.value);
+                      // Remove from secondary if it was there
+                      setSecondaryTypes((prev) => prev.filter((t) => t !== bt.value));
+                    }}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center ${
+                      isSelected
+                        ? "bg-[#D4A373]/10 border-[#D4A373] text-[#D4A373]"
+                        : "bg-[#0B1120] border-[#2A3A5C] text-[#F4F1ED]/70 hover:border-[#D4A373]/40 hover:text-[#F4F1ED]"
+                    }`}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="text-sm font-medium">{bt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {businessType && (
+              <div className="space-y-3">
+                <p className="text-sm text-[#F4F1ED]/50">
+                  We also do... <span className="text-[#F4F1ED]/30">(optional, up to 2)</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {BUSINESS_TYPES.filter((bt) => bt.value !== businessType).map((bt) => {
+                    const isSelected = secondaryTypes.includes(bt.value);
+                    return (
+                      <button
+                        key={bt.value}
+                        onClick={() => toggleSecondaryType(bt.value)}
+                        className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                          isSelected
+                            ? "bg-[#D4A373]/10 border-[#D4A373]/50 text-[#D4A373]"
+                            : "bg-[#0B1120] border-[#2A3A5C] text-[#F4F1ED]/50 hover:border-[#D4A373]/30"
+                        } ${!isSelected && secondaryTypes.length >= 2 ? "opacity-40 cursor-not-allowed" : ""}`}
+                        disabled={!isSelected && secondaryTypes.length >= 2}
+                      >
+                        {bt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 1: Primary Goal */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-5 h-5 text-[#D4A373]" />
+                <span className="text-sm font-medium text-[#D4A373] uppercase tracking-wider">
+                  Step 2 of {STEPS.length}
+                </span>
+              </div>
+              <h1 className="text-2xl font-semibold text-[#F4F1ED]">
+                What do you need most right now?
+              </h1>
+              <p className="mt-2 text-[#F4F1ED]/60">
+                This helps us prioritize what you see first.
+              </p>
+            </div>
+            <div className="space-y-2">
+              {PRIMARY_GOALS.map((g) => {
+                const isSelected = primaryGoal === g.value;
+                return (
+                  <button
+                    key={g.value}
+                    onClick={() => setPrimaryGoal(g.value)}
+                    className={`w-full text-left px-5 py-3.5 rounded-xl border transition-all ${
+                      isSelected
+                        ? "bg-[#D4A373]/10 border-[#D4A373] text-[#D4A373]"
+                        : "bg-[#0B1120] border-[#2A3A5C] text-[#F4F1ED]/70 hover:border-[#D4A373]/40 hover:text-[#F4F1ED]"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{g.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Welcome & Profile */}
+        {step === 2 && (
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-5 h-5 text-[#D4A373]" />
                 <span className="text-sm font-medium text-[#D4A373] uppercase tracking-wider">
-                  Step 1 of 4
+                  Step 3 of {STEPS.length}
                 </span>
               </div>
               <h1 className="text-2xl font-semibold text-[#F4F1ED]">
@@ -246,14 +440,14 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* Step 2: Connect Stripe */}
-        {step === 1 && (
+        {/* Step 3: Connect Stripe */}
+        {step === 3 && (
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <CreditCard className="w-5 h-5 text-[#D4A373]" />
                 <span className="text-sm font-medium text-[#D4A373] uppercase tracking-wider">
-                  Step 2 of 4
+                  Step 4 of {STEPS.length}
                 </span>
               </div>
               <h1 className="text-2xl font-semibold text-[#F4F1ED]">
@@ -307,14 +501,14 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* Step 3: Create First Event */}
-        {step === 2 && (
+        {/* Step 4: Create First Event */}
+        {step === 4 && (
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <CalendarPlus className="w-5 h-5 text-[#D4A373]" />
                 <span className="text-sm font-medium text-[#D4A373] uppercase tracking-wider">
-                  Step 3 of 4
+                  Step 5 of {STEPS.length}
                 </span>
               </div>
               <h1 className="text-2xl font-semibold text-[#F4F1ED]">
@@ -425,8 +619,8 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* Step 4: Done */}
-        {step === 3 && (
+        {/* Step 5: Done */}
+        {step === 5 && (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-full bg-[#D4A373]/20 flex items-center justify-center">
@@ -442,6 +636,20 @@ export default function OnboardingClient({
               </p>
             </div>
             <div className="text-left space-y-3 bg-[#0B1120] rounded-xl p-5 border border-[#2A3A5C]">
+              <div className="flex justify-between items-center">
+                <span className="text-[#F4F1ED]/50 text-sm">Business Type</span>
+                <span className="text-[#F4F1ED] text-sm font-medium">
+                  {BUSINESS_TYPES.find((bt) => bt.value === businessType)?.label || "Caterer"}
+                </span>
+              </div>
+              <div className="border-t border-[#2A3A5C]" />
+              <div className="flex justify-between items-center">
+                <span className="text-[#F4F1ED]/50 text-sm">Primary Goal</span>
+                <span className="text-[#F4F1ED] text-sm font-medium">
+                  {PRIMARY_GOALS.find((g) => g.value === primaryGoal)?.label || "Manage Events"}
+                </span>
+              </div>
+              <div className="border-t border-[#2A3A5C]" />
               <div className="flex justify-between items-center">
                 <span className="text-[#F4F1ED]/50 text-sm">Name</span>
                 <span className="text-[#F4F1ED] text-sm font-medium">
@@ -486,7 +694,7 @@ export default function OnboardingClient({
         {/* Navigation */}
         <div className="mt-8 flex items-center justify-between">
           <div>
-            {step > 0 && step < 3 && (
+            {step > 0 && step < 5 && (
               <button
                 onClick={handleBack}
                 disabled={isPending}
@@ -498,8 +706,8 @@ export default function OnboardingClient({
             )}
           </div>
           <div className="flex items-center gap-4">
-            {/* Skip for now on steps 1 and 2 */}
-            {(step === 1 || (step === 2 && !eventCreated)) && (
+            {/* Skip for now on Stripe and Event steps */}
+            {(step === 3 || (step === 4 && !eventCreated)) && (
               <button
                 onClick={() => setStep(step + 1)}
                 disabled={isPending}
@@ -509,10 +717,23 @@ export default function OnboardingClient({
               </button>
             )}
 
+            {/* Business Type — Next */}
             {step === 0 && (
               <button
                 onClick={handleNext}
-                disabled={!canProceedStep0 || isPending}
+                disabled={!businessType || isPending}
+                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Primary Goal — Next (saves role) */}
+            {step === 1 && (
+              <button
+                onClick={handleNext}
+                disabled={!primaryGoal || isPending}
                 className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isPending ? (
@@ -529,27 +750,51 @@ export default function OnboardingClient({
               </button>
             )}
 
-            {step === 1 && (
+            {/* Profile — Next (saves profile) */}
+            {step === 2 && (
               <button
-                onClick={() => setStep(2)}
-                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors flex items-center gap-2"
+                onClick={handleNext}
+                disabled={!canProceedProfile || isPending}
+                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Next
-                <ArrowRight className="w-4 h-4" />
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             )}
 
-            {step === 2 && eventCreated && (
-              <button
-                onClick={() => setStep(3)}
-                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors flex items-center gap-2"
-              >
-                Next
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-
+            {/* Stripe — Next */}
             {step === 3 && (
+              <button
+                onClick={() => setStep(4)}
+                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Event created — Next */}
+            {step === 4 && eventCreated && (
+              <button
+                onClick={() => setStep(5)}
+                className="px-6 py-2.5 bg-[#D4A373] text-[#0B1120] font-medium rounded-lg hover:bg-[#D4A373]/90 transition-colors flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Done — Go to Dashboard */}
+            {step === 5 && (
               <button
                 onClick={handleFinish}
                 disabled={isPending}

@@ -27,5 +27,5 @@ export default async function CainPage() {
     redirect("/billing?upgrade=pro&feature=cain");
   }
 
-  return <CainPageClient />;
+  return <CainPageClient userId={user.id} />;
 }

@@ -56,6 +56,26 @@ export async function updateRecipeAction(recipeId: string, formData: FormData) {
   return { success: true };
 }
 
+export async function updateRecipeCoverImage(recipeId: string, imageUrl: string | null) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
+
+  let query = supabase
+    .from("recipes")
+    .update({ cover_image_url: imageUrl, updated_at: new Date().toISOString() })
+    .eq("id", recipeId)
+    .eq("user_id", user.id);
+  if (org?.orgId) query = query.eq("organization_id", org.orgId);
+  const { error } = await query;
+  if (error) return { error: error.message };
+
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+  return { success: true };
+}
+
 export async function deleteRecipeAction(recipeId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

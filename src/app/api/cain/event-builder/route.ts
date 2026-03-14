@@ -3,11 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/organizations";
 import { createCainSession, runEventBuilder } from "@/lib/cain/service";
 import { registerDomainEventHandlers } from "@/lib/events";
+import { registerQBEventHandlers } from "@/lib/quickbooks";
 
 export const maxDuration = 60;
 
 // Register domain event handlers on module load
 registerDomainEventHandlers();
+registerQBEventHandlers();
 
 export async function POST(request: NextRequest) {
   try {

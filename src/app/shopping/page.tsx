@@ -4,6 +4,7 @@ import { format, addDays } from "date-fns";
 import { CalendarDays } from "lucide-react";
 import type { Event, PricingData, Recipe } from "@/types";
 import { getCurrentOrg } from "@/lib/organizations";
+import { categorizeIngredient } from "@/lib/cain/shopping-aggregator";
 import { ShoppingListClient } from "./ShoppingListClient";
 
 export default async function ShoppingPage() {
@@ -35,7 +36,7 @@ export default async function ShoppingPage() {
   }
 
   // Aggregate ingredients
-  type AggIngredient = { name: string; quantity: number; unit: string; estimatedCost: number; sources: string[] };
+  type AggIngredient = { name: string; quantity: number; unit: string; estimatedCost: number; sources: string[]; category: string };
   const ingredientMap = new Map<string, AggIngredient>();
 
   for (const event of events) {
@@ -65,13 +66,17 @@ export default async function ShoppingPage() {
             unit: ing.unit,
             estimatedCost: cost,
             sources: [event.name],
+            category: categorizeIngredient(ing.name),
           });
         }
       }
     }
   }
 
-  const ingredients = Array.from(ingredientMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const ingredients = Array.from(ingredientMap.values()).sort((a, b) => {
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
+    return a.name.localeCompare(b.name);
+  });
   const totalCost = ingredients.reduce((s, i) => s + i.estimatedCost, 0);
 
   return (

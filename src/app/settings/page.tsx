@@ -6,6 +6,9 @@ import { updateProfileAction, updateBusinessDefaults, getBusinessSettings } from
 import { User, CreditCard, Building2, Mail, Pencil, DollarSign, FileText, Bell, Banknote } from "lucide-react";
 import { StripeConnectSetup } from "@/components/payments/StripeConnectSetup";
 import { PaymentsDashboard } from "@/components/payments/PaymentsDashboard";
+import { QuickBooksSyncCard } from "@/components/settings/QuickBooksSyncCard";
+import { PayrollSyncCard } from "@/components/settings/PayrollSyncCard";
+import { DistributorSyncCard } from "@/components/settings/DistributorSyncCard";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
@@ -485,6 +488,15 @@ export default function SettingsPage() {
         </div>
         <PaymentsDashboard />
       </div>
+
+      {/* QuickBooks Sync */}
+      <QuickBooksSyncCard />
+
+      {/* Payroll */}
+      <PayrollSyncCard />
+
+      {/* Distributors */}
+      <DistributorSyncCard />
 
       {/* Subscription */}
       <div className="card p-4 md:p-6 mb-6">

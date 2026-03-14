@@ -4,8 +4,10 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowLeft, Edit, BookOpen, Package, TrendingUp, CalendarDays, PieChart } from "lucide-react";
 import { DeleteRecipeButton } from "@/components/recipes/DeleteRecipeButton";
+import { GenerateImageButton } from "@/components/recipes/GenerateImageButton";
 import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { getCurrentOrg } from "@/lib/organizations";
+import { getUserEntitlements } from "@/lib/entitlements";
 import type { Recipe } from "@/types";
 
 export default async function RecipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -21,6 +23,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
 
   if (error || !data) notFound();
   const recipe: Recipe = data;
+  const { isPro } = await getUserEntitlements();
 
   // Fetch events that use this recipe in their pricing_data menuItems
   let pricedEventsQuery = supabase.from("events").select("id, name, client_name, event_date, status, guest_count, pricing_data").eq("user_id", user.id).not("pricing_data", "is", null);
@@ -88,6 +91,17 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
               </span>
             )}
           </div>
+        </div>
+
+        {/* AI Dish Image */}
+        <div className="mt-4">
+          <GenerateImageButton
+            recipeId={recipe.id}
+            recipeName={recipe.name}
+            recipeDescription={recipe.description}
+            currentImageUrl={recipe.cover_image_url}
+            isPro={isPro}
+          />
         </div>
       </div>
 

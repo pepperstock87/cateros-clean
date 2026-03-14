@@ -32,7 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           try {
-            var t = localStorage.getItem('cateros-theme') || 'dark';
+            var p = localStorage.getItem('cateros-theme') || 'dark';
+            var t = p === 'system'
+              ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+              : p;
             document.documentElement.setAttribute('data-theme', t);
           } catch(e) {}
         `}} />
