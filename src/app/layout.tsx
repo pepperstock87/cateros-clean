@@ -8,11 +8,11 @@ import { KeyboardShortcutsProvider } from "@/components/layout/KeyboardShortcuts
 
 export const metadata: Metadata = {
   title: "Cateros – The Event Operations Platform",
-  description: "Run events on the Cateros Event Engine. Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+  description: "The operating system for the hospitality industry. Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
   metadataBase: new URL("https://cateros.com"),
   openGraph: {
     title: "Cateros – The Event Operations Platform",
-    description: "Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+    description: "The operating system for the hospitality industry — proposals, pricing, staffing, vendors, and client approvals in one place.",
     url: "https://cateros.com",
     siteName: "Cateros",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Cateros Event Engine" }],
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Cateros – The Event Operations Platform",
-    description: "Proposals, pricing, staffing, vendors, and client approvals — all in one place.",
+    description: "The operating system for the hospitality industry — proposals, pricing, staffing, vendors, and client approvals in one place.",
     images: ["/og-image.png"],
   },
 };

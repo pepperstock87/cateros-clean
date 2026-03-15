@@ -132,7 +132,7 @@ const PRICING_TIERS = [
 
 const STATS = [
   { value: "500+", label: "Events Managed" },
-  { value: "100+", label: "Catering Professionals" },
+  { value: "100+", label: "Hospitality Professionals" },
   { value: "$2M+", label: "Revenue Processed" },
   { value: "< 2 min", label: "To Generate a Proposal" },
 ];
@@ -152,11 +152,11 @@ export default function LandingPage() {
             The Event Operations Platform
           </div>
           <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[1.1] mb-8 tracking-tight">
-            Run Your Catering<br />
-            Business <span className="text-brand-400">Like a Pro</span>
+            The Operating System for the<br />
+            <span className="text-brand-400">Hospitality Industry</span>
           </h1>
           <p className="text-[#D4A373] text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-            The all-in-one platform for event operations — from proposals to payments, recipes to scheduling.
+            The all-in-one platform for caterers, venues, planners, chefs, and florists — from proposals to payments, recipes to scheduling.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link href="/signup" className="btn-primary px-10 py-3.5 text-base font-medium inline-flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function LandingPage() {
       <section className="bg-[#182030] border-y border-[#2A3A5C] py-14">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-brand-400 mb-8">
-            Trusted by catering professionals
+            Trusted by hospitality professionals
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {STATS.map(({ value, label }) => (
@@ -330,10 +330,10 @@ export default function LandingPage() {
             The Event Operations Platform
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold mb-5">
-            Ready to streamline your catering business?
+            Ready to streamline your event operations?
           </h2>
           <p className="text-[#D4A373] text-lg mb-10 max-w-xl mx-auto">
-            Join catering and event professionals using Cateros to plan, price, and execute events profitably.
+            Join hospitality professionals using Cateros to plan, price, and execute events profitably.
           </p>
           <Link href="/signup" className="btn-primary px-10 py-3.5 text-base font-medium inline-flex items-center gap-2">
             Start Free
