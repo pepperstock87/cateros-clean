@@ -101,12 +101,15 @@ export type PricingData = {
 
 export type MenuItemCategory = "Appetizers" | "Mains" | "Sides" | "Desserts" | "Drinks" | "Other";
 
+export type MenuItemPricingType = "per_guest" | "flat" | "per_unit";
+
 export type MenuItem = {
   id: string;
   name: string;
   costPerPerson: number;
   quantity: number;
   category?: MenuItemCategory;
+  pricingType?: MenuItemPricingType;
 };
 
 export type StaffingLine = {

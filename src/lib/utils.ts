@@ -7,11 +7,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(amount);
+  const safe = Number.isFinite(amount) ? amount : 0;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(safe);
 }
 
 export function formatPercent(value: number): string {
-  return `${value.toFixed(1)}%`;
+  const safe = Number.isFinite(value) ? value : 0;
+  return `${safe.toFixed(1)}%`;
 }
 
 export function generateId(): string {
@@ -81,4 +83,18 @@ export function getDepositStatus(scheduleItems: Pick<PaymentScheduleItem, "insta
   }
 
   return "pending";
+}
+
+/** Safely parse a date string that might be ISO timestamp or YYYY-MM-DD.
+ *  Always treats date-only values as local dates to avoid timezone shift. */
+export function safeParseDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date(NaN);
+  // Extract just the YYYY-MM-DD portion to avoid timezone offset issues
+  // This ensures "2026-08-29T00:00:00+00:00" → Aug 29 in any timezone
+  const dateOnly = dateStr.substring(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    return new Date(dateOnly + "T12:00:00");
+  }
+  // Fallback for non-standard formats
+  return new Date(dateStr);
 }

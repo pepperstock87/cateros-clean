@@ -52,9 +52,14 @@ export async function signupAction(formData: FormData): Promise<AuthState> {
   }
 
   const supabase = await createClient();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const callbackNext = parsed.data.redirectTo || "/dashboard";
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email, password: parsed.data.password,
-    options: { data: { full_name: parsed.data.full_name, company_name: parsed.data.company_name || "" } },
+    options: {
+      data: { full_name: parsed.data.full_name, company_name: parsed.data.company_name || "" },
+      emailRedirectTo: `${appUrl}/api/auth/callback?next=${encodeURIComponent(callbackNext)}`,
+    },
   });
   if (error) return { error: error.message };
   if (!data.user) return { error: "Signup failed." };

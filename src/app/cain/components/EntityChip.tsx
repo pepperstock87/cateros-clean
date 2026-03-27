@@ -42,7 +42,7 @@ export function EntityChip({
   return (
     <div className="flex items-center justify-between gap-2 py-1.5">
       <span className="text-[11px] text-[var(--text-muted)] shrink-0 w-24 capitalize">
-        {label.replace(/_/g, " ")}
+        {(label ?? "").replace(/_/g, " ")}
       </span>
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <span

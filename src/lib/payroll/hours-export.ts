@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GustoClient } from "./client";
 import { getPayrollId } from "./mapping";
 import { domainEvents } from "@/lib/events";
+import { safeParseDate } from "@/lib/utils";
 import type { PayrollHoursExport, PayrollHoursLineItem } from "./types";
 
 /**
@@ -93,7 +94,7 @@ export async function collectEventHours(params: {
   }
 
   // Determine pay period (default: week containing the event date)
-  const eventDate = new Date(event.event_date);
+  const eventDate = safeParseDate(event.event_date);
   const dayOfWeek = eventDate.getDay();
   const periodStart = new Date(eventDate);
   periodStart.setDate(periodStart.getDate() - dayOfWeek); // Sunday

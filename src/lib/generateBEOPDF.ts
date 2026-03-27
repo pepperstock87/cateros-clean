@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Event, PricingData, Recipe, StaffAssignment } from "@/types";
 
@@ -105,7 +105,7 @@ export function generateBEOPDF(
     body: [
       ["Event Name", event.name],
       ["Client", event.client_name],
-      ["Date", format(new Date(event.event_date), "EEEE, MMMM d, yyyy")],
+      ["Date", format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy")],
       ["Time", timeStr],
       ["Guests", String(event.guest_count)],
       ["Venue", event.venue ?? "TBD"],

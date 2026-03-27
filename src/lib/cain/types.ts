@@ -256,6 +256,8 @@ export interface CainDraftSnapshot {
   extractedEntities: ExtractedEntities | null;
 }
 
+export type CainMode = "event_builder" | "chat" | "quick_action";
+
 export type CainProgressEvent =
   | { type: "thinking"; message: string }
   | { type: "tool_start"; tool: string; input: Record<string, unknown> }
@@ -265,3 +267,14 @@ export type CainProgressEvent =
   | { type: "margin_analysis"; analysis: CainMarginAnalysis }
   | { type: "error"; message: string }
   | { type: "text_delta"; text: string };
+
+export type CainChatProgressEvent =
+  | { type: "thinking"; message: string }
+  | { type: "text_delta"; text: string }
+  | { type: "tool_start"; tool: string; input: Record<string, unknown> }
+  | { type: "tool_result"; tool: string; summary: string }
+  | { type: "action_proposed"; actionId: string; title: string; actionType: string }
+  | { type: "entity_update"; entities: Partial<ExtractedEntities>; fullSnapshot: ExtractedEntities }
+  | { type: "margin_analysis"; analysis: CainMarginAnalysis }
+  | { type: "error"; message: string }
+  | { type: "done" };

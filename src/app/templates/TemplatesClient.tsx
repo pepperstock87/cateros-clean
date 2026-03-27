@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { safeParseDate } from "@/lib/utils";
 import {
   LayoutTemplate,
   Search,
@@ -205,7 +206,7 @@ export function TemplatesClient({ templates }: Props) {
                       <CatIcon className="w-3 h-3" />
                       {catConfig.label}
                     </span>
-                    <span className="text-[10px] text-[#7A8BA8]">
+                    <span className="text-[10px] text-[#7A8BA8]" suppressHydrationWarning>
                       {formatDate(template.created_at)}
                     </span>
                   </div>
@@ -312,7 +313,7 @@ export function TemplatesClient({ templates }: Props) {
                           >
                             <span className="text-[#F4F1ED]">{evt.name}</span>
                             <span className="text-[#7A8BA8] ml-2">
-                              {evt.client_name} - {new Date(evt.event_date).toLocaleDateString()}
+                              {evt.client_name} - {safeParseDate(evt.event_date).toLocaleDateString()}
                             </span>
                           </button>
                         ))}

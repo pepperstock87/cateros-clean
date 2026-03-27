@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { format } from "date-fns";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { BEOActions } from "./BEOActions";
 import { BEOPageClient } from "@/components/events/BEOPageClient";
+import { GeneratedDate } from "@/components/ui/GeneratedDate";
 import { getCurrentOrg } from "@/lib/organizations";
 import type { Event, PricingData, Recipe, StaffAssignment } from "@/types";
 
@@ -124,7 +125,7 @@ export default async function BEOPage({ params }: Props) {
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{companyName}</p>
             )}
             <h1 className="text-2xl font-bold tracking-tight">PRODUCTION SHEET</h1>
-            <p className="text-gray-400 text-sm mt-1"><span data-beo-internal>Internal Use Only · </span>Generated {format(new Date(), "MMMM d, yyyy")}</p>
+            <p className="text-gray-400 text-sm mt-1"><span data-beo-internal>Internal Use Only · </span><GeneratedDate /></p>
           </div>
 
           {/* Event Details */}
@@ -132,7 +133,7 @@ export default async function BEOPage({ params }: Props) {
             <h2 className="text-xl font-bold text-gray-900 mb-4">{e.name}</h2>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-700">
               <div><span className="font-semibold text-gray-900">Client:</span> {e.client_name}</div>
-              <div><span className="font-semibold text-gray-900">Date:</span> {format(new Date(e.event_date), "EEEE, MMMM d, yyyy")}</div>
+              <div><span className="font-semibold text-gray-900">Date:</span> {format(safeParseDate(e.event_date), "EEEE, MMMM d, yyyy")}</div>
               {(e.start_time || e.end_time) && (
                 <div>
                   <span className="font-semibold text-gray-900">Time:</span>{" "}
@@ -406,7 +407,7 @@ export default async function BEOPage({ params }: Props) {
 
           {/* Footer */}
           <div className="px-8 py-4 text-xs text-gray-400 text-center">
-            Production Sheet &middot; <span data-beo-internal>Internal Use Only &middot; </span>Generated {format(new Date(), "MMMM d, yyyy")}
+            Production Sheet &middot; <span data-beo-internal>Internal Use Only &middot; </span><GeneratedDate />
           </div>
         </div>
         </BEOPageClient>

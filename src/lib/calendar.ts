@@ -1,4 +1,5 @@
 import type { Event } from "@/types";
+import { safeParseDate } from "@/lib/utils";
 
 /**
  * Calendar integration utilities for generating ICS files and Google Calendar URLs.
@@ -63,7 +64,7 @@ export function generateICSFile(event: Event): string {
   } else {
     // All-day event
     lines.push(`DTSTART;VALUE=DATE:${formatDateForICS(event.event_date)}`);
-    const d = new Date(event.event_date + "T00:00:00");
+    const d = safeParseDate(event.event_date);
     d.setDate(d.getDate() + 1);
     const nextDay = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
     lines.push(`DTEND;VALUE=DATE:${nextDay}`);
@@ -116,7 +117,7 @@ export function buildGoogleCalendarURL(event: Event): string {
   } else {
     // All-day event: use YYYYMMDD format (no time component)
     startDate = formatDateForICS(event.event_date);
-    const d = new Date(event.event_date + "T00:00:00");
+    const d = safeParseDate(event.event_date);
     d.setDate(d.getDate() + 1);
     endDate = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
   }

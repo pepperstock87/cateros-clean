@@ -70,8 +70,10 @@ export async function generateProduction(eventId: string) {
   if (!sheet) throw new Error("Failed to create production sheet");
 
   // Delete old generated (non-manual) prep items, shopping items
-  await supabase.from("event_prep_items").delete().eq("event_id", eventId).eq("is_manual", false);
-  await supabase.from("event_shopping_items").delete().eq("event_id", eventId);
+  const { error: prepDelError } = await supabase.from("event_prep_items").delete().eq("event_id", eventId).eq("is_manual", false);
+  if (prepDelError) console.error("Failed to delete old prep items:", prepDelError.message);
+  const { error: shopDelError } = await supabase.from("event_shopping_items").delete().eq("event_id", eventId);
+  if (shopDelError) console.error("Failed to delete old shopping items:", shopDelError.message);
 
   const prepItems: any[] = [];
   const shoppingMap = new Map<string, { quantity: number; unit: string }>();

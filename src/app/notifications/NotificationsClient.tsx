@@ -223,7 +223,7 @@ export function NotificationsClient({
                     >
                       {n.title}
                     </p>
-                    <span className="text-[#5A6A88] text-xs whitespace-nowrap flex-shrink-0 mt-0.5">
+                    <span className="text-[#5A6A88] text-xs whitespace-nowrap flex-shrink-0 mt-0.5" suppressHydrationWarning>
                       {timeAgo(n.created_at)}
                     </span>
                   </div>

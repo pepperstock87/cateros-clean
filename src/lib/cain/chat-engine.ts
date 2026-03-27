@@ -7,13 +7,15 @@ import type { CainEventPlan, CainDraftRecipe, CainShoppingList, CainPrepPreview,
 import { createEntityState, mergeEntityUpdate, extractFromToolResult } from "./entity-extractor";
 
 const MAX_ITERATIONS = 15;
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-opus-4-20250514";
 
 export async function runCainChat(params: {
   userId: string;
   orgId: string | null;
   companyName?: string;
   messages: Array<{ role: "user" | "assistant"; content: string }>;
+  pageContext?: string;
+  memoryContext?: string;
   constraints?: {
     maxBudget?: number;
     dietaryRestrictions?: string;
@@ -70,6 +72,8 @@ export async function runCainChat(params: {
         inventoryItemCount: inventoryRes.count ?? 0,
         maxBudget: params.constraints?.maxBudget,
         dietaryRestrictions: params.constraints?.dietaryRestrictions,
+        pageContext: params.pageContext,
+        memoryContext: params.memoryContext,
       });
 
       const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -96,7 +100,10 @@ export async function runCainChat(params: {
       let latestProcurementDraft: CainProcurementDraft | null = null;
 
       for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-        const response = await anthropic.messages.create({
+        console.log(`[CAIN] Iteration ${iteration + 1}/${MAX_ITERATIONS}, messages: ${anthropicMessages.length}`);
+
+        // Use streaming so text reaches the client immediately
+        const stream = anthropic.messages.stream({
           model: MODEL,
           max_tokens: 4096,
           system: systemPrompt,
@@ -104,18 +111,21 @@ export async function runCainChat(params: {
           messages: anthropicMessages,
         });
 
+        // Stream text deltas to the client as they arrive
+        stream.on("text", (text) => {
+          pushEvent({ type: "text_delta", text }).catch(() => {});
+        });
+
+        // Wait for the full response to collect tool calls
+        const response = await stream.finalMessage();
+
+        console.log(`[CAIN] Response: stop_reason=${response.stop_reason}, blocks=${response.content.length}`);
         const assistantContent = response.content;
 
-        // Push text blocks as deltas
-        for (const block of assistantContent) {
-          if (block.type === "text" && block.text) {
-            await pushEvent({ type: "text_delta", text: block.text });
-          }
-        }
-
         const toolUseBlocks = assistantContent.filter((b) => b.type === "tool_use");
+        console.log(`[CAIN] Tool calls: ${toolUseBlocks.map((b) => b.type === "tool_use" ? b.name : "?").join(", ") || "none"}`);
 
-        if (toolUseBlocks.length === 0 || response.stop_reason === "end_turn") {
+        if (toolUseBlocks.length === 0) {
           if (finalPlan) {
             await pushEvent({ type: "plan_ready", plan: finalPlan });
           }
@@ -139,11 +149,13 @@ export async function runCainChat(params: {
           });
 
           try {
+            console.log(`[CAIN] Executing tool: ${toolBlock.name}`);
             const { result, plan, entityUpdate, draftRecipes, shoppingList, prepPreview, marginAnalysis, procurementDraft } = await executeTool(
               toolBlock.name,
               toolBlock.input as Record<string, unknown>,
               ctx
             );
+            console.log(`[CAIN] Tool ${toolBlock.name} completed, result length: ${result.length}`);
 
             const summary =
               toolBlock.name === "finalize_plan"
@@ -159,52 +171,42 @@ export async function runCainChat(params: {
             if (plan) {
               finalPlan = plan;
               finalPlan.status = "ready";
-              // Attach accumulated draft recipes to the plan
               if (accumulatedDraftRecipes.length > 0) {
                 finalPlan.draftRecipes = [
                   ...(finalPlan.draftRecipes || []),
                   ...accumulatedDraftRecipes,
                 ];
               }
-              // Attach shopping list to the plan
               if (latestShoppingList) {
                 finalPlan.shoppingList = latestShoppingList;
               }
-              // Attach prep preview to the plan
               if (latestPrepPreview) {
                 finalPlan.prepPreview = latestPrepPreview;
               }
-              // Attach margin analysis to the plan
               if (latestMarginAnalysis) {
                 finalPlan.marginAnalysis = latestMarginAnalysis;
               }
-              // Attach procurement draft to the plan
               if (latestProcurementDraft) {
                 finalPlan.procurementDraft = latestProcurementDraft;
               }
             }
 
-            // Accumulate draft recipes from generate_draft_recipes tool
             if (draftRecipes && draftRecipes.length > 0) {
               accumulatedDraftRecipes = [...accumulatedDraftRecipes, ...draftRecipes];
             }
 
-            // Track shopping list from generate_shopping_list tool
             if (shoppingList) {
               latestShoppingList = shoppingList;
             }
 
-            // Track prep preview from preview_prep_breakdown tool
             if (prepPreview) {
               latestPrepPreview = prepPreview;
             }
 
-            // Track procurement draft from generate_purchase_draft tool
             if (procurementDraft) {
               latestProcurementDraft = procurementDraft;
             }
 
-            // Track margin analysis from analyze_event_margin tool
             if (marginAnalysis) {
               latestMarginAnalysis = marginAnalysis;
               await pushEvent({ type: "margin_analysis", analysis: marginAnalysis });
@@ -243,6 +245,7 @@ export async function runCainChat(params: {
             });
           } catch (err) {
             const errorMsg = err instanceof Error ? err.message : "Unknown tool error";
+            console.error(`[CAIN] Tool ${toolBlock.name} FAILED:`, err);
             await pushEvent({ type: "tool_result", tool: toolBlock.name, summary: `Error: ${errorMsg}` });
 
             toolResults.push({
@@ -258,6 +261,7 @@ export async function runCainChat(params: {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
+      console.error("[CAIN] Fatal error in chat loop:", err);
       try {
         await pushEvent({ type: "error", message });
       } catch {

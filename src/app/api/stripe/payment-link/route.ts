@@ -96,6 +96,24 @@ export async function POST(req: NextRequest) {
       profile?.stripe_connect_account_id &&
       profile?.stripe_connect_onboarded === true;
 
+    // Verify Stripe Connect account is in good standing
+    if (hasConnect) {
+      try {
+        const account = await stripe.accounts.retrieve(profile.stripe_connect_account_id);
+        if (!account.charges_enabled) {
+          return NextResponse.json(
+            { error: "Your Stripe account is not yet ready to accept payments. Please complete Stripe onboarding." },
+            { status: 400 }
+          );
+        }
+      } catch (stripeErr) {
+        return NextResponse.json(
+          { error: "Unable to verify Stripe account. Please reconnect your Stripe account." },
+          { status: 400 }
+        );
+      }
+    }
+
     const platformFeeCents = hasConnect
       ? Math.round(amountCents * (PLATFORM_FEE_PERCENT / 100))
       : 0;

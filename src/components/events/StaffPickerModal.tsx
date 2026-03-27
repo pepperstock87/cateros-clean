@@ -119,7 +119,7 @@ export function StaffPickerModal({ open, onClose, onSelect }: Props) {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-sm font-semibold text-brand-300">
-                      {formatCurrency(Number(s.hourly_rate))}/hr
+                      {formatCurrency(Number(s.hourly_rate))}/{s.pay_type === "salary" ? "yr" : "hr"}
                     </div>
                   </div>
                 </button>

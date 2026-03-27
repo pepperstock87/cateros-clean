@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCurrentOrg } from "@/lib/organizations";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, PricingData, PaymentData } from "@/types";
 import { ReportsClient } from "./ReportsClient";
 
@@ -151,7 +152,7 @@ export default async function ReportsPage() {
   // Busiest months
   const monthCounts: Record<string, number> = {};
   for (const e of events) {
-    const m = format(new Date(e.event_date), "MMMM");
+    const m = format(safeParseDate(e.event_date), "MMMM");
     monthCounts[m] = (monthCounts[m] ?? 0) + 1;
   }
   const busiestMonths = Object.entries(monthCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([month, count]) => ({ month, count }));

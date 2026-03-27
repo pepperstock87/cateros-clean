@@ -1,4 +1,5 @@
 import type { CainEventPattern } from "./types";
+import { safeParseDate } from "@/lib/utils";
 
 interface PastEventData {
   id: string;
@@ -83,7 +84,7 @@ export function scoreSimilarity(current: CurrentParams, past: PastEventData): nu
   }
 
   // Recent event bonus (within last 6 months)
-  const daysSince = (Date.now() - new Date(past.event_date).getTime()) / (1000 * 60 * 60 * 24);
+  const daysSince = (Date.now() - safeParseDate(past.event_date).getTime()) / (1000 * 60 * 60 * 24);
   if (daysSince < 180) {
     score += 10;
   } else if (daysSince < 365) {

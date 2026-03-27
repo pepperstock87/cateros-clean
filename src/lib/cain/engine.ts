@@ -6,7 +6,7 @@ import { cainTools, executeTool } from "./tools";
 import type { CainEventPlan, CainProgressEvent } from "./types";
 
 const MAX_ITERATIONS = 15;
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-opus-4-20250514";
 
 export async function runCainEventBuilder(params: {
   userId: string;
@@ -117,7 +117,8 @@ export async function runCainEventBuilder(params: {
       let finalPlan: CainEventPlan | null = null;
 
       for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-        const response = await anthropic.messages.create({
+        // Use streaming so text reaches the client immediately
+        const stream = anthropic.messages.stream({
           model: MODEL,
           max_tokens: 8192,
           system: systemPrompt,
@@ -125,22 +126,23 @@ export async function runCainEventBuilder(params: {
           messages,
         });
 
+        // Stream text deltas to the client as they arrive
+        stream.on("text", (text) => {
+          pushEvent({ type: "text_delta", text }).catch(() => {});
+        });
+
+        // Wait for the full response to collect tool calls
+        const response = await stream.finalMessage();
+
         // Collect assistant content blocks
         const assistantContent = response.content;
-
-        // Push any text blocks as deltas
-        for (const block of assistantContent) {
-          if (block.type === "text" && block.text) {
-            await pushEvent({ type: "text_delta", text: block.text });
-          }
-        }
 
         // If no tool use, we're done
         const toolUseBlocks = assistantContent.filter(
           (b) => b.type === "tool_use"
         );
 
-        if (toolUseBlocks.length === 0 || response.stop_reason === "end_turn") {
+        if (toolUseBlocks.length === 0) {
           // No more tool calls — done
           if (!finalPlan) {
             await pushEvent({

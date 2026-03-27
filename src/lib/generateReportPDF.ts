@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import type { Event, PricingData } from "@/types";
 
 const DARK: [number, number, number] = [15, 13, 11];
@@ -40,7 +40,7 @@ export function generateEventsSummaryPDF(events: Event[], companyName: string) {
     return [
       event.name,
       event.client_name,
-      format(new Date(event.event_date), "MMM d, yyyy"),
+      format(safeParseDate(event.event_date), "MMM d, yyyy"),
       String(event.guest_count),
       event.status.charAt(0).toUpperCase() + event.status.slice(1),
       p ? formatCurrency(p.suggestedPrice) : "—",

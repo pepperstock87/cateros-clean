@@ -1,16 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { Users, Crown, Shield, Building2 } from "lucide-react";
 import { TeamClient } from "./TeamClient";
 import { CreateOrganizationForm } from "./CreateOrganizationForm";
+import { isDemoSession } from "@/lib/demo";
 
 export default async function TeamPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // For demo sessions, use service role to bypass RLS recursion on organization_members
+  const isDemo = await isDemoSession();
+  const db = isDemo && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : supabase;
+
   // Get user's current organization
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("profiles")
     .select("current_organization_id")
     .eq("id", user.id)
@@ -34,17 +42,17 @@ export default async function TeamPage() {
 
   // Fetch organization details and members in parallel
   const [orgRes, membersRes, currentMemberRes] = await Promise.all([
-    supabase
+    db
       .from("organizations")
       .select("id, name, slug, organization_type, primary_contact_email")
       .eq("id", orgId)
       .single(),
-    supabase
+    db
       .from("organization_members")
       .select("id, user_id, role, created_at, profiles(full_name, email)")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: true }),
-    supabase
+    db
       .from("organization_members")
       .select("role")
       .eq("organization_id", orgId)
@@ -55,7 +63,7 @@ export default async function TeamPage() {
   const org = orgRes.data;
   const rawMembers = membersRes.data ?? [];
   const currentMemberRole = currentMemberRes.data?.role ?? "viewer";
-  const isAdmin = ["owner", "admin"].includes(currentMemberRole);
+  const isAdmin = ["owner", "admin"].includes(currentMemberRole) || isDemo;
 
   // Transform members for the client component
   const members = rawMembers.map((m: any) => ({
@@ -128,6 +136,7 @@ export default async function TeamPage() {
         members={members}
         currentUserId={user.id}
         isAdmin={isAdmin}
+        isDemo={isDemo}
         organization={org ? {
           id: org.id,
           name: org.name,

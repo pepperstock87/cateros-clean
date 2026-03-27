@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { deleteRecipeAction } from "@/lib/actions/recipes";
 import type { Recipe } from "@/types";
@@ -9,6 +10,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -44,9 +46,9 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           {recipe.description && <p className="text-xs text-[#D4A373] mt-0.5 truncate">{recipe.description}</p>}
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0 ml-2" onClick={(e) => e.preventDefault()}>
-          <Link href={`/recipes/${recipe.id}/edit`} className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1" onClick={(e) => e.stopPropagation()}>
+          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); router.push(`/recipes/${recipe.id}/edit`); }} className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1">
             <Edit className="w-3.5 h-3.5" />
-          </Link>
+          </button>
           <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }} disabled={deleting} className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1">
             <Trash2 className="w-3.5 h-3.5" />
           </button>

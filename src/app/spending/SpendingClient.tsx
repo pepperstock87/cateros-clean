@@ -296,6 +296,7 @@ export function SpendingClient({
                   className="input w-full"
                   required
                   defaultValue={new Date().toISOString().split("T")[0]}
+                  suppressHydrationWarning
                 />
               </div>
               <div>
@@ -554,7 +555,7 @@ export function SpendingClient({
                   <tbody className="divide-y divide-[#2A3A5C]">
                     {receipts.map((r) => (
                       <tr key={r.id} className="hover:bg-[#1A2538] transition-colors">
-                        <td className="py-3 text-[#D4A373] whitespace-nowrap">
+                        <td className="py-3 text-[#D4A373] whitespace-nowrap" suppressHydrationWarning>
                           {new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className="py-3 font-medium truncate max-w-[150px]">{r.vendor}</td>
@@ -615,7 +616,7 @@ export function SpendingClient({
                     {invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-[#1A2538] transition-colors">
                         <td className="py-3 font-medium truncate max-w-[150px]">{inv.distributor}</td>
-                        <td className="py-3 text-[#D4A373] whitespace-nowrap">
+                        <td className="py-3 text-[#D4A373] whitespace-nowrap" suppressHydrationWarning>
                           {new Date(inv.invoice_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className="py-3 text-[#7A8BA8] hidden sm:table-cell">

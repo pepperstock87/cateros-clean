@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Loader2, LayoutTemplate, Users, Sparkles } from "lucide-react";
 import { DEFAULT_TEMPLATES, type DefaultTemplate } from "@/lib/defaultTemplates";
 import { ClientSelector } from "@/components/events/ClientSelector";
+import { SmartTimeInput } from "@/components/ui/SmartTimeInput";
 
 type Template = { id: string; name: string; guest_count: number | null };
 
@@ -196,11 +197,11 @@ export function NewEventForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Start time</label>
-              <input name="start_time" type="time" className="input" />
+              <SmartTimeInput name="start_time" placeholder="e.g. 5:00 PM" />
             </div>
             <div>
               <label className="label">End time</label>
-              <input name="end_time" type="time" className="input" />
+              <SmartTimeInput name="end_time" placeholder="e.g. 10:00 PM" />
             </div>
           </div>
           <div>

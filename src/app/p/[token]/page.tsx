@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { CalendarDays, Users, MapPin } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import type { Event, PricingData, BookingConfig } from "@/types";
 import { ClientResponse } from "./ClientResponse";
 import { ViewTracker } from "./ViewTracker";
@@ -97,7 +97,7 @@ export default async function PublicProposalPage({ params }: Props) {
                   <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
                   <span className="text-xs text-[#D4A373]">Date</span>
                 </div>
-                <div className="text-sm font-medium">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</div>
+                <div className="text-sm font-medium">{format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy")}</div>
               </div>
               <div className="card p-4">
                 <div className="flex items-center gap-1.5 mb-1">

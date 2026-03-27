@@ -20,6 +20,7 @@ import { computeNetPurchaseList, detectInventoryConflicts } from "../inventory-p
 import { generateTimeline } from "../timeline-generator";
 import { extractPatterns } from "../pattern-matcher";
 import { buildProcurementDraft } from "../procurement-builder";
+import { writeToolDefinitions, executeWriteTool } from "./write-tools";
 
 // ---------- Anthropic tool definitions ----------
 
@@ -727,6 +728,8 @@ export const cainTools = [
       required: ["plan"],
     },
   },
+  // Write/action tools that propose changes
+  ...writeToolDefinitions,
 ] as const;
 
 // ---------- Tool execution ----------
@@ -1427,6 +1430,7 @@ export async function executeTool(
     case "generate_shopping_list": {
       const menuItems = (input.menu_items as Array<{ name: string; recipe_id?: string; quantity?: number }>) || [];
       const guestCount = (input.guest_count as number) || 100;
+      console.log(`[CAIN Tool] generate_shopping_list: ${menuItems.length} items, ${guestCount} guests, recipe_ids: ${menuItems.map(m => m.recipe_id || "none").join(", ")}`);
       const supabase = await createClient();
 
       // Fetch recipes by ID or name
@@ -1463,6 +1467,8 @@ export async function executeTool(
         }
       }
 
+      console.log(`[CAIN Tool] generate_shopping_list: found ${recipeMap.size} recipes in DB for ${menuItems.length} menu items. Matched: [${Array.from(recipeMap.keys()).join(", ")}]`);
+
       // Aggregate ingredients
       let items = aggregateIngredients(menuItems, recipeMap, guestCount);
 
@@ -1498,6 +1504,7 @@ export async function executeTool(
       const items = (input.items as Array<{ name: string; category?: string }>) || [];
       const guestCount = (input.guest_count as number) || 100;
       const serviceStyle = input.service_style as string | undefined;
+      console.log(`[CAIN Tool] generate_draft_recipes: ${items.length} items, ${guestCount} guests`);
 
       const drafts = await generateDraftRecipes({
         menuItems: items,
@@ -1974,6 +1981,11 @@ export async function executeTool(
       return { result, plan: planInput.plan };
     }
     default:
+      // Check if this is a write tool (propose_*)
+      if (toolName.startsWith("propose_")) {
+        const writeResult = await executeWriteTool(toolName, input, ctx);
+        return writeResult;
+      }
       return { result: `Unknown tool: ${toolName}` };
   }
 }

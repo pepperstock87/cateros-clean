@@ -28,9 +28,9 @@ export default function SettingsPage() {
   const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
   // Pricing defaults state
-  const [defaultAdminFee, setDefaultAdminFee] = useState(20);
-  const [defaultTaxRate, setDefaultTaxRate] = useState(8.875);
-  const [defaultTargetMargin, setDefaultTargetMargin] = useState(35);
+  const [defaultAdminFee, setDefaultAdminFee] = useState(DEFAULTS.ADMIN_FEE_PERCENT);
+  const [defaultTaxRate, setDefaultTaxRate] = useState(DEFAULTS.TAX_RATE_PERCENT);
+  const [defaultTargetMargin, setDefaultTargetMargin] = useState(DEFAULTS.PROFIT_MARGIN_PERCENT);
   const [defaultDepositPercent, setDefaultDepositPercent] = useState(50);
   const [serviceChargePercent, setServiceChargePercent] = useState(0);
   const [savingPricing, setSavingPricing] = useState(false);

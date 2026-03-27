@@ -137,7 +137,7 @@ export function StaffAssignments({ eventId, assignments, staffMembers, eventStar
             <select name="staff_id" className="input text-sm w-full" required>
               <option value="">Select staff...</option>
               {availableStaff.map(s => (
-                <option key={s.id} value={s.id}>{s.name} — {s.role} (${s.hourly_rate}/hr)</option>
+                <option key={s.id} value={s.id}>{s.name} — {s.role} (${Number(s.hourly_rate).toLocaleString()}/{s.pay_type === "salary" ? "yr" : "hr"})</option>
               ))}
             </select>
           </div>

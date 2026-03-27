@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ClipboardList, FileText, Receipt, DollarSign, Edit, ExternalLink, Building2 } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, Receipt, DollarSign, Edit, ExternalLink, Building2, Users, MapPin, Calendar } from "lucide-react";
+import { MoreActionsDropdown } from "@/components/events/MoreActionsDropdown";
 import { InlineEventEditor } from "@/components/events/InlineEventEditor";
 import { CalendarExport } from "@/components/events/CalendarExport";
 import { DeleteEventButton } from "@/components/events/DeleteEventButton";
@@ -20,7 +21,7 @@ import { InlineSuggestion } from "@/components/assistant/InlineSuggestion";
 import { PrintButton } from "@/components/events/PrintButton";
 import { EventChecklist } from "@/components/events/EventChecklist";
 import { EventAlerts } from "@/components/events/EventAlerts";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { EventActivityLog } from "@/components/events/EventActivityLog";
 import { EventDetailTabs } from "@/components/events/EventDetailTabs";
 import { EventVendors } from "@/components/events/EventVendors";
@@ -165,7 +166,7 @@ export default async function EventDetailPage({ params }: Props) {
   const hasStaff = assignments.length > 0;
   const depositStatus = getDepositStatus(scheduleItems);
   const daysUntilEvent = Math.ceil(
-    (new Date(e.event_date).getTime() - Date.now()) / 86400000
+    (safeParseDate(e.event_date).getTime() - Date.now()) / 86400000
   );
 
   return (
@@ -209,14 +210,18 @@ export default async function EventDetailPage({ params }: Props) {
           <Link href={`/events/${e.id}/edit`} className="btn-secondary flex items-center gap-2">
             <Edit className="w-4 h-4" />Edit
           </Link>
-          <CalendarExport event={{ id: e.id, name: e.name, event_date: e.event_date, start_time: e.start_time, end_time: e.end_time, venue: e.venue, client_name: e.client_name, notes: e.notes }} />
-          <PrintButton />
-          <DuplicateEventButton eventId={e.id} />
-          <CloneEventButton eventId={e.id} eventName={e.name} clientName={e.client_name} />
-          <RecurringEventButton eventId={e.id} eventName={e.name} />
-          {e.pricing_data && <SaveAsTemplateButton eventId={e.id} />}
           <InlineSuggestion prompt={`Help me price the "${e.name}" event for ${e.guest_count} guests on ${e.event_date}. What should I charge?`} label="Help me price this" />
-          <DeleteEventButton eventId={e.id} eventName={e.name} />
+          <MoreActionsDropdown>
+            <div className="px-1 py-1 space-y-0.5 [&>*]:w-full [&>*]:justify-start [&>*]:rounded-md [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:hover:bg-[#1A2538]">
+              <CloneEventButton eventId={e.id} eventName={e.name} clientName={e.client_name} />
+              <RecurringEventButton eventId={e.id} eventName={e.name} />
+              <DuplicateEventButton eventId={e.id} />
+              {e.pricing_data && <SaveAsTemplateButton eventId={e.id} />}
+              <CalendarExport event={{ id: e.id, name: e.name, event_date: e.event_date, start_time: e.start_time, end_time: e.end_time, venue: e.venue, client_name: e.client_name, notes: e.notes }} />
+              <PrintButton />
+              <DeleteEventButton eventId={e.id} eventName={e.name} />
+            </div>
+          </MoreActionsDropdown>
         </div>
       </div>
 
@@ -233,6 +238,40 @@ export default async function EventDetailPage({ params }: Props) {
         {{
           overview: (
             <div>
+              {/* Event Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="card p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Users className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7A8BA8]">Guests</span>
+                  </div>
+                  <div className="text-lg font-semibold font-display">{e.guest_count ?? "—"}</div>
+                </div>
+                <div className="card p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7A8BA8]">Date</span>
+                  </div>
+                  <div className="text-lg font-semibold font-display">
+                    {e.event_date ? safeParseDate(e.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                  </div>
+                </div>
+                <div className="card p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <MapPin className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7A8BA8]">Venue</span>
+                  </div>
+                  <div className="text-lg font-semibold font-display truncate">{e.venue || "—"}</div>
+                </div>
+                <div className="card p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <DollarSign className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7A8BA8]">Value</span>
+                  </div>
+                  <div className="text-lg font-semibold font-display">{pricing ? formatCurrency(pricing.suggestedPrice) : "—"}</div>
+                </div>
+              </div>
+
               {/* Inline-editable event fields */}
               <div className="mb-6">
                 <InlineEventEditor
@@ -252,14 +291,14 @@ export default async function EventDetailPage({ params }: Props) {
                 />
               </div>
 
-              {/* Revenue summary card */}
+              {/* Quoted price summary card */}
               {pricing && (
                 <div className="card p-4 mb-6">
                   <div className="flex items-center gap-1.5 mb-1">
                     <DollarSign className="w-3.5 h-3.5 text-[#D4A373]" />
-                    <span className="stat-label">Revenue</span>
+                    <span className="stat-label">Quoted Price</span>
                   </div>
-                  <div className="text-sm font-medium text-brand-300">{formatCurrency(pricing.suggestedPrice)}</div>
+                  <div className="text-lg font-semibold text-brand-300">{formatCurrency(pricing.suggestedPrice)}</div>
                   <div className={`text-xs mt-1 ${pricing.projectedMargin >= 25 ? "text-green-400" : pricing.projectedMargin >= 15 ? "text-yellow-400" : "text-red-400"}`}>
                     {pricing.projectedMargin.toFixed(1)}% margin &middot; {formatCurrency(pricing.suggestedPrice / pricing.guestCount)}/person
                   </div>
@@ -378,7 +417,7 @@ export default async function EventDetailPage({ params }: Props) {
               {/* Pricing Engine */}
               <div className="mb-4">
                 <h2 className="font-display text-lg font-semibold mb-1">Pricing Engine</h2>
-                <p className="text-sm text-[#D4A373]">Build your cost model. Calculations update in real time.</p>
+                <p className="text-sm text-[#D4A373]">Menu costing, staffing, and margin calculations — all in real time.</p>
               </div>
 
               <PricingEngine eventId={e.id} guestCount={e.guest_count} initialPricing={e.pricing_data as PricingData | null} />

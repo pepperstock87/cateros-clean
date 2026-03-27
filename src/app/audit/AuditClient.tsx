@@ -211,7 +211,7 @@ export function AuditClient({ entries }: { entries: AuditLogEntry[] }) {
                   return (
                     <tr key={entry.id} className="border-b border-[#2A3A5C]/50 last:border-0">
                       <td className="px-4 py-3 text-[#D4A373] whitespace-nowrap">
-                        <span title={new Date(entry.created_at).toLocaleString()}>
+                        <span title={new Date(entry.created_at).toLocaleString()} suppressHydrationWarning>
                           {relativeTime(entry.created_at)}
                         </span>
                       </td>

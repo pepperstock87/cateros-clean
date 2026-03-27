@@ -6,10 +6,16 @@ import { DEFAULTS } from "@/lib/constants";
 import { getBusinessSettings } from "@/lib/actions/settings";
 import { formatCurrency, formatPercent, generateId } from "@/lib/utils";
 import { updateEventPricingAction } from "@/lib/actions/events";
-import type { PricingData, MenuItem, MenuItemCategory, StaffingLine, RentalLine, BarPackage } from "@/types";
+import type { PricingData, MenuItem, MenuItemCategory, MenuItemPricingType, StaffingLine, RentalLine, BarPackage } from "@/types";
 import { Plus, Trash2, Save, TrendingUp, DollarSign, Percent, Users, BookOpen, Package, UtensilsCrossed, Link2, Bookmark, LayoutTemplate } from "lucide-react";
 
 const MENU_CATEGORIES: MenuItemCategory[] = ["Appetizers", "Mains", "Sides", "Desserts", "Drinks", "Other"];
+
+const PRICING_TYPE_OPTIONS: { value: MenuItemPricingType; label: string; shortLabel: string }[] = [
+  { value: "per_guest", label: "Per Guest", shortLabel: "/ guest" },
+  { value: "flat", label: "Flat Fee", shortLabel: "flat" },
+  { value: "per_unit", label: "Per Unit", shortLabel: "/ unit" },
+];
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
 import { toast } from "sonner";
@@ -60,7 +66,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
   const [showLoadMenuTemplate, setShowLoadMenuTemplate] = useState(false);
   const { isDirty, markDirty, markClean } = useUnsavedChanges();
 
-  const addMenuItem = (category: MenuItemCategory = "Mains") => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: guestCount, category }]); markDirty(); };
+  const addMenuItem = (category: MenuItemCategory = "Mains") => { setMenuItems(p => [...p, { id: generateId(), name: "", costPerPerson: 0, quantity: 0, category }]); markDirty(); };
   const addStaffItem = () => { setStaffing(p => [...p, { id: generateId(), role: "", hourlyRate: 25, hours: 8, headcount: 1 }]); markDirty(); };
   const addRentalItem = () => { setRentals(p => [...p, { id: generateId(), item: "", unitCost: 0, quantity: 1 }]); markDirty(); };
 
@@ -232,23 +238,30 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
         {[
           { icon: DollarSign, label: "Total Cost", value: formatCurrency(pricing.totalCost), color: "" },
           { icon: TrendingUp, label: "Suggested Price", value: formatCurrency(pricing.suggestedPrice), color: "text-brand-300" },
-          { icon: Percent, label: "Proj. Margin", value: formatPercent(pricing.projectedMargin), color: marginColor },
+          { icon: Percent, label: "Margin", value: formatPercent(pricing.projectedMargin), color: marginColor },
           { icon: Users, label: "Per Person", value: formatCurrency(pricing.suggestedPrice / guestCount), color: "" },
-        ].map(({ icon: Icon, label, value, color }) => (
-          <div key={label}>
-            <div className="flex items-center gap-1.5 mb-1"><Icon className="w-3.5 h-3.5 text-[#D4A373]" /><span className="stat-label">{label}</span></div>
-            <div className={`text-xl font-semibold font-display ${color}`}>{value}</div>
-          </div>
-        ))}
+        ].map(({ icon: Icon, label, value, color }) => {
+          const foodCostPct = pricing.suggestedPrice > 0 ? (pricing.foodCostTotal / pricing.suggestedPrice * 100) : 0;
+          return (
+            <div key={label}>
+              <div className="flex items-center gap-1.5 mb-1"><Icon className="w-3.5 h-3.5 text-[#D4A373]" /><span className="stat-label">{label}</span></div>
+              <div className={`text-xl font-semibold font-display ${color}`}>{value}</div>
+              {label === "Per Person" && <div className="text-[10px] text-[#7A8BA8] mt-0.5">Food cost: {foodCostPct.toFixed(0)}%</div>}
+            </div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Inputs */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Menu */}
+          {/* Menu — packages, stations, services */}
           <div className="card p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-sm">Menu Items</h3>
+              <div>
+                <h3 className="font-medium text-sm">Menu &amp; Services</h3>
+                <p className="text-[10px] text-[#7A8BA8] mt-0.5">Packages, stations, courses, and services</p>
+              </div>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setShowLoadMenuTemplate(true)} className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
                   <LayoutTemplate className="w-3.5 h-3.5" />Load Template
@@ -271,69 +284,156 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
               <div className="text-center py-6 border border-dashed border-[#2A3A5C] rounded-lg">
                 <UtensilsCrossed className="w-6 h-6 text-[#7A8BA8] mx-auto mb-2" />
                 <p className="text-sm font-medium text-[#D4A373] mb-1">No menu items yet</p>
-                <p className="text-xs text-[#7A8BA8] mb-3">Add dishes, courses, or menu components to build your pricing</p>
-                <button onClick={() => addMenuItem()} className="btn-primary text-xs px-3 py-1.5">+ Add Menu Item</button>
+                <p className="text-xs text-[#7A8BA8] mb-3">Add packages, stations, or services — e.g. Cocktail Hour, Buffet Dinner, Coffee Service</p>
+                <button onClick={() => addMenuItem()} className="btn-primary text-xs px-3 py-1.5">+ Add Item</button>
               </div>
             ) : (
               <>
-                {MENU_CATEGORIES
-                  .filter(cat => menuItems.some(item => (item.category || "Other") === cat))
-                  .map(cat => {
-                    const categoryItems = menuItems.filter(item => (item.category || "Other") === cat);
-                    return (
-                      <div key={cat} className="mb-3 last:mb-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[11px] uppercase tracking-wider text-[#D4A373] font-semibold">{cat}</span>
-                          <button type="button" onClick={() => addMenuItem(cat)} className="text-[10px] text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-0.5">
-                            <Plus className="w-3 h-3" />Add
-                          </button>
+                {/* Column headers */}
+                <div className="hidden sm:grid sm:grid-cols-[1fr_100px_90px_90px_90px_32px] gap-2 text-[10px] font-medium text-[#D4A373] uppercase tracking-wider mb-1 px-1">
+                  <span>Service / Package</span>
+                  <span>Type</span>
+                  <span>Price</span>
+                  <span>Guests</span>
+                  <span className="text-right">Total</span>
+                  <span></span>
+                </div>
+
+                {menuItems.map(item => {
+                  const pType = item.pricingType || "per_guest";
+                  const isInherited = pType === "per_guest" && (!item.quantity || item.quantity === guestCount);
+
+                  // Line total
+                  let lineTotal = 0;
+                  if (pType === "flat") lineTotal = item.costPerPerson;
+                  else if (pType === "per_unit") lineTotal = item.costPerPerson * (item.quantity || 1);
+                  else lineTotal = item.costPerPerson * (item.quantity || guestCount);
+
+                  return (
+                    <div key={item.id} className="group">
+                      {/* Main row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_90px_90px_90px_32px] gap-2 items-center py-2 px-1 rounded-lg hover:bg-[#182030]/50 transition-colors">
+                        {/* Service name */}
+                        <input
+                          className="input text-sm"
+                          placeholder="e.g. Cocktail Hour, Buffet Dinner"
+                          value={item.name}
+                          onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }}
+                        />
+
+                        {/* Pricing type */}
+                        <select
+                          className="input text-xs"
+                          value={pType}
+                          onChange={e => {
+                            const newType = e.target.value as MenuItemPricingType;
+                            setMenuItems(p => p.map(m => m.id === item.id ? {
+                              ...m,
+                              pricingType: newType,
+                              quantity: newType === "flat" ? 1 : newType === "per_unit" ? (m.quantity || 1) : 0,
+                            } : m));
+                            markDirty();
+                          }}
+                        >
+                          {PRICING_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+
+                        {/* Price */}
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-xs">$</span>
+                          <input
+                            className="input pl-6 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            type="number"
+                            placeholder={pType === "flat" ? "350" : "14.00"}
+                            step="0.01"
+                            min={0}
+                            value={item.costPerPerson || ""}
+                            onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }}
+                          />
                         </div>
-                        {categoryItems.map(item => (
-                          <div key={item.id} className="grid grid-cols-12 gap-2 items-center mb-2">
-                            <input className="input col-span-4 text-sm" placeholder="Item name" value={item.name} onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, name: e.target.value } : m)); markDirty(); }} />
-                            <select
-                              className="input col-span-2 text-sm"
-                              value={item.category || "Other"}
-                              onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, category: e.target.value as MenuItemCategory } : m)); markDirty(); }}
-                            >
-                              {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                            <div className="col-span-2 relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8BA8] text-sm">$</span>
-                              <input className="input pl-6 text-sm" type="number" placeholder="0.00" step="0.01" min={0} value={item.costPerPerson || ""}
-                                onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, costPerPerson: parseFloat(e.target.value) || 0 } : m)); markDirty(); }} />
-                            </div>
-                            <input className="input col-span-1 text-sm" type="number" placeholder="Qty" min={1} value={item.quantity || ""}
-                              onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: parseInt(e.target.value) || guestCount } : m)); markDirty(); }} />
-                            <button
-                              type="button"
-                              onClick={() => item.name.trim() && openLinker(item.name.trim())}
-                              disabled={!item.name.trim()}
-                              className={`col-span-1 flex items-center justify-center transition-colors ${
-                                (menuItemMappings[item.name.trim()] ?? []).length > 0
-                                  ? "text-[#D4A373] hover:text-brand-300"
-                                  : "text-[#7A8BA8] hover:text-[#D4A373]"
-                              } disabled:opacity-30 disabled:cursor-not-allowed`}
-                              title={`Link recipes to "${item.name || "item"}"`}
-                            >
-                              <Link2 className="w-3.5 h-3.5" />
-                              {(menuItemMappings[item.name.trim()] ?? []).length > 0 && (
-                                <span className="text-[9px] ml-0.5 font-semibold">{menuItemMappings[item.name.trim()].length}</span>
-                              )}
-                            </button>
-                            <button type="button" onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }} className="col-span-2 flex items-center justify-center text-[#7A8BA8] hover:text-red-400 transition-colors">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+
+                        {/* Guests / Quantity */}
+                        {pType === "flat" ? (
+                          <div className="text-xs text-[#7A8BA8] text-center px-2">—</div>
+                        ) : (
+                          <div className="relative">
+                            <input
+                              className={`input text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isInherited ? "text-[#7A8BA8]" : ""}`}
+                              type="number"
+                              placeholder={pType === "per_guest" ? String(guestCount) : "1"}
+                              min={1}
+                              value={item.quantity || ""}
+                              onChange={e => {
+                                const val = parseInt(e.target.value) || 0;
+                                setMenuItems(p => p.map(m => m.id === item.id ? { ...m, quantity: val } : m));
+                                markDirty();
+                              }}
+                              title={
+                                pType === "per_guest"
+                                  ? (isInherited ? `From event (${guestCount} guests)` : `Custom (event has ${guestCount})`)
+                                  : "Quantity"
+                              }
+                            />
+                            <span className={`absolute -top-1.5 right-1 text-[8px] font-medium px-1 rounded ${
+                              isInherited
+                                ? "text-brand-400 bg-[#111827]"
+                                : "text-[#D4A373] bg-[#111827]"
+                            }`}>
+                              {isInherited ? "from event" : "custom"}
+                            </span>
                           </div>
-                        ))}
+                        )}
+
+                        {/* Total */}
+                        <div className="text-right pr-1">
+                          <span className="text-sm font-semibold text-[#F4F1ED]">{formatCurrency(lineTotal)}</span>
+                        </div>
+
+                        {/* Delete */}
+                        <button
+                          type="button"
+                          onClick={() => { setMenuItems(p => p.filter(m => m.id !== item.id)); markDirty(); }}
+                          className="text-[#7A8BA8] hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100 justify-self-center"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    );
-                  })}
+
+                      {/* Secondary row: category + recipe link */}
+                      <div className="flex items-center gap-2 px-1 pb-2 sm:ml-0">
+                        <select
+                          className="text-[10px] bg-transparent border border-[#2A3A5C] text-[#7A8BA8] rounded px-1.5 py-0.5 focus:border-brand-600 focus:outline-none"
+                          value={item.category || "Other"}
+                          onChange={e => { setMenuItems(p => p.map(m => m.id === item.id ? { ...m, category: e.target.value as MenuItemCategory } : m)); markDirty(); }}
+                        >
+                          {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => item.name.trim() && openLinker(item.name.trim())}
+                          disabled={!item.name.trim()}
+                          className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded transition-colors ${
+                            (menuItemMappings[item.name.trim()] ?? []).length > 0
+                              ? "text-[#D4A373] hover:text-brand-300"
+                              : "text-[#7A8BA8] hover:text-[#D4A373]"
+                          } disabled:opacity-30 disabled:cursor-not-allowed`}
+                          title={`Link recipes to "${item.name || "item"}"`}
+                        >
+                          <Link2 className="w-2.5 h-2.5" />
+                          {(menuItemMappings[item.name.trim()] ?? []).length > 0
+                            ? <span>{menuItemMappings[item.name.trim()].length} recipe{menuItemMappings[item.name.trim()].length !== 1 ? "s" : ""} linked</span>
+                            : <span>Link recipes</span>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </>
             )}
             {menuItems.length > 0 && (
               <div className="flex justify-between text-xs text-[#D4A373] pt-2 border-t border-[#2A3A5C]">
-                <span>Food cost total</span><span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.foodCostTotal)}</span>
+                <span>Menu &amp; services total</span><span className="font-medium text-[#F4F1ED]">{formatCurrency(pricing.foodCostTotal)}</span>
               </div>
             )}
             </div>
@@ -489,7 +589,7 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
             <h3 className="font-medium text-sm mb-4">Cost Breakdown</h3>
             <div className="space-y-2.5">
               {[
-                { label: "Food & Menu", value: pricing.foodCostTotal },
+                { label: "Menu & Services", value: pricing.foodCostTotal },
                 { label: "Staffing", value: pricing.staffingTotal },
                 { label: "Rentals", value: pricing.rentalsTotal },
                 { label: "Bar", value: pricing.barTotal },
@@ -514,7 +614,11 @@ export function PricingEngine({ eventId, guestCount, initialPricing }: Props) {
                 <span>Suggested Price</span><span>{formatCurrency(pricing.suggestedPrice)}</span>
               </div>
               <div className={`flex justify-between font-semibold text-sm ${marginColor}`}>
-                <span>Proj. Margin</span><span>{formatPercent(pricing.projectedMargin)}</span>
+                <span>Projected Margin</span><span>{formatPercent(pricing.projectedMargin)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#D4A373]">Per Person</span>
+                <span>{formatCurrency(pricing.suggestedPrice / guestCount)}</span>
               </div>
             </div>
           </div>

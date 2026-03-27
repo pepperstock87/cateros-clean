@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { CheckCircle, Circle, Clock } from "lucide-react";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, Payment } from "@/types";
 
 type Props = {
@@ -30,7 +31,7 @@ export function PortalTimeline({ event, proposal, payments }: Props) {
   const proposalApproved = ["approved", "signed", "deposit_paid", "booked", "accepted"].includes(proposal.status);
   const contractSigned = !!proposal.contract_accepted_at;
   const depositPaid = !!firstPayment || ["deposit_paid", "booked"].includes(proposal.status);
-  const eventDate = new Date(event.event_date);
+  const eventDate = safeParseDate(event.event_date);
   const eventPassed = eventDate <= new Date();
 
   const milestones: Milestone[] = [

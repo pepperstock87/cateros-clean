@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, PricingData, Recipe } from "@/types";
 
 export function generateKitchenPrepPDF(
@@ -93,7 +94,7 @@ export function generateKitchenPrepPDF(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
-  const eventDate = format(new Date(event.event_date), "EEEE, MMMM d, yyyy");
+  const eventDate = format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy");
   const timeStr = event.start_time ? formatTime(event.start_time) : "TBD";
   doc.text(`${eventDate}  |  Service: ${timeStr}  |  ${event.guest_count} guests`, margin + 14, y + 42);
   y += 76;

@@ -56,6 +56,36 @@ export default async function PlansPage() {
     "Profit dashboard",
   ];
 
+  const proFeatures = [
+    "Everything in Basic, plus:",
+    "Staff scheduling & payroll",
+    "Venue & vendor coordination",
+    "Custom branded proposals",
+    "Production sheets (BEO)",
+    "AI business assistant (C.A.I.N)",
+    "Advanced analytics",
+    "Team collaboration",
+    "Priority support & onboarding",
+  ];
+
+  // Hardcoded comparison rows as fallback when feature_flags table is empty
+  const comparisonFeatures = [
+    { name: "Unlimited events", basic: true, pro: true },
+    { name: "PDF proposal generation", basic: true, pro: true },
+    { name: "Recipe cost library", basic: true, pro: true },
+    { name: "Profit dashboard", basic: true, pro: true },
+    { name: "Client portal", basic: true, pro: true },
+    { name: "Email support", basic: true, pro: true },
+    { name: "Staff scheduling & payroll", basic: false, pro: true },
+    { name: "Venue & vendor coordination", basic: false, pro: true },
+    { name: "Custom branded proposals", basic: false, pro: true },
+    { name: "Production sheets (BEO)", basic: false, pro: true },
+    { name: "AI business assistant (C.A.I.N)", basic: false, pro: true },
+    { name: "Advanced analytics", basic: false, pro: true },
+    { name: "Team collaboration", basic: false, pro: true },
+    { name: "Priority support & onboarding", basic: false, pro: true },
+  ];
+
   return (
     <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
@@ -145,9 +175,9 @@ export default async function PlansPage() {
                       </li>
                     ))}
                   {planKey === "pro" &&
-                    basicFeatures.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                    proFeatures.map((f, i) => (
+                      <li key={f} className={`flex items-center gap-2 text-sm ${i === 0 ? "text-[#D4A373] font-medium" : ""}`}>
+                        {i > 0 && <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />}
                         {f}
                       </li>
                     ))}
@@ -229,36 +259,65 @@ export default async function PlansPage() {
               </tr>
             </thead>
             <tbody>
-              {featureFlags.map((flag, i) => (
-                <tr
-                  key={flag.id}
-                  className={
-                    i < featureFlags.length - 1
-                      ? "border-b border-[#1A2538]"
-                      : ""
-                  }
-                >
-                  <td className="p-4">
-                    <div className="text-sm font-medium">
-                      {flag.feature_name}
-                    </div>
-                    {flag.description && (
-                      <div className="text-xs text-[#7A8BA8] mt-0.5">
-                        {flag.description}
-                      </div>
-                    )}
-                  </td>
-                  {PLAN_ORDER.map((p) => (
-                    <td key={p} className="p-4 text-center">
-                      {flag.plans.includes(p) ? (
-                        <Check className="w-5 h-5 text-brand-400 mx-auto" />
-                      ) : (
-                        <X className="w-5 h-5 text-[#344570] mx-auto" />
-                      )}
-                    </td>
+              {featureFlags.length > 0
+                ? featureFlags.map((flag, i) => (
+                    <tr
+                      key={flag.id}
+                      className={
+                        i < featureFlags.length - 1
+                          ? "border-b border-[#1A2538]"
+                          : ""
+                      }
+                    >
+                      <td className="p-4">
+                        <div className="text-sm font-medium">
+                          {flag.feature_name}
+                        </div>
+                        {flag.description && (
+                          <div className="text-xs text-[#7A8BA8] mt-0.5">
+                            {flag.description}
+                          </div>
+                        )}
+                      </td>
+                      {PLAN_ORDER.map((p) => (
+                        <td key={p} className="p-4 text-center">
+                          {flag.plans.includes(p) ? (
+                            <Check className="w-5 h-5 text-brand-400 mx-auto" />
+                          ) : (
+                            <X className="w-5 h-5 text-[#344570] mx-auto" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : comparisonFeatures.map((feat, i) => (
+                    <tr
+                      key={feat.name}
+                      className={
+                        i < comparisonFeatures.length - 1
+                          ? "border-b border-[#1A2538]"
+                          : ""
+                      }
+                    >
+                      <td className="p-4">
+                        <div className="text-sm font-medium">{feat.name}</div>
+                      </td>
+                      <td className="p-4 text-center">
+                        {feat.basic ? (
+                          <Check className="w-5 h-5 text-brand-400 mx-auto" />
+                        ) : (
+                          <X className="w-5 h-5 text-[#344570] mx-auto" />
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {feat.pro ? (
+                          <Check className="w-5 h-5 text-brand-400 mx-auto" />
+                        ) : (
+                          <X className="w-5 h-5 text-[#344570] mx-auto" />
+                        )}
+                      </td>
+                    </tr>
                   ))}
-                </tr>
-              ))}
             </tbody>
           </table>
         </div>

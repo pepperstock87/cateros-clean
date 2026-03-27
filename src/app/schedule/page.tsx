@@ -26,7 +26,7 @@ export default async function SchedulePage() {
     .order("created_at");
   if (orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", orgId);
 
-  let staffQuery = supabase.from("staff_members").select("*").order("name");
+  let staffQuery = supabase.from("staff_members").select("id, name, role, email, phone, hourly_rate, pay_type, organization_id, user_id, notes, created_at").order("name");
   if (orgId) staffQuery = staffQuery.eq("organization_id", orgId);
 
   const [{ data: events }, { data: rawAssignments }, { data: staffMembers }] = await Promise.all([

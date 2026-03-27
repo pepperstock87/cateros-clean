@@ -520,47 +520,59 @@ export async function getDistributorSyncStatus(): Promise<{
 
   const org = await getCurrentOrg();
 
-  const [distRes, prodRes, jobsRes, ordersRes, invoicesRes] = await Promise.all([
-    supabase
-      .from("distributors")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("is_active", true),
-    supabase
-      .from("distributor_products")
-      .select("id, distributors!inner(user_id)", { count: "exact", head: true })
-      .eq("distributors.user_id", user.id)
-      .eq("is_active", true),
-    supabase
-      .from("distributor_sync_jobs")
-      .select("id, job_type, status, error, created_at, distributors(name)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("distributor_orders")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .in("status", ["draft", "submitted"]),
-    supabase
-      .from("distributor_invoices")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("status", "pending"),
-  ]);
+  try {
+    const [distRes, prodRes, jobsRes, ordersRes, invoicesRes] = await Promise.all([
+      supabase
+        .from("distributors")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_active", true),
+      supabase
+        .from("distributor_products")
+        .select("id, distributors!inner(user_id)", { count: "exact", head: true })
+        .eq("distributors.user_id", user.id)
+        .eq("is_active", true),
+      supabase
+        .from("distributor_sync_jobs")
+        .select("id, job_type, status, error, created_at, distributors(name)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("distributor_orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .in("status", ["draft", "submitted"]),
+      supabase
+        .from("distributor_invoices")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "pending"),
+    ]);
 
-  return {
-    distributorCount: distRes.count ?? 0,
-    totalProducts: prodRes.count ?? 0,
-    recentJobs: (jobsRes.data ?? []).map((j: any) => ({
-      id: j.id,
-      distributorName: j.distributors?.name || "Unknown",
-      jobType: j.job_type,
-      status: j.status,
-      createdAt: j.created_at,
-      error: j.error,
-    })),
-    pendingOrders: ordersRes.count ?? 0,
-    unreconciledInvoices: invoicesRes.count ?? 0,
-  };
+    // Log any query errors but don't fail the whole call
+    if (distRes.error) console.error("Distributor count query failed:", distRes.error.message);
+    if (prodRes.error) console.error("Product count query failed:", prodRes.error.message);
+    if (jobsRes.error) console.error("Sync jobs query failed:", jobsRes.error.message);
+    if (ordersRes.error) console.error("Orders count query failed:", ordersRes.error.message);
+    if (invoicesRes.error) console.error("Invoices count query failed:", invoicesRes.error.message);
+
+    return {
+      distributorCount: distRes.count ?? 0,
+      totalProducts: prodRes.count ?? 0,
+      recentJobs: (jobsRes.data ?? []).map((j: any) => ({
+        id: j.id,
+        distributorName: j.distributors?.name || "Unknown",
+        jobType: j.job_type,
+        status: j.status,
+        createdAt: j.created_at,
+        error: j.error,
+      })),
+      pendingOrders: ordersRes.count ?? 0,
+      unreconciledInvoices: invoicesRes.count ?? 0,
+    };
+  } catch (err) {
+    console.error("getDistributorSyncStatus failed:", err);
+    return { distributorCount: 0, totalProducts: 0, recentJobs: [], pendingOrders: 0, unreconciledInvoices: 0 };
+  }
 }

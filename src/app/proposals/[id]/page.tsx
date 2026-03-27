@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft, CalendarDays, Users, MapPin, FileText, Mail, MessageSquare } from "lucide-react";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent, safeParseDate } from "@/lib/utils";
 import type { Proposal, Event, PricingData, ClientMessage } from "@/types";
 import { ProposalActions } from "./ProposalActions";
 import { ReplyToClient } from "./ReplyToClient";
@@ -100,7 +100,7 @@ export default async function ProposalDetailPage({ params }: Props) {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
-                  <span className="text-sm">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</span>
+                  <span className="text-sm">{format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-[#D4A373]" />

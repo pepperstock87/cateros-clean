@@ -47,7 +47,7 @@ export function StaffingSuggestion({ guestCount, eventType, currentStaffCount }:
         <div className="flex items-center gap-2">
           <Users className={`w-4 h-4 ${statusColor}`} />
           <span className={`text-sm font-medium ${statusColor}`}>
-            {isAdequate ? "Staffing looks good" : `You may need ${deficit} more staff`}
+            {isAdequate ? "Staffing on track" : `Consider adding ${deficit} more staff`}
           </span>
         </div>
         {collapsed ? (
@@ -60,13 +60,13 @@ export function StaffingSuggestion({ guestCount, eventType, currentStaffCount }:
       {!collapsed && (
         <div className="px-4 pb-3 text-xs text-[#D4A373] space-y-1 border-t border-[#2A3A5C] pt-2">
           <p>
-            Suggested: {suggestedServers} server{suggestedServers !== 1 ? "s" : ""}, {suggestedKitchen} kitchen staff for {guestCount} guests
+            Recommended: {suggestedServers} server{suggestedServers !== 1 ? "s" : ""} + {suggestedKitchen} kitchen staff for {guestCount} guests
           </p>
           <p className="text-[#7A8BA8]">
-            Ratio: 1 server per {serverRatio} guests{eventType ? ` (${eventType})` : ""} &middot; 1 chef per 50 guests
+            Based on 1 server per {serverRatio} guests{eventType ? ` (${eventType})` : ""}, 1 kitchen per 50 guests
           </p>
           <p className="text-[#7A8BA8]">
-            Currently assigned: {currentStaffCount} staff
+            Currently assigned: {currentStaffCount}
           </p>
         </div>
       )}

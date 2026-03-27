@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Printer, Download } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Event, PricingData } from "@/types";
 
@@ -45,7 +45,7 @@ export function BEOActions({ event }: { event: Event }) {
     doc.setTextColor(60, 60, 60);
     const details = [
       `Client: ${e.client_name}`,
-      `Date: ${format(new Date(e.event_date), "EEEE, MMMM d, yyyy")}`,
+      `Date: ${format(safeParseDate(e.event_date), "EEEE, MMMM d, yyyy")}`,
       ...(e.start_time && e.end_time ? [`Time: ${e.start_time} - ${e.end_time}`] : []),
       `Guests: ${e.guest_count}`,
       ...(e.venue ? [`Venue: ${e.venue}`] : []),

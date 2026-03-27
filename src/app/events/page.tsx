@@ -9,21 +9,37 @@ import { getCurrentOrg } from "@/lib/organizations";
 import { getDepositStatus } from "@/lib/utils";
 import type { Event, DepositStatus, PaymentScheduleItem } from "@/types";
 
-export default async function EventsListPage() {
+export default async function EventsListPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
+  // Pagination
+  const params = await searchParams;
+  const page = Number(params?.page) || 1;
+  const pageSize = 50;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id);
   if (org?.orgId) eventsQuery = eventsQuery.eq("organization_id", org.orgId);
 
-  const [eventsRes, profileRes] = await Promise.all([
-    eventsQuery.order("event_date", { ascending: false }),
+  let countQuery = supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+  if (org?.orgId) countQuery = countQuery.eq("organization_id", org.orgId);
+
+  const [eventsRes, profileRes, countRes] = await Promise.all([
+    eventsQuery.order("event_date", { ascending: false }).range(from, to),
     supabase.from("profiles").select("company_name").eq("id", user.id).single(),
+    countQuery,
   ]);
   const events: Event[] = eventsRes.data ?? [];
   const companyName = profileRes.data?.company_name ?? "My Company";
+  const totalCount = countRes.count ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
   const { isPro } = await getUserEntitlements();
 
   // Fetch payment schedules for deposit status (filtered by event IDs)
@@ -68,7 +84,26 @@ export default async function EventsListPage() {
           <Link href="/events/new" className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" />Create first event</Link>
         </div>
       ) : (
-        <FilteredEventsView events={events} companyName={companyName} depositStatusMap={depositStatusMap} />
+        <>
+          <FilteredEventsView events={events} companyName={companyName} depositStatusMap={depositStatusMap} />
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {page > 1 && (
+                <Link href={`/events?page=${page - 1}`} className="btn-secondary text-sm px-3 py-1.5">
+                  Previous
+                </Link>
+              )}
+              <span className="text-sm text-[#7A8BA8]">
+                Page {page} of {totalPages}
+              </span>
+              {page < totalPages && (
+                <Link href={`/events?page=${page + 1}`} className="btn-secondary text-sm px-3 py-1.5">
+                  Next
+                </Link>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

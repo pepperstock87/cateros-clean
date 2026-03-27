@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent, safeParseDate } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, subMonths, addDays, isThisWeek } from "date-fns";
 import { TrendingUp, TrendingDown, Minus, CalendarDays, DollarSign, Percent, Plus, ArrowRight, FileText, Activity, Send } from "lucide-react";
 import type { Event, PricingData, PaymentData, ClientMessage } from "@/types";
@@ -13,7 +13,10 @@ import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { ActionAlerts, type AlertItem } from "@/components/dashboard/ActionAlerts";
 import { UpcomingEventsTimeline } from "@/components/dashboard/UpcomingEventsTimeline";
 import { RecentActivityFeed } from "@/components/dashboard/RecentActivityFeed";
+import { ClientDate, ClientGreeting } from "@/components/dashboard/ClientDate";
+import { SuggestionsWidget } from "@/components/cain/SuggestionsWidget";
 import { getCurrentOrg } from "@/lib/organizations";
+import { isDemoSession } from "@/lib/demo";
 
 async function getDashboardData(userId: string, orgId: string | null) {
   const supabase = await createClient();
@@ -148,7 +151,7 @@ async function getDashboardData(userId: string, orgId: string | null) {
 
   // Count events this week for informational alert
   const eventsThisWeekCount = events.filter(e =>
-    e.status !== "canceled" && isThisWeek(new Date(e.event_date), { weekStartsOn: 1 })
+    e.status !== "canceled" && isThisWeek(safeParseDate(e.event_date), { weekStartsOn: 1 })
   ).length;
 
   // Events needing attention: upcoming events with incomplete checklists
@@ -224,12 +227,13 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const org = await getCurrentOrg();
-  const { data: profile } = await supabase.from("profiles").select("full_name, has_seen_welcome, onboarding_completed, business_type, primary_goal").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, company_name, has_seen_welcome, onboarding_completed, business_type, primary_goal").eq("id", user.id).single();
 
   if (profile && profile.onboarding_completed === false) {
     redirect("/onboarding");
   }
   const stats = await getDashboardData(user.id, org?.orgId ?? null);
+  const isDemo = await isDemoSession();
   const h = new Date().getHours();
   const greeting = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
 
@@ -258,7 +262,7 @@ export default async function DashboardPage() {
       id: `pricing-${e.id}`,
       type: "urgent",
       title: `Pricing missing for ${e.name}`,
-      description: `Event on ${format(new Date(e.event_date), "MMM d")} has no pricing set`,
+      description: `Event on ${format(safeParseDate(e.event_date), "MMM d")} has no pricing set`,
       link: `/events/${e.id}`,
       eventName: e.name,
     });
@@ -270,7 +274,7 @@ export default async function DashboardPage() {
       id: `staff-${e.id}`,
       type: "warning",
       title: `Staff not assigned for ${e.name}`,
-      description: `Event on ${format(new Date(e.event_date), "MMM d")} has no staff assigned`,
+      description: `Event on ${format(safeParseDate(e.event_date), "MMM d")} has no staff assigned`,
       link: `/events/${e.id}`,
       eventName: e.name,
     });
@@ -295,7 +299,7 @@ export default async function DashboardPage() {
       id: `draft-${e.id}`,
       type: "warning",
       title: `${e.name} still in draft`,
-      description: `Event on ${format(new Date(e.event_date), "MMM d")} — confirm or update`,
+      description: `Event on ${format(safeParseDate(e.event_date), "MMM d")} — confirm or update`,
       link: `/events/${e.id}`,
       eventName: e.name,
     });
@@ -349,16 +353,30 @@ export default async function DashboardPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <WelcomeModal hasSeenWelcome={profile?.has_seen_welcome ?? false} />
 
+      {isDemo && (
+        <div className="card p-5 mb-6 border-brand-800/40 bg-gradient-to-r from-brand-950/50 via-[#111B2E] to-brand-950/50">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-900/50 border border-brand-800/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-brand-400 text-sm">C</span>
+            </div>
+            <div>
+              <h2 className="font-display text-sm font-semibold mb-1">Welcome to Cateros</h2>
+              <p className="text-xs text-[#D4A373] leading-relaxed">
+                The operating system for catering and hospitality. Explore events, menu costing, staffing, proposals, and margin tracking — all in one place.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
-          <h1 className="font-display text-xl md:text-2xl font-semibold">
-            Good {greeting}, {profile?.full_name?.split(" ")[0] ?? "there"}
-          </h1>
-          <p className="text-xs md:text-sm text-[#D4A373] mt-1">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
+          <ClientGreeting name={profile?.full_name ?? undefined} isDemo={isDemo} companyName={profile?.company_name ?? undefined} />
+          <ClientDate />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="How's my business?" />
+          <InlineSuggestion prompt="How's my business doing this month? Analyze my events, margins, and revenue." label="Business Insights" />
           <Link href="/proposals" className="btn-secondary flex items-center justify-center gap-2 flex-1 sm:flex-initial">
             <Send className="w-4 h-4" />
             <span className="hidden sm:inline">New {terms.proposal.toLowerCase()}</span>
@@ -377,7 +395,7 @@ export default async function DashboardPage() {
         {[
           { icon: DollarSign, label: "Revenue", fullLabel: "Revenue this month", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
           { icon: CalendarDays, label: terms.event + "s", fullLabel: terms.event + "s this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
-          { icon: Percent, label: "Margin", fullLabel: "Avg Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
+          { icon: Percent, label: "Margin", fullLabel: "Avg. Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
           { icon: FileText, label: "Proposals", fullLabel: "Pending Proposals", value: stats.pendingProposalsCount, prev: null, color: "text-[#D4A373]", raw: true, noDelta: true },
         ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw, noDelta }: any) => {
           const current = value as number;
@@ -441,7 +459,7 @@ export default async function DashboardPage() {
         <RevenueGoal currentRevenue={stats.totalRevenueThisMonth} />
         {stats.upcomingEvents.length > 0 && (() => {
           const next = stats.upcomingEvents[0];
-          const daysUntil = Math.ceil((new Date(next.event_date).getTime() - Date.now()) / 86400000);
+          const daysUntil = Math.ceil((safeParseDate(next.event_date).getTime() - Date.now()) / 86400000);
           return (
             <div className="card p-4 md:p-5 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-2">
@@ -486,6 +504,11 @@ export default async function DashboardPage() {
       {/* Action Alerts */}
       <div className="mb-6 md:mb-8">
         <ActionAlerts alerts={alerts} />
+      </div>
+
+      {/* CAIN Suggestions Widget */}
+      <div className="mb-6 md:mb-8">
+        <SuggestionsWidget />
       </div>
 
       {/* Upcoming Events + Recent Activity — Side by Side on Desktop */}
@@ -546,7 +569,7 @@ export default async function DashboardPage() {
                 <Link key={e.id} href={`/events/${e.id}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#1A2538] transition-colors border border-[#2A3A5C]">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{e.name}</div>
-                    <div className="text-[10px] text-[#7A8BA8]">{e.client_name} · {format(new Date(e.event_date), "MMM d")}</div>
+                    <div className="text-[10px] text-[#7A8BA8]">{e.client_name} · {format(safeParseDate(e.event_date), "MMM d")}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-sm font-medium text-yellow-400">{formatCurrency(balance)}</div>
@@ -600,13 +623,13 @@ export default async function DashboardPage() {
                         <span className="text-[#D4A373] truncate block max-w-[150px]">{e.client_name}</span>
                       </td>
                       <td className="py-3">
-                        <span className="text-[#D4A373] whitespace-nowrap">{format(new Date(e.event_date), "MMM d")}</span>
+                        <span className="text-[#D4A373] whitespace-nowrap">{format(safeParseDate(e.event_date), "MMM d")}</span>
                       </td>
                       <td className="py-3 text-right hidden md:table-cell">
                         {e.pricing_data ? formatCurrency((e.pricing_data as PricingData).suggestedPrice) : "—"}
                       </td>
                       <td className="py-3 text-right">
-                        <span className={STATUS_CLASSES[e.status]}>{e.status}</span>
+                        <span className={`${STATUS_CLASSES[e.status]} capitalize`}>{e.status}</span>
                       </td>
                     </tr>
                   ))}

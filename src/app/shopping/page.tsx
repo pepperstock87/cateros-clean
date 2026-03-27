@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { format, addDays } from "date-fns";
 import { CalendarDays } from "lucide-react";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, PricingData, Recipe } from "@/types";
 import { getCurrentOrg } from "@/lib/organizations";
 import { categorizeIngredient } from "@/lib/cain/shopping-aggregator";
@@ -99,7 +100,7 @@ export default async function ShoppingPage() {
           <div className="flex flex-wrap gap-2">
             {events.map(e => (
               <span key={e.id} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#182030] border border-[#2A3A5C]">
-                {e.name} — {format(new Date(e.event_date), "MMM d")} ({e.guest_count} guests)
+                {e.name} — {format(safeParseDate(e.event_date), "MMM d")} ({e.guest_count} guests)
               </span>
             ))}
           </div>

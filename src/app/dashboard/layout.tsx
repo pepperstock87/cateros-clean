@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { isDemoSession } from "@/lib/demo";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const isDemo = await isDemoSession();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -13,17 +16,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq("id", user.id)
     .single();
 
-  // Redirect to onboarding if not completed
-  if (profile && !profile.onboarding_completed) {
+  // Skip onboarding redirect for demo users
+  if (!isDemo && profile && !profile.onboarding_completed) {
     redirect("/onboarding");
   }
 
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar companyName={profile?.company_name ?? undefined} />
-      <main className="flex-1 overflow-y-auto bg-[#0C1220]">
-        {children}
-      </main>
+      <main className="flex-1 overflow-y-auto bg-[#0C1220]">{children}</main>
     </div>
   );
 }

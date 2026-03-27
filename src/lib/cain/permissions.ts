@@ -33,8 +33,20 @@ const DEFAULT_TOOL_PERMISSIONS: CainToolPermission[] = [
 
   // Write tools — draft-confirm by default (creates data)
   { tool: "finalize_plan", level: "draft-confirm", description: "Finalize event plan", category: "write" },
+  { tool: "propose_staff_assignment", level: "draft-confirm", description: "Propose staff assignment", category: "write" },
+  { tool: "propose_event_status_change", level: "draft-confirm", description: "Propose event status change", category: "write" },
+  { tool: "propose_create_client", level: "draft-confirm", description: "Propose creating a client", category: "write" },
+  { tool: "propose_duplicate_event", level: "draft-confirm", description: "Propose duplicating an event", category: "write" },
+  { tool: "propose_update_inventory", level: "draft-confirm", description: "Propose inventory update", category: "write" },
+  { tool: "propose_purchase_order", level: "draft-confirm", description: "Propose purchase order", category: "write" },
 
-  // Future write tools
+  // Write tools — suggest by default (external side effects like sending)
+  { tool: "propose_send_proposal", level: "suggest", description: "Propose sending proposal to client", category: "execute" },
+  { tool: "propose_send_invoice", level: "suggest", description: "Propose sending invoice to client", category: "execute" },
+  { tool: "propose_send_payment_reminder", level: "suggest", description: "Propose sending payment reminder", category: "execute" },
+  { tool: "propose_send_message", level: "suggest", description: "Propose sending email message", category: "execute" },
+
+  // Legacy write tools — draft-confirm by default
   { tool: "create_event", level: "draft-confirm", description: "Create a new event", category: "write" },
   { tool: "update_pricing", level: "draft-confirm", description: "Modify event pricing", category: "write" },
   { tool: "assign_staff", level: "draft-confirm", description: "Assign staff to event", category: "write" },

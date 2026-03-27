@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Plus, Lock, Users, AlertTriangle, MapPin, Clock,
   Filter, Check, X, DollarSign, Briefcase, BarChart3,
 } from "lucide-react";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, StaffMember } from "@/types";
 
 // ---------- types ----------
@@ -88,6 +89,13 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 }
 
+function formatPay(rate: number, payType: string | undefined): string {
+  if (payType === "salary") {
+    return `${formatCurrency(rate)}/yr`;
+  }
+  return `${formatCurrency(rate)}/hr`;
+}
+
 // ---------- component ----------
 
 export function ScheduleClient({ events, assignments, staffMembers, isPro }: Props) {
@@ -128,7 +136,7 @@ export function ScheduleClient({ events, assignments, staffMembers, isPro }: Pro
   }
 
   // ---- helpers ----
-  const eventsForDay = (day: Date) => filteredEvents.filter((e) => isSameDay(new Date(e.event_date), day));
+  const eventsForDay = (day: Date) => filteredEvents.filter((e) => isSameDay(safeParseDate(e.event_date), day));
   const assignmentsForEvent = (eventId: string) => assignments.filter((a) => a.event_id === eventId);
   const assignmentsForStaff = (staffId: string) => assignments.filter((a) => a.staff_member_id === staffId);
 
@@ -162,7 +170,7 @@ export function ScheduleClient({ events, assignments, staffMembers, isPro }: Pro
 
   const weeklyStats = useMemo(() => {
     const weekEvents = events.filter((e) => {
-      const d = new Date(e.event_date);
+      const d = safeParseDate(e.event_date);
       return d >= weekStart && d <= weekEnd;
     });
     const weekEventIds = new Set(weekEvents.map((e) => e.id));
@@ -198,7 +206,7 @@ export function ScheduleClient({ events, assignments, staffMembers, isPro }: Pro
 
       // Per day
       if (event) {
-        const dayKey = format(new Date(event.event_date), "yyyy-MM-dd");
+        const dayKey = format(safeParseDate(event.event_date), "yyyy-MM-dd");
         const dayEntry = perDay.get(dayKey) || { hours: 0, cost: 0, events: 0, staff: new Set<string>() };
         dayEntry.hours += hours;
         dayEntry.cost += cost;
@@ -209,7 +217,7 @@ export function ScheduleClient({ events, assignments, staffMembers, isPro }: Pro
 
     // Count unique events per day
     for (const e of weekEvents) {
-      const dayKey = format(new Date(e.event_date), "yyyy-MM-dd");
+      const dayKey = format(safeParseDate(e.event_date), "yyyy-MM-dd");
       const dayEntry = perDay.get(dayKey) || { hours: 0, cost: 0, events: 0, staff: new Set<string>() };
       dayEntry.events += 1;
       perDay.set(dayKey, dayEntry);
@@ -270,7 +278,7 @@ export function ScheduleClient({ events, assignments, staffMembers, isPro }: Pro
                         </div>
                         <div className="min-w-0">
                           <div className="text-sm truncate">{s.name}</div>
-                          <div className="text-[10px] text-[#7A8BA8]">{s.role} &middot; ${s.hourly_rate}/hr</div>
+                          <div className="text-[10px] text-[#7A8BA8]">{s.role} &middot; {formatPay(s.hourly_rate, s.pay_type)}</div>
                         </div>
                       </button>
                     ))}
@@ -395,7 +403,7 @@ function WorkforceView({
     return assignments.filter((a) => {
       if (a.staff_member_id !== staffId) return false;
       const event = events.find((e) => e.id === a.event_id);
-      return event && isSameDay(new Date(event.event_date), day);
+      return event && isSameDay(safeParseDate(event.event_date), day);
     }).map((a) => ({
       ...a,
       event: events.find((e) => e.id === a.event_id)!,
@@ -454,7 +462,7 @@ function WorkforceView({
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium truncate">{staff.name}</div>
-                      <div className="text-[10px] text-[#7A8BA8]">{staff.role} &middot; ${staff.hourly_rate}/hr</div>
+                      <div className="text-[10px] text-[#7A8BA8]">{staff.role} &middot; {formatPay(staff.hourly_rate, staff.pay_type)}</div>
                     </div>
                   </div>
 
@@ -561,7 +569,7 @@ function WorkforceView({
                     <span className="text-sm font-medium truncate">{event.name}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${colors.bg} ${colors.text}`}>{event.status}</span>
                   </div>
-                  <div className="text-xs text-[#7A8BA8] mb-2">{format(new Date(event.event_date), "EEE, MMM d")}</div>
+                  <div className="text-xs text-[#7A8BA8] mb-2">{format(safeParseDate(event.event_date), "EEE, MMM d")}</div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="flex items-center gap-1 text-[#7A8BA8]"><Users className="w-3 h-3" />{stats.staff} staff</span>
                     <span className="flex items-center gap-1 text-[#7A8BA8]"><Clock className="w-3 h-3" />{stats.hours.toFixed(1)}h</span>

@@ -148,7 +148,7 @@ export function ClientList({ clients }: { clients: ClientWithStats[] }) {
               Events: c.eventCount,
               Revenue: c.totalRevenue,
               "Last Event": c.lastEventDate
-                ? format(new Date(c.lastEventDate + "T00:00:00"), "MMM d, yyyy")
+                ? format(new Date(c.lastEventDate + "T00:00:00Z"), "MMM d, yyyy")
                 : "",
             }));
             downloadCSV(rows, "clients.csv");
@@ -274,9 +274,9 @@ export function ClientList({ clients }: { clients: ClientWithStats[] }) {
                     <td className="px-4 py-3 text-right font-medium text-brand-300">
                       {formatCurrency(client.totalRevenue)}
                     </td>
-                    <td className="px-4 py-3 text-right text-[#7A8BA8] hidden md:table-cell">
+                    <td className="px-4 py-3 text-right text-[#7A8BA8] hidden md:table-cell" suppressHydrationWarning>
                       {client.lastEventDate
-                        ? format(new Date(client.lastEventDate + "T00:00:00"), "MMM d, yyyy")
+                        ? format(new Date(client.lastEventDate + "T00:00:00Z"), "MMM d, yyyy")
                         : "--"}
                     </td>
                     <td className="px-4 py-3 text-center">

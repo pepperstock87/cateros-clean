@@ -4,6 +4,19 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentOrg } from "@/lib/organizations";
 
+/** Valid status transitions for proposals */
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  draft: ["sent", "declined"],
+  sent: ["viewed", "approved", "declined", "expired"],
+  viewed: ["approved", "signed", "declined", "expired"],
+  approved: ["signed", "deposit_paid", "booked", "declined"],
+  signed: ["deposit_paid", "booked", "declined"],
+  deposit_paid: ["booked", "declined"],
+  booked: ["declined"], // Allow cancellation
+  declined: ["draft"], // Allow reopening
+  expired: ["draft", "sent"], // Allow resending
+};
+
 export async function updateProposalStatusAction(
   proposalId: string,
   status: "draft" | "sent" | "viewed" | "approved" | "signed" | "deposit_paid" | "booked" | "declined" | "expired"
@@ -12,6 +25,22 @@ export async function updateProposalStatusAction(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
   const org = await getCurrentOrg();
+
+  // Fetch current status and validate transition
+  const { data: currentProposal } = await supabase
+    .from("proposals")
+    .select("status")
+    .eq("id", proposalId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (currentProposal) {
+    const currentStatus = currentProposal.status as string;
+    const allowedTransitions = VALID_TRANSITIONS[currentStatus];
+    if (allowedTransitions && !allowedTransitions.includes(status)) {
+      return { error: `Cannot change status from "${currentStatus}" to "${status}"` };
+    }
+  }
 
   let statusQuery = supabase
     .from("proposals")
@@ -38,7 +67,8 @@ export async function updateProposalStatusAction(
         .eq("id", proposal.event_id)
         .eq("user_id", user.id);
       if (org?.orgId) confirmQuery = confirmQuery.eq("organization_id", org.orgId);
-      await confirmQuery;
+      const { error: confirmError } = await confirmQuery;
+      if (confirmError) console.error("Failed to confirm event:", confirmError.message);
       revalidatePath(`/events/${proposal.event_id}`);
     }
   }
@@ -58,7 +88,8 @@ export async function updateProposalStatusAction(
         .eq("id", proposal.event_id)
         .eq("user_id", user.id);
       if (org?.orgId) proposedQuery = proposedQuery.eq("organization_id", org.orgId);
-      await proposedQuery;
+      const { error: proposedError } = await proposedQuery;
+      if (proposedError) console.error("Failed to set event proposed:", proposedError.message);
       revalidatePath(`/events/${proposal.event_id}`);
     }
   }

@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import type { Event, PricingData, BusinessSettings } from "@/types";
 import { format } from "date-fns";
 
@@ -112,7 +112,7 @@ export async function generateProposalPDF(
   doc.setTextColor(...MID);
   const col2x = margin + contentW / 2;
   doc.text(`Client: ${event.client_name}`, margin + cardPadding, y + 42);
-  doc.text(`Date: ${format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}`, margin + cardPadding, y + 56);
+  doc.text(`Date: ${format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy")}`, margin + cardPadding, y + 56);
   doc.text(`Guests: ${event.guest_count}`, col2x, y + 42);
   if (event.venue) doc.text(`Venue: ${event.venue}`, col2x, y + 56);
   if (event.client_email && template === "modern") doc.text(`Email: ${event.client_email}`, margin + cardPadding, y + 70);
@@ -136,8 +136,16 @@ export async function generateProposalPDF(
     y += template === "modern" ? 8 : 6;
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [["Item", "Qty", "Cost/Person", "Subtotal"]],
-      body: p.menuItems.map(item => [item.name, item.quantity, formatCurrency(item.costPerPerson), formatCurrency(item.costPerPerson * item.quantity)]),
+      head: [["Item", "Type", "Price", "Subtotal"]],
+      body: p.menuItems.map(item => {
+        const pType = (item as any).pricingType || "per_guest";
+        let typeLabel: string;
+        let subtotal: number;
+        if (pType === "flat") { typeLabel = "Flat fee"; subtotal = item.costPerPerson; }
+        else if (pType === "per_unit") { typeLabel = `${item.quantity || 1} units`; subtotal = item.costPerPerson * (item.quantity || 1); }
+        else { typeLabel = `${item.quantity || p.guestCount} guests`; subtotal = item.costPerPerson * (item.quantity || p.guestCount); }
+        return [item.name, typeLabel, formatCurrency(item.costPerPerson), formatCurrency(subtotal)];
+      }),
       styles: { fontSize: template === "modern" ? 10 : 9, cellPadding: template === "modern" ? 8 : 6, textColor: [245,237,224] as [number,number,number], fillColor: [28,24,20] as [number,number,number], lineColor: [46,39,31] as [number,number,number], lineWidth: 0.3 },
       headStyles: { fillColor: [30,25,18] as [number,number,number], textColor: [156,136,118] as [number,number,number], fontStyle: "bold", fontSize: template === "modern" ? 9 : 8 },
       alternateRowStyles: { fillColor: [22,18,14] as [number,number,number] },

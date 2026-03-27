@@ -131,9 +131,9 @@ const PRICING_TIERS = [
 ];
 
 const STATS = [
-  { value: "500+", label: "Events Managed" },
-  { value: "100+", label: "Hospitality Professionals" },
-  { value: "$2M+", label: "Revenue Processed" },
+  { value: "Unlimited", label: "Events Managed" },
+  { value: "Solo to 50+", label: "Team Sizes" },
+  { value: "Full Stack", label: "Event Operations" },
   { value: "< 2 min", label: "To Generate a Proposal" },
 ];
 
@@ -152,8 +152,8 @@ export default function LandingPage() {
             The Event Operations Platform
           </div>
           <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[1.1] mb-8 tracking-tight">
-            The Operating System for the<br />
-            <span className="text-brand-400">Hospitality Industry</span>
+            The Hospitality<br />
+            <span className="text-brand-400">Operating System</span>
           </h1>
           <p className="text-[#D4A373] text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
             The all-in-one platform for caterers, venues, planners, chefs, and florists — from proposals to payments, recipes to scheduling.

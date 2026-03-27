@@ -1,7 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
+import { isDemoSession } from "@/lib/demo";
 import type { UserEntitlements } from "@/types";
 
 export async function getUserEntitlements(): Promise<UserEntitlements> {
+  // Demo sessions always get Pro access
+  const isDemo = await isDemoSession();
+  if (isDemo) {
+    return { plan: "pro", subscription_status: "active", isPro: true };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

@@ -267,12 +267,14 @@ export async function buildEventContext(
 /**
  * Build a complete context string for injection into CAIN's system prompt.
  * Used for conversational CAIN interactions beyond event planning.
+ * Now includes persistent memory context.
  */
 export async function buildFullContext(params: {
   userId: string;
   orgId: string | null;
   eventId?: string;
   clientId?: string;
+  brief?: string;
 }): Promise<string> {
   const sections: string[] = [];
 
@@ -310,5 +312,45 @@ export async function buildFullContext(params: {
     }
   }
 
+  // Add persistent memory context
+  const memoryContext = await buildMemoryContext(
+    params.userId,
+    params.orgId,
+    params.brief,
+    params.clientId
+  );
+  if (memoryContext) {
+    sections.push(memoryContext);
+  }
+
   return sections.join("\n\n");
+}
+
+/**
+ * Build memory context from persistent memories.
+ * Retrieves relevant memories based on client, brief keywords, and confidence.
+ * Returns formatted markdown section or empty string if no memories found.
+ */
+export async function buildMemoryContext(
+  userId: string,
+  orgId: string | null,
+  brief?: string,
+  clientId?: string
+): Promise<string> {
+  try {
+    const { retrieveRelevantMemories } = await import("./learning/retriever");
+
+    const context = await retrieveRelevantMemories({
+      userId,
+      orgId: orgId ?? undefined,
+      brief,
+      clientId,
+      limit: 15,
+    });
+
+    return context;
+  } catch (error) {
+    console.error("Error building memory context:", error);
+    return "";
+  }
 }

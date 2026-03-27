@@ -244,7 +244,7 @@ export function PayoutsClient({ profile, payments, allPayments, paymentSchedules
               ) : (
                 filteredPayments.map((payment) => (
                   <tr key={payment.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap text-[var(--text-secondary)]">
+                    <td className="px-4 py-3 whitespace-nowrap text-[var(--text-secondary)]" suppressHydrationWarning>
                       {payment.paid_at
                         ? new Date(payment.paid_at).toLocaleDateString("en-US", {
                             month: "short",

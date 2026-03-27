@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { updateClientAction } from "@/lib/actions/clients";
 import {
   Save,
@@ -456,10 +456,10 @@ export function ClientDetailClient({ client, events, proposals, financials }: Pr
             <CalendarDays className="w-3.5 h-3.5 text-[#D4A373]" />
             <span className="stat-label">Last Booked</span>
           </div>
-          <div className="text-sm font-medium">
+          <div className="text-sm font-medium" suppressHydrationWarning>
             {financials.lastBookedDate
               ? format(
-                  new Date(financials.lastBookedDate + "T00:00:00"),
+                  new Date(financials.lastBookedDate + "T00:00:00Z"),
                   "MMM d, yyyy"
                 )
               : "--"}
@@ -505,8 +505,8 @@ export function ClientDetailClient({ client, events, proposals, financials }: Pr
                             <ChevronRight className="w-3 h-3 text-[#7A8BA8]" />
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-[#D4A373]">
-                          {format(new Date(event.event_date + "T00:00:00"), "MMM d, yyyy")}
+                        <td className="px-4 py-3 text-[#D4A373]" suppressHydrationWarning>
+                          {format(safeParseDate(event.event_date), "MMM d, yyyy")}
                         </td>
                         <td className="px-4 py-3 text-[#D4A373] hidden md:table-cell">
                           {event.venue ?? <span className="text-[#7A8BA8]">--</span>}
@@ -580,7 +580,7 @@ export function ClientDetailClient({ client, events, proposals, financials }: Pr
                         <td className="px-4 py-3 text-[#D4A373]">
                           {event?.name ?? "--"}
                         </td>
-                        <td className="px-4 py-3 text-[#D4A373] hidden md:table-cell">
+                        <td className="px-4 py-3 text-[#D4A373] hidden md:table-cell" suppressHydrationWarning>
                           {format(new Date(proposal.created_at), "MMM d, yyyy")}
                         </td>
                         <td className="px-4 py-3 text-center">

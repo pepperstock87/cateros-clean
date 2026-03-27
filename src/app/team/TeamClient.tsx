@@ -63,12 +63,14 @@ export function TeamClient({
   members,
   currentUserId,
   isAdmin,
+  isDemo,
   organization,
   currentUserRole,
 }: {
   members: Member[];
   currentUserId: string;
   isAdmin: boolean;
+  isDemo?: boolean;
   organization?: OrgInfo;
   currentUserRole?: string;
 }) {
@@ -278,11 +280,17 @@ export function TeamClient({
             <div>
               {!showInviteForm ? (
                 <button
-                  onClick={() => setShowInviteForm(true)}
+                  onClick={() => {
+                    if (isDemo) {
+                      toast.info("Team invites are available in the full platform. This sandbox is view-only.");
+                      return;
+                    }
+                    setShowInviteForm(true);
+                  }}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-colors"
                 >
                   <UserPlus className="w-4 h-4" />
-                  Invite Member
+                  Add Team Member
                 </button>
               ) : (
                 <>
@@ -439,7 +447,7 @@ export function TeamClient({
                     </div>
 
                     {/* Joined date */}
-                    <span className="text-xs text-[#7A8BA8] whitespace-nowrap">
+                    <span className="text-xs text-[#7A8BA8] whitespace-nowrap" suppressHydrationWarning>
                       {new Date(member.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
 
@@ -514,6 +522,7 @@ export function TeamClient({
             <div className="space-y-3">
               {pendingInvites.map((invite) => {
                 const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
+                const today = new Date();
                 return (
                   <div
                     key={invite.id}
@@ -531,7 +540,7 @@ export function TeamClient({
                             {isExpired ? (
                               <span className="text-[10px] text-red-400">Expired</span>
                             ) : (
-                              <span className="text-[10px] text-[#7A8BA8] flex items-center gap-1">
+                              <span className="text-[10px] text-[#7A8BA8] flex items-center gap-1" suppressHydrationWarning>
                                 <Clock className="w-3 h-3" />
                                 Sent {new Date(invite.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                                 {invite.expires_at && (

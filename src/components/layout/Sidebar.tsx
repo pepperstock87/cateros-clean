@@ -11,11 +11,17 @@ import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { OrgSwitcher } from "@/components/layout/OrgSwitcher";
+import { ActionBadge } from "@/components/cain/ActionBadge";
 import type { BusinessType } from "@/types";
 
 const SIDEBAR_COLLAPSED_KEY = "cateros-sidebar-collapsed";
 
 type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; module?: string; sub?: boolean };
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
 
 const ALL_NAV: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -25,8 +31,8 @@ const ALL_NAV: NavItem[] = [
   { href: "/events", icon: CalendarDays, label: "Events", module: "events" },
   { href: "/templates", icon: LayoutTemplate, label: "Templates", module: "templates" },
   { href: "/clients", icon: Contact, label: "Clients", module: "clients" },
-  { href: "/schedule", icon: Calendar, label: "Workforce", module: "schedule" },
-  { href: "/recipes", icon: BookOpen, label: "Recipe Library", module: "recipes" },
+  { href: "/schedule", icon: Calendar, label: "Schedule", module: "schedule" },
+  { href: "/recipes", icon: BookOpen, label: "Recipes", module: "recipes" },
   { href: "/recipes/analytics", icon: BarChart3, label: "Recipe Analytics", module: "recipes", sub: true },
   { href: "/inventory", icon: Package, label: "Inventory", module: "inventory" },
   { href: "/prep", icon: UtensilsCrossed, label: "Prep", module: "production" },
@@ -64,6 +70,34 @@ const MODULE_TO_HREF: Record<string, string> = {
   reports: "/reports",
   spending: "/spending",
   rentals: "/rentals",
+};
+
+// Section groupings — maps href to section title
+const NAV_SECTIONS: Record<string, string> = {
+  "/dashboard": "operations",
+  "/cain": "operations",
+  "/events": "operations",
+  "/recipes": "kitchen",
+  "/recipes/analytics": "kitchen",
+  "/shopping": "kitchen",
+  "/prep": "kitchen",
+  "/proposals": "sales",
+  "/branding": "sales",
+  "/vendor-profile": "sales",
+  "/staff": "team",
+  "/schedule": "team",
+  "/team": "team",
+  "/team/invites": "team",
+  "/notifications": "admin",
+  "/audit": "admin",
+};
+
+const SECTION_TITLES: Record<string, string> = {
+  operations: "Operations",
+  kitchen: "Kitchen",
+  sales: "Sales",
+  team: "Team",
+  admin: "Admin",
 };
 
 // Role-specific label overrides
@@ -108,6 +142,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
     currentOrg: { id: string; name: string; slug: string } | null;
     allOrgs: Array<{ id: string; name: string }>;
   }>({ currentOrg: null, allOrgs: [] });
+  const [isDemo, setIsDemo] = useState(false);
 
   // Load collapsed preference from localStorage
   useEffect(() => {
@@ -115,6 +150,7 @@ export function Sidebar({ companyName }: { companyName?: string }) {
       const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
       if (stored === "true") setCollapsed(true);
     } catch {}
+    setIsDemo(document.cookie.includes('cateros-demo-session'));
   }, []);
 
   function toggleCollapsed() {
@@ -222,8 +258,8 @@ export function Sidebar({ companyName }: { companyName?: string }) {
     });
   }, []);
 
-  // Compute role-aware nav: primary items in role order, rest in "More"
-  const { primaryNav, moreNav } = useMemo(() => {
+  // Compute role-aware nav: primary items grouped by section, rest in "More"
+  const { primarySections, moreNav } = useMemo(() => {
     const bt = roleData.businessType;
     const navOrder = ROLE_NAV_ORDER[bt] || ROLE_NAV_ORDER.caterer;
     const labels = ROLE_LABELS[bt] || {};
@@ -276,15 +312,49 @@ export function Sidebar({ companyName }: { companyName?: string }) {
     const dashboard = universalItems.find((i) => i.href === "/dashboard");
     const otherUniversal = universalItems.filter((i) => i.href !== "/dashboard");
 
+    const allPrimary = [
+      ...(dashboard ? [dashboard] : []),
+      ...orderedPrimary,
+      ...otherUniversal,
+    ];
+
+    // Filter out billing/payouts for demo users and rename vendor profile
+    const filterDemo = (items: NavItem[]) =>
+      isDemo
+        ? items
+            .filter(i => !["/billing", "/payouts", "/team/invites", "/audit", "/prep"].includes(i.href))
+            .map(i => i.href === "/vendor-profile" ? { ...i, label: "Vendors & Partners" } : i)
+        : items;
+
+    const filteredPrimary = filterDemo(allPrimary);
+    const filteredMore = filterDemo(more);
+
+    // Group primary nav by section
+    const sectionMap: Record<string, NavItem[]> = {};
+    const sectionOrder: string[] = [];
+
+    for (const item of filteredPrimary) {
+      const sectionKey = NAV_SECTIONS[item.href];
+      if (sectionKey) {
+        if (!sectionMap[sectionKey]) {
+          sectionMap[sectionKey] = [];
+          sectionOrder.push(sectionKey);
+        }
+        sectionMap[sectionKey].push(item);
+      }
+    }
+
+    // Build sections array in order
+    const sections: NavSection[] = sectionOrder.map((key) => ({
+      title: SECTION_TITLES[key] || key,
+      items: sectionMap[key],
+    }));
+
     return {
-      primaryNav: [
-        ...(dashboard ? [dashboard] : []),
-        ...orderedPrimary,
-        ...otherUniversal,
-      ],
-      moreNav: more,
+      primarySections: sections,
+      moreNav: filteredMore,
     };
-  }, [roleData.businessType]);
+  }, [roleData.businessType, isDemo]);
 
   return (
     <>
@@ -351,39 +421,51 @@ export function Sidebar({ companyName }: { companyName?: string }) {
 
         {/* Navigation */}
         <nav className={cn("flex-1 py-4 space-y-0.5 overflow-y-auto", collapsed ? "px-2" : "px-3")}>
-          {primaryNav.map(({ href, icon: Icon, label, sub }) => {
-            const active = sub ? pathname === href : pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                title={collapsed ? label : undefined}
-                className={cn(
-                  "flex items-center rounded-lg font-medium transition-all duration-150",
-                  collapsed
-                    ? "justify-center px-0 py-2.5 text-sm"
-                    : cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm"),
-                  active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                )}
-              >
-                <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
-                {!collapsed && (
-                  <>
-                    {label}
-                    {badges[href] && (
-                      <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">
-                        {badges[href]}
-                      </span>
-                    )}
-                  </>
-                )}
-                {collapsed && badges[href] && (
-                  <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-brand-400" />
-                )}
-              </Link>
-            );
-          })}
+          {primarySections.map((section) => (
+            <div key={section.title}>
+              {!collapsed && (
+                <div className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[#5A6B88]">
+                  {section.title}
+                </div>
+              )}
+              {section.items.map(({ href, icon: Icon, label, sub }) => {
+                const active = sub ? pathname === href : pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+                const isCain = href === "/cain";
+                return (
+                  <div key={href} className="relative">
+                    <Link
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      title={collapsed ? label : undefined}
+                      className={cn(
+                        "flex items-center rounded-lg font-medium transition-all duration-150",
+                        collapsed
+                          ? "justify-center px-0 py-2.5 text-sm"
+                          : cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm"),
+                        active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                      )}
+                    >
+                      <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
+                      {!collapsed && (
+                        <>
+                          {label}
+                          {badges[href] && (
+                            <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-800/60 min-w-[20px] text-center">
+                              {badges[href]}
+                            </span>
+                          )}
+                        </>
+                      )}
+                      {collapsed && badges[href] && (
+                        <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-brand-400" />
+                      )}
+                    </Link>
+                    {isCain && <ActionBadge collapsed={collapsed} />}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
 
           {/* More section — collapsed role-secondary items */}
           {moreNav.length > 0 && !collapsed && (
@@ -400,20 +482,23 @@ export function Sidebar({ companyName }: { companyName?: string }) {
               </button>
               {showMore && moreNav.map(({ href, icon: Icon, label, sub }) => {
                 const active = sub ? pathname === href : pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+                const isCain = href === "/cain";
                 return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "flex items-center rounded-lg font-medium transition-all duration-150",
-                      cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "pl-9 pr-3 py-2 text-sm"),
-                      active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                    )}
-                  >
-                    <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
-                    {label}
-                  </Link>
+                  <div key={href} className="relative">
+                    <Link
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex items-center rounded-lg font-medium transition-all duration-150",
+                        cn("gap-2.5", sub ? "pl-9 pr-3 py-1.5 text-xs" : "pl-9 pr-3 py-2 text-sm"),
+                        active ? "bg-brand-950 text-brand-300 border border-brand-800/60" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                      )}
+                    >
+                      <Icon className={cn("flex-shrink-0", sub ? "w-3.5 h-3.5" : "w-4 h-4", active ? "text-brand-400" : "")} />
+                      {label}
+                    </Link>
+                    {isCain && <ActionBadge collapsed={false} />}
+                  </div>
                 );
               })}
             </>

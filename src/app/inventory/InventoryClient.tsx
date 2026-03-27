@@ -25,7 +25,7 @@ import {
   adjustQuantity,
   deductFromShoppingList,
 } from "@/lib/actions/inventory";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 
 const CATEGORIES = [
   "Proteins",
@@ -433,7 +433,7 @@ export function InventoryClient({ items, events }: Props) {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-[var(--text-muted)]">{item.location ?? "—"}</td>
-                      <td className="px-4 py-3 text-[var(--text-muted)] text-xs">
+                      <td className="px-4 py-3 text-[var(--text-muted)] text-xs" suppressHydrationWarning>
                         {new Date(item.last_updated).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
@@ -689,7 +689,7 @@ export function InventoryClient({ items, events }: Props) {
                       <option value="">Select an event...</option>
                       {events.map((ev) => (
                         <option key={ev.id} value={ev.id}>
-                          {ev.name} — {new Date(ev.event_date).toLocaleDateString()}
+                          {ev.name} — {safeParseDate(ev.event_date).toLocaleDateString()}
                         </option>
                       ))}
                     </select>

@@ -25,6 +25,7 @@ import {
   type ConsolidatedIngredient,
 } from "@/lib/actions/production";
 import { generatePrepShoppingPDF } from "@/lib/generatePrepPDF";
+import { safeParseDate } from "@/lib/utils";
 
 type EventInfo = {
   id: string;
@@ -76,7 +77,9 @@ function getDateRange(preset: DatePreset): { start: string; end: string } {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+  const d = safeParseDate(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -316,6 +319,7 @@ export function PrepDashboardClient({ events }: Props) {
               <span
                 key={ev.id}
                 className="px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)]"
+                suppressHydrationWarning
               >
                 {ev.name} ({formatDate(ev.event_date)})
               </span>
@@ -592,7 +596,7 @@ export function PrepDashboardClient({ events }: Props) {
                                         <div className="flex items-center gap-3">
                                           <CalendarDays className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                                           <span className="text-[var(--text-primary)] text-sm font-medium">{ev.eventName}</span>
-                                          <span className="text-[var(--text-muted)] text-xs">{formatDate(ev.eventDate)}</span>
+                                          <span className="text-[var(--text-muted)] text-xs" suppressHydrationWarning>{formatDate(ev.eventDate)}</span>
                                         </div>
                                         <span className="font-mono text-sm text-[var(--text-secondary)]">
                                           {roundQty(ev.quantity)} {ing.unit}

@@ -5,6 +5,8 @@ import { getOrgEntitlements } from "@/lib/orgEntitlements";
 import { getVendorProfileAction } from "@/lib/actions/vendorProfiles";
 import { VendorProfileEditor } from "@/components/vendors/VendorProfileEditor";
 import { FeatureGate } from "@/components/ui/FeatureGate";
+import { isDemoSession } from "@/lib/demo";
+import { DemoVendorsPartners } from "./DemoVendorsPartners";
 
 export default async function VendorProfilePage() {
   const supabase = await createClient();
@@ -13,8 +15,13 @@ export default async function VendorProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const org = await getCurrentOrg();
+  const isDemo = await isDemoSession();
 
+  if (isDemo) {
+    return <DemoVendorsPartners />;
+  }
+
+  const org = await getCurrentOrg();
   const { plan } = await getOrgEntitlements();
   const { data: vendorProfile } = await getVendorProfileAction();
 

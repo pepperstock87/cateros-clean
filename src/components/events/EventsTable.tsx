@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { format } from "date-fns";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent, safeParseDate } from "@/lib/utils";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
 import type { Event, PricingData, PaymentData, DepositStatus } from "@/types";
 
@@ -52,11 +52,11 @@ export function EventsTable({ events, depositStatusMap }: { events: Event[]; dep
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span className="font-medium text-sm truncate">{event.name}</span>
-                    <span className={`${STATUS_CLASSES[event.status] ?? "badge-draft"} flex-shrink-0`}>{event.status}</span>
+                    <span className={`${STATUS_CLASSES[event.status] ?? "badge-draft"} flex-shrink-0 capitalize`}>{event.status}</span>
                   </div>
                   <div className="text-xs text-[#D4A373] mb-1">{event.client_name}</div>
                   <div className="flex items-center gap-3 text-xs text-[#7A8BA8]">
-                    <span>{format(new Date(event.event_date), "MMM d, yyyy")}</span>
+                    <span>{format(safeParseDate(event.event_date), "MMM d, yyyy")}</span>
                     <span>{event.guest_count} guests</span>
                     {p && <span className="text-[#D4A373]">{formatCurrency(p.suggestedPrice)}</span>}
                   </div>
@@ -96,7 +96,7 @@ export function EventsTable({ events, depositStatusMap }: { events: Event[]; dep
                       </td>
                       <td className="px-5 py-3.5 text-sm text-[#D4A373]">{event.client_name}</td>
                       <td className="px-5 py-3.5 text-sm text-[#D4A373] whitespace-nowrap">
-                        {format(new Date(event.event_date), "MMM d, yyyy")}
+                        {format(safeParseDate(event.event_date), "MMM d, yyyy")}
                       </td>
                       <td className="px-5 py-3.5 text-sm text-[#D4A373]">{event.guest_count}</td>
                       <td className="px-5 py-3.5 text-sm">
@@ -109,11 +109,11 @@ export function EventsTable({ events, depositStatusMap }: { events: Event[]; dep
                         <PaymentBadge pricing={p} payment={pay} />
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={STATUS_CLASSES[event.status] ?? "badge-draft"}>{event.status}</span>
+                        <span className={`${STATUS_CLASSES[event.status] ?? "badge-draft"} capitalize`}>{event.status}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         {(() => {
-                          const daysUntil = Math.ceil((new Date(event.event_date).getTime() - Date.now()) / 86400000);
+                          const daysUntil = Math.ceil((safeParseDate(event.event_date).getTime() - Date.now()) / 86400000);
                           const depositStatus: DepositStatus = depositStatusMap?.[event.id] ?? "none";
                           return (
                             <EventReadinessFlags

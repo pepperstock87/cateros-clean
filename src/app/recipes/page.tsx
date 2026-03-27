@@ -26,7 +26,7 @@ export default async function RecipesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="font-display text-xl md:text-2xl font-semibold">Recipe Library</h1>
-          <p className="text-sm text-[#D4A373] mt-1">{recipes.length} recipes · Track ingredient costs & per-person pricing</p>
+          <p className="text-sm text-[#D4A373] mt-1">{recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} · Track ingredient costs & per-person pricing</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/recipes/analytics" className="btn-secondary flex items-center gap-2 text-sm">

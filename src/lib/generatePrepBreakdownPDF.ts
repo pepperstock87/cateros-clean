@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { safeParseDate } from "@/lib/utils";
 import type { Event } from "@/types";
 import type { PrepBreakdownData } from "@/lib/actions/production";
 
@@ -81,7 +82,7 @@ function drawHeader(
 }
 
 function drawEventInfo(doc: jsPDF, event: Event, guestCount: number, y: number): number {
-  const dateStr = format(new Date(event.event_date), "EEEE, MMMM d, yyyy");
+  const dateStr = format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy");
   const info = [
     ["Client", event.client_name],
     ["Date", dateStr],

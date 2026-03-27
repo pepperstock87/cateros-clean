@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, safeParseDate } from "@/lib/utils";
 import { ArrowLeft, Edit, BookOpen, Package, TrendingUp, CalendarDays, PieChart } from "lucide-react";
 import { DeleteRecipeButton } from "@/components/recipes/DeleteRecipeButton";
 import { GenerateImageButton } from "@/components/recipes/GenerateImageButton";
@@ -232,7 +232,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
                   <div className="text-xs text-[#D4A373] mt-0.5">
                     {event.client_name}
                     {event.event_date && (
-                      <> &middot; {new Date(event.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
+                      <> &middot; {safeParseDate(event.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
                     )}
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         </div>
       )}
 
-      <p className="text-xs text-[#7A8BA8] mt-6 text-center">
+      <p className="text-xs text-[#7A8BA8] mt-6 text-center" suppressHydrationWarning>
         Created {new Date(recipe.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
         {recipe.updated_at !== recipe.created_at && (
           <> · Updated {new Date(recipe.updated_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</>

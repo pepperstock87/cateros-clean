@@ -165,10 +165,10 @@ function RecordSection({
       </button>
       {open && entries.length > 0 && (
         <div className="pl-2">
-          {entries.map((entity) => (
+          {entries.map((entity, idx) => (
             <EntityChip
-              key={entity.key}
-              label={entity.key}
+              key={`${entity.key ?? idx}`}
+              label={entity.key ?? "unknown"}
               value={entity.value}
               confidence={entity.confidence}
               onEdit={(newValue) => onCorrect(category, entity.key, newValue)}
@@ -218,9 +218,9 @@ function ArraySection({
       </button>
       {open && items.length > 0 && (
         <div className="pl-2">
-          {items.map((entity) => (
+          {items.map((entity, idx) => (
             <EntityChip
-              key={entity.key}
+              key={`${entity.key}-${idx}`}
               label={entity.key}
               value={entity.value}
               confidence={entity.confidence}

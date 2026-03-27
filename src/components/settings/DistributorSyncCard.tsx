@@ -22,14 +22,16 @@ interface DistributorSyncData {
 export function DistributorSyncCard() {
   const [status, setStatus] = useState<DistributorSyncData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showJobs, setShowJobs] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
       const data = await getDistributorSyncStatus();
       setStatus(data);
-    } catch {
-      // Silently fail
+    } catch (err) {
+      console.error("Failed to load distributor status:", err);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -37,6 +39,11 @@ export function DistributorSyncCard() {
 
   useEffect(() => {
     fetchStatus();
+    // Safety timeout — if fetch hangs for 10s, stop loading
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 10000);
+    return () => clearTimeout(timeout);
   }, [fetchStatus]);
 
   if (loading) {
@@ -47,6 +54,23 @@ export function DistributorSyncCard() {
           <h2 className="font-semibold text-lg">Distributors</h2>
         </div>
         <div className="text-sm text-[var(--text-secondary)]">Loading distributor status...</div>
+      </div>
+    );
+  }
+
+  if (error || (!status && !loading)) {
+    return (
+      <div className="card p-4 md:p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Truck className="w-5 h-5 text-brand-400" />
+          <h2 className="font-semibold text-lg">Distributors</h2>
+        </div>
+        <p className="text-sm text-[var(--text-secondary)] mb-3">
+          Add distributors to manage catalogs, purchase orders, and invoices.
+        </p>
+        <p className="text-xs text-[var(--text-muted)]">
+          Go to the Distributors page to add your first distributor.
+        </p>
       </div>
     );
   }

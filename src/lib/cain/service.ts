@@ -15,7 +15,9 @@ import { domainEvents } from "@/lib/events";
 import { loadCainPermissions, getToolPermission, type CainPermissionConfig } from "./permissions";
 import { buildCompanyContext, buildFullContext, type CompanyContext } from "./memory";
 import { runCainEventBuilder } from "./engine";
+import { runCainChat } from "./chat-engine";
 import { commitCainPlan } from "./commit";
+import { retrieveRelevantMemories } from "./learning/retriever";
 import type { CainEventPlan } from "./types";
 
 // ─── Session Types ───
@@ -35,6 +37,11 @@ export interface CainEventBuilderRequest {
   };
   clientId?: string;
   eventId?: string; // If re-planning an existing event
+}
+
+export interface CainChatRequest {
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  pageContext?: string;
 }
 
 export interface CainCommitResult {
@@ -92,6 +99,38 @@ export async function runEventBuilder(
     companyName: session.companyContext.businessName ?? undefined,
     constraints: request.constraints,
     contextString,
+  });
+
+  return stream;
+}
+
+/**
+ * Run the CAIN chat assistant with full context and memory injection.
+ * Used for conversational mode beyond event building.
+ * Returns an SSE stream.
+ */
+export async function runChat(
+  session: CainSession,
+  request: CainChatRequest
+): Promise<ReadableStream<Uint8Array>> {
+  // Retrieve relevant memories to inject into system prompt
+  const lastUserMessage = request.messages[request.messages.length - 1];
+  const userBrief = lastUserMessage?.role === "user" ? lastUserMessage.content : "";
+
+  const memoryContext = await retrieveRelevantMemories({
+    userId: session.userId,
+    orgId: session.orgId,
+    brief: userBrief,
+    limit: 10,
+  });
+
+  const stream = await runCainChat({
+    userId: session.userId,
+    orgId: session.orgId,
+    companyName: session.companyContext.businessName ?? undefined,
+    messages: request.messages,
+    pageContext: request.pageContext,
+    memoryContext,
   });
 
   return stream;

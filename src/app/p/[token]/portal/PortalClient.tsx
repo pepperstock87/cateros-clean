@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { format } from "date-fns";
+import { safeParseDate } from "@/lib/utils";
 import {
   CalendarDays,
   Users,
@@ -765,7 +766,7 @@ function EventDetailsSummary({
             <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wide">Date</span>
           </div>
           <div className="text-sm font-medium text-stone-700">
-            {format(new Date(event.event_date), "EEE, MMM d, yyyy")}
+            {format(safeParseDate(event.event_date), "EEE, MMM d, yyyy")}
           </div>
         </div>
 

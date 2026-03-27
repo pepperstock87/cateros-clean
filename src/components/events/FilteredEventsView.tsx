@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { EventFilters, type EventFilterState } from "./EventFilters";
 import { EventsTable } from "./EventsTable";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, DepositStatus } from "@/types";
 
 type Props = {
@@ -28,21 +29,21 @@ function filterByDateRange(events: Event[], dateRange: string): Event[] {
 
   switch (dateRange) {
     case "upcoming":
-      return events.filter((e) => new Date(e.event_date) >= today);
+      return events.filter((e) => safeParseDate(e.event_date) >= today);
     case "past":
-      return events.filter((e) => new Date(e.event_date) < today);
+      return events.filter((e) => safeParseDate(e.event_date) < today);
     case "this_month": {
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
       return events.filter((e) => {
-        const d = new Date(e.event_date);
+        const d = safeParseDate(e.event_date);
         return d >= monthStart && d <= monthEnd;
       });
     }
     case "this_quarter": {
       const { start, end } = getQuarterRange(today);
       return events.filter((e) => {
-        const d = new Date(e.event_date);
+        const d = safeParseDate(e.event_date);
         return d >= start && d <= end;
       });
     }

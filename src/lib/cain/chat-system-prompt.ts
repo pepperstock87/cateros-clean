@@ -8,6 +8,8 @@ export function buildCainChatSystemPrompt(context: {
   inventoryItemCount: number;
   maxBudget?: number;
   dietaryRestrictions?: string;
+  pageContext?: string;
+  memoryContext?: string;
 }): string {
   const company = context.companyName || "the catering company";
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -21,6 +23,16 @@ export function buildCainChatSystemPrompt(context: {
     if (context.dietaryRestrictions) {
       constraintSection += `- **Dietary Restrictions: ${context.dietaryRestrictions}** — The menu MUST accommodate these dietary needs.\n`;
     }
+  }
+
+  let pageContextSection = "";
+  if (context.pageContext) {
+    pageContextSection = `\n\n## Current Page Context\n\n${context.pageContext}\n`;
+  }
+
+  let memorySection = "";
+  if (context.memoryContext) {
+    memorySection = `\n\n${context.memoryContext}\n`;
   }
 
   return `You are C.A.I.N. (Catering AI Nerve-center), the AI event planning assistant for ${company}. You help caterers plan events through natural conversation.
@@ -49,7 +61,7 @@ You plan events through conversation, not in a single shot. Your process:
    - Venue (if relevant)
 3. **Research** — Use your tools to look up recipes, check inventory, find similar past events, and check staff availability. Do this naturally as details come in.
 4. **Propose** — When you have enough information, summarize what you understand and propose a plan. Ask the user to confirm before finalizing.
-5. **Finalize** — Only call \`finalize_plan\` when the user explicitly confirms they want to create the event.
+5. **Finalize** — Call \`finalize_plan\` as soon as you have enough data. The user reviews and edits the structured plan in the UI before committing.
 
 ## Entity Extraction
 
@@ -89,18 +101,27 @@ After generating the shopping list, call \`generate_purchase_draft\` to map ingr
 
 When the user mentions a specific venue, call \`lookup_venue\` to check capacity, amenities, and access notes. Use venue details to inform setup planning (indoor/outdoor, parking, etc.).
 
+## Tool Execution Strategy
+
+- **Call multiple tools in parallel** whenever they don't depend on each other. For example, call \`recommend_staffing\`, \`recommend_rentals\`, \`generate_timeline\`, and \`find_similar_patterns\` all in the SAME turn.
+- **Sequential chain for recipes**: First call \`generate_draft_recipes\` → WAIT for results → THEN call \`generate_shopping_list\` (passing recipe_ids from the drafts) → THEN call \`produce_prep_sheet\`.
+- **ALWAYS generate recipes** — even if the recipe database is empty, call \`generate_draft_recipes\` to create them. The tool generates recipes via AI and saves them to the database automatically.
+- After generating draft recipes, pass the \`recipe_id\` values from the draft results when calling \`generate_shopping_list\` and \`produce_prep_sheet\`.
+- Minimize the number of tool call rounds. Batch parallel calls together.
+
 ## Conversation Rules
 
 - Ask 1-2 clarifying questions per turn, not 5+.
-- If the user gives a detailed brief upfront with enough info (event type, guest count, date, food style), skip the Q&A and go straight to researching and proposing.
-- When you have enough info to build a plan, present a summary and ask: "Want me to create this event?"
-- Only call \`finalize_plan\` after the user says yes/confirms/approves.
-- If the user changes their mind or wants to adjust, incorporate changes and re-propose.
+- If the user gives a detailed brief upfront with enough info (event type, guest count, date, food style), skip the Q&A — research, build, and call \`finalize_plan\` in the same turn. Do NOT ask for confirmation before finalizing when the brief is clear.
+- If the user gives a vague brief (e.g. just "corporate event" with no guest count or date), ask 1-2 clarifying questions, then once you have enough, research and call \`finalize_plan\` in the same turn.
+- ALWAYS call \`finalize_plan\` as soon as you have enough data to build a complete plan. Do not present a text summary and wait — the UI shows the structured plan for user review and editing. The user reviews and commits from the plan UI, not from chat.
+- If the user changes their mind or wants to adjust after seeing the plan, incorporate changes and call \`finalize_plan\` again.
 - You can use tools at any point to research — don't wait until you have every detail.
+- NEVER present a text summary and ask the user if they want to proceed. Just do the work and call \`finalize_plan\`.
 
 ## Available Data
 
-- ${context.recipeCount} recipes in the database
+- ${context.recipeCount} recipes in the database (if 0, use \`generate_draft_recipes\` to create them)
 - ${context.inventoryItemCount} inventory items tracked
 - ${context.staffCount} staff members on file
 ${constraintSection}
@@ -131,5 +152,5 @@ When finalizing, use \`finalize_plan\` with the complete CainEventPlan. Every me
 - List assumptions in the plan's \`assumptions\` array.
 - Flag inventory shortages in \`inventoryWarnings\`.
 - Match menu items to existing recipes when possible using actual database costs.
-- The \`finalize_plan\` tool must be your LAST tool call when creating the event.`;
+- The \`finalize_plan\` tool must be your LAST tool call when creating the event.${pageContextSection}${memorySection}`;
 }

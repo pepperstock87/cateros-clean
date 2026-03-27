@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/audit";
 import { getCurrentOrg } from "@/lib/organizations";
 import { domainEvents, registerDomainEventHandlers } from "@/lib/events";
 import { generateProduction } from "@/lib/actions/production";
+import { validateEventFormData } from "@/lib/validations";
 
 registerDomainEventHandlers();
 
@@ -18,24 +19,28 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
-  const clientId = (formData.get("client_id") as string)?.trim() || null;
+  const validated = validateEventFormData(formData);
+  if (!validated.success) {
+    return { error: validated.error.errors[0]?.message || "Invalid input" };
+  }
+  const v = validated.data;
 
   const { data, error } = await supabase
     .from("events")
     .insert({
       user_id: user.id,
       organization_id: org?.orgId || null,
-      name: (formData.get("name") as string).trim(),
-      client_name: (formData.get("client_name") as string).trim(),
-      client_email: (formData.get("client_email") as string)?.trim() || null,
-      client_phone: (formData.get("client_phone") as string)?.trim() || null,
-      client_id: clientId,
-      event_date: (formData.get("event_date") as string).trim(),
-      start_time: (formData.get("start_time") as string)?.trim() || null,
-      end_time: (formData.get("end_time") as string)?.trim() || null,
-      guest_count: Number(formData.get("guest_count")),
-      venue: (formData.get("venue") as string)?.trim() || null,
-      notes: (formData.get("notes") as string)?.trim() || null,
+      name: v.name,
+      client_name: v.client_name,
+      client_email: v.client_email || null,
+      client_phone: v.client_phone || null,
+      client_id: v.client_id || null,
+      event_date: v.event_date,
+      start_time: v.start_time || null,
+      end_time: v.end_time || null,
+      guest_count: v.guest_count,
+      venue: v.venue || null,
+      notes: v.notes || null,
       status: "draft",
     })
     .select()
@@ -86,22 +91,26 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
-  const clientId = (formData.get("client_id") as string)?.trim() || null;
+  const validated = validateEventFormData(formData);
+  if (!validated.success) {
+    return { error: validated.error.errors[0]?.message || "Invalid input" };
+  }
+  const v = validated.data;
 
   let updateQuery = supabase
     .from("events")
     .update({
-      name: (formData.get("name") as string).trim(),
-      client_name: (formData.get("client_name") as string).trim(),
-      client_email: (formData.get("client_email") as string)?.trim() || null,
-      client_phone: (formData.get("client_phone") as string)?.trim() || null,
-      client_id: clientId,
-      event_date: (formData.get("event_date") as string).trim(),
-      start_time: (formData.get("start_time") as string)?.trim() || null,
-      end_time: (formData.get("end_time") as string)?.trim() || null,
-      guest_count: Number(formData.get("guest_count")),
-      venue: (formData.get("venue") as string)?.trim() || null,
-      notes: (formData.get("notes") as string)?.trim() || null,
+      name: v.name,
+      client_name: v.client_name,
+      client_email: v.client_email || null,
+      client_phone: v.client_phone || null,
+      client_id: v.client_id || null,
+      event_date: v.event_date,
+      start_time: v.start_time || null,
+      end_time: v.end_time || null,
+      guest_count: v.guest_count,
+      venue: v.venue || null,
+      notes: v.notes || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId)
@@ -112,9 +121,9 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
   if (error) return { error: error.message };
 
   await logActivity(eventId, user.id, "event_updated", "Event details updated", {
-    name: formData.get("name") as string,
-    guest_count: Number(formData.get("guest_count")),
-    venue: formData.get("venue") as string || null,
+    name: v.name,
+    guest_count: v.guest_count,
+    venue: v.venue || null,
   });
 
   logAudit({
@@ -122,8 +131,8 @@ export async function updateEventDetailsAction(eventId: string, _prevState: unkn
     action: "update",
     entity: "event",
     entityId: eventId,
-    entityName: (formData.get("name") as string)?.trim(),
-    details: { guest_count: Number(formData.get("guest_count")), venue: formData.get("venue") as string || null },
+    entityName: v.name,
+    details: { guest_count: v.guest_count, venue: v.venue || null },
     organizationId: org?.orgId || null,
   });
 
@@ -185,12 +194,16 @@ export async function updateEventStatusAction(eventId: string, status: string) {
   const org = await getCurrentOrg();
 
   // Fetch current status before updating
-  const { data: currentEvent } = await supabase
+  const { data: currentEvent, error: fetchError } = await supabase
     .from("events")
     .select("status")
     .eq("id", eventId)
     .eq("user_id", user.id)
     .single();
+
+  if (fetchError) {
+    console.error("Failed to fetch event for status update:", fetchError.message);
+  }
 
   const fromStatus = currentEvent?.status || "unknown";
 
@@ -274,9 +287,9 @@ export async function duplicateEventAction(eventId: string) {
     .eq("id", eventId)
     .eq("user_id", user.id);
   if (org?.orgId) dupQuery = dupQuery.eq("organization_id", org.orgId);
-  const { data: original } = await dupQuery.single();
+  const { data: original, error: dupError } = await dupQuery.single();
 
-  if (!original) return { error: "Event not found" };
+  if (dupError || !original) return { error: dupError?.message || "Event not found" };
 
   const { data: newEvent, error } = await supabase
     .from("events")

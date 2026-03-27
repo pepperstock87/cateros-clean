@@ -19,6 +19,9 @@ export function SubscriptionBanner() {
 
   if (!profile) return null;
 
+  // Hide subscription prompts in demo mode
+  if (typeof document !== 'undefined' && document.cookie.includes('cateros-demo-session')) return null;
+
   const now = new Date();
   const trialEnd = profile.trial_end ? new Date(profile.trial_end) : null;
   const daysLeft = trialEnd ? Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;

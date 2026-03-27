@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { CalendarDays, Users, MapPin, ChefHat, AlertTriangle, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { safeParseDate } from "@/lib/utils";
 import { InviteResponseClient } from "./InviteResponseClient";
 
 const RELATIONSHIP_LABELS: Record<string, string> = {
@@ -191,7 +192,7 @@ export default async function EventInvitePage({ params }: Props) {
                     <span className="text-xs text-[#D4A373]">Date</span>
                   </div>
                   <div className="text-sm font-medium">
-                    {format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}
+                    {format(safeParseDate(event.event_date), "EEEE, MMMM d, yyyy")}
                   </div>
                   {(event.start_time || event.end_time) && (
                     <div className="text-xs text-[#7A8BA8] mt-0.5">

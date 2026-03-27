@@ -2,15 +2,33 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { CainDraftRecipe } from "./types";
 
 const MODEL = "claude-haiku-4-5-20251001";
+const MAX_ITEMS_PER_BATCH = 5;
 
 interface MenuItemInput {
   name: string;
   category?: string;
 }
 
+interface RawRecipe {
+  name: string;
+  description: string;
+  category: string;
+  servings: number;
+  ingredients: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    cost_per_unit: number;
+    total_cost: number;
+  }>;
+  total_cost: number;
+  cost_per_serving: number;
+}
+
 /**
  * Generate draft recipes for unmatched menu items using a focused Claude call.
- * Returns fully structured recipe objects with ingredients, costs, and servings.
+ * Batches items to avoid truncated JSON responses.
  */
 export async function generateDraftRecipes(params: {
   menuItems: MenuItemInput[];
@@ -23,69 +41,85 @@ export async function generateDraftRecipes(params: {
 
   const anthropic = new Anthropic({ apiKey });
 
-  const itemList = params.menuItems
+  // Batch items to avoid JSON truncation
+  const batches: MenuItemInput[][] = [];
+  for (let i = 0; i < params.menuItems.length; i += MAX_ITEMS_PER_BATCH) {
+    batches.push(params.menuItems.slice(i, i + MAX_ITEMS_PER_BATCH));
+  }
+
+  console.log(`[CAIN Recipe Gen] Generating ${params.menuItems.length} recipes in ${batches.length} batch(es) for ${params.guestCount} guests...`);
+
+  const allDrafts: CainDraftRecipe[] = [];
+  let globalIndex = 0;
+
+  for (const batch of batches) {
+    const batchDrafts = await generateBatch(anthropic, batch, params.guestCount, params.serviceStyle, globalIndex);
+    allDrafts.push(...batchDrafts);
+    globalIndex += batch.length;
+  }
+
+  console.log(`[CAIN Recipe Gen] Generated ${allDrafts.length}/${params.menuItems.length} recipes successfully`);
+  return allDrafts;
+}
+
+async function generateBatch(
+  anthropic: Anthropic,
+  items: MenuItemInput[],
+  guestCount: number,
+  serviceStyle: string | undefined,
+  startIndex: number,
+): Promise<CainDraftRecipe[]> {
+  const itemList = items
     .map((item, i) => `${i + 1}. "${item.name}"${item.category ? ` (${item.category})` : ""}`)
     .join("\n");
 
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content: `Generate professional catering recipes for the following menu items. This is for an event with ${params.guestCount} guests${params.serviceStyle ? `, ${params.serviceStyle} service` : ""}.
+  let response;
+  try {
+    response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 8192,
+      messages: [
+        {
+          role: "user",
+          content: `Generate professional catering recipes for these menu items. Event: ${guestCount} guests${serviceStyle ? `, ${serviceStyle} service` : ""}.
 
 Menu items:
 ${itemList}
 
-For each item, return a JSON object with:
-- name: recipe name (match the menu item name)
-- description: 1-2 sentence description
-- category: one of "Appetizers", "Mains", "Sides", "Desserts", "Drinks", "Other"
-- servings: 1 (base recipe per person)
-- ingredients: array of { id: "ing-N", name, quantity (per serving), unit, cost_per_unit (realistic USD), total_cost (quantity × cost_per_unit) }
-- total_cost: sum of all ingredient total_costs
-- cost_per_serving: same as total_cost since servings=1
+For each item return JSON with: name, description (1 sentence), category ("Appetizers"|"Mains"|"Sides"|"Desserts"|"Drinks"|"Other"), servings (1), ingredients (array of {id, name, quantity, unit, cost_per_unit, total_cost}), total_cost, cost_per_serving.
 
-Use realistic wholesale/catering ingredient costs. Include 4-8 ingredients per recipe.
+Use realistic wholesale costs. 4-6 ingredients per recipe. Keep descriptions SHORT.
 
-Respond with ONLY a JSON array, no markdown or explanation:
-[{ "name": "...", ... }, ...]`,
-      },
-    ],
-  });
+Respond with ONLY a JSON array, no markdown:
+[{"name":"...","description":"...","category":"...","servings":1,"ingredients":[...],"total_cost":0,"cost_per_serving":0}]`,
+        },
+      ],
+    });
+  } catch (err) {
+    console.error(`[CAIN Recipe Gen] Batch API call failed:`, err instanceof Error ? err.message : err);
+    return [];
+  }
 
-  const text =
-    response.content[0].type === "text" ? response.content[0].text : "";
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+  console.log(`[CAIN Recipe Gen] Batch response: ${text.length} chars, stop: ${response.stop_reason}`);
 
-  // Extract JSON from response (handle potential markdown wrapping)
+  // If response was truncated, try to repair the JSON
+  let jsonStr = text;
   const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) {
-    console.error("Failed to parse recipe generation response:", text.slice(0, 200));
+  if (jsonMatch) {
+    jsonStr = jsonMatch[0];
+  } else if (text.includes("[")) {
+    // Truncated — try to close the JSON
+    jsonStr = repairTruncatedJson(text);
+  } else {
+    console.error("[CAIN Recipe Gen] No JSON array found in response");
     return [];
   }
 
   try {
-    const recipes = JSON.parse(jsonMatch[0]) as Array<{
-      name: string;
-      description: string;
-      category: string;
-      servings: number;
-      ingredients: Array<{
-        id: string;
-        name: string;
-        quantity: number;
-        unit: string;
-        cost_per_unit: number;
-        total_cost: number;
-      }>;
-      total_cost: number;
-      cost_per_serving: number;
-    }>;
-
+    const recipes = JSON.parse(jsonStr) as RawRecipe[];
     return recipes.map((recipe, index) => {
-      // Ensure costs are calculated correctly
-      const ingredients = recipe.ingredients.map((ing, ingIdx) => ({
+      const ingredients = (recipe.ingredients || []).map((ing, ingIdx) => ({
         id: ing.id || `ing-${ingIdx + 1}`,
         name: ing.name,
         quantity: ing.quantity,
@@ -98,8 +132,8 @@ Respond with ONLY a JSON array, no markdown or explanation:
       const servings = recipe.servings || 1;
 
       return {
-        id: `draft-recipe-${index}`,
-        menuItemName: params.menuItems[index]?.name || recipe.name,
+        id: `draft-recipe-${startIndex + index}`,
+        menuItemName: items[index]?.name || recipe.name,
         recipe: {
           name: recipe.name,
           description: recipe.description || "",
@@ -113,7 +147,35 @@ Respond with ONLY a JSON array, no markdown or explanation:
       };
     });
   } catch (err) {
-    console.error("Failed to parse recipe JSON:", err);
+    console.error("[CAIN Recipe Gen] JSON parse failed:", err instanceof Error ? err.message : err);
+    console.error("[CAIN Recipe Gen] Raw text (last 200 chars):", text.slice(-200));
     return [];
   }
+}
+
+/**
+ * Attempt to repair truncated JSON by closing open brackets/braces
+ */
+function repairTruncatedJson(text: string): string {
+  // Find the start of the array
+  const arrStart = text.indexOf("[");
+  if (arrStart === -1) return "[]";
+
+  let json = text.slice(arrStart);
+
+  // Remove any trailing incomplete object (after the last complete object)
+  const lastCompleteObj = json.lastIndexOf("}");
+  if (lastCompleteObj > 0) {
+    json = json.slice(0, lastCompleteObj + 1);
+  }
+
+  // Remove trailing comma if present
+  json = json.replace(/,\s*$/, "");
+
+  // Close the array
+  if (!json.endsWith("]")) {
+    json += "]";
+  }
+
+  return json;
 }

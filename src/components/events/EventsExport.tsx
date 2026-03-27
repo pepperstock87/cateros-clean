@@ -5,6 +5,7 @@ import { downloadCSV } from "@/lib/exportCSV";
 import { generateEventsSummaryPDF } from "@/lib/generateReportPDF";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { safeParseDate } from "@/lib/utils";
 import type { Event, PricingData } from "@/types";
 
 export function EventsExport({ events, companyName, isPro = false }: { events: Event[]; companyName: string; isPro?: boolean }) {
@@ -18,7 +19,7 @@ export function EventsExport({ events, companyName, isPro = false }: { events: E
       return {
         Name: event.name,
         Client: event.client_name,
-        Date: format(new Date(event.event_date), "MMM d, yyyy"),
+        Date: format(safeParseDate(event.event_date), "MMM d, yyyy"),
         Guests: event.guest_count,
         Status: event.status.charAt(0).toUpperCase() + event.status.slice(1),
         Revenue: p ? p.suggestedPrice : "",

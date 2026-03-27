@@ -74,7 +74,7 @@ export function FeatureGate({
           .replace(/\b\w/g, (c) => c.toUpperCase())}
       </h3>
       <p className="text-sm text-[#D4A373] mb-5">
-        This feature requires the <span className="text-[#F4F1ED] font-medium">{label}</span> plan or higher.
+        This feature requires the <span className="text-[#F4F1ED] font-medium">{label}</span> plan.
       </p>
       <Link
         href="/billing/plans"

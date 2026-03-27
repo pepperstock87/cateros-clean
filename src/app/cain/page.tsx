@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isDemoSession } from "@/lib/demo";
 import { redirect } from "next/navigation";
 import { CainPageClient } from "./CainPageClient";
 
@@ -23,7 +24,8 @@ export default async function CainPage() {
     (profile?.subscription_status === "active" ||
       profile?.subscription_status === "trialing");
 
-  if (!isPro) {
+  const isDemo = await isDemoSession();
+  if (!isPro && !isDemo) {
     redirect("/billing?upgrade=pro&feature=cain");
   }
 

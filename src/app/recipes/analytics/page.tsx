@@ -12,17 +12,17 @@ export default async function RecipeAnalyticsPage() {
   if (!user) redirect("/login");
   const org = await getCurrentOrg();
 
-  let recipesQuery = supabase.from("recipes").select("id, name, category, cost_per_serving, selling_price, servings").eq("user_id", user.id);
+  let recipesQuery = supabase.from("recipes").select("id, name, category, cost_per_serving, servings").eq("user_id", user.id);
   if (org?.orgId) recipesQuery = recipesQuery.eq("organization_id", org.orgId);
   const { data } = await recipesQuery.order("name");
 
-  const recipes = (data ?? []).map((r) => ({
+  const recipes = (data ?? []).map((r: Record<string, unknown>) => ({
     id: r.id as string,
     name: r.name as string,
-    category: r.category as string | null,
-    cost_per_serving: (r.cost_per_serving ?? 0) as number,
-    selling_price: (r.selling_price ?? 0) as number,
-    servings: (r.servings ?? 0) as number,
+    category: (r.category ?? null) as string | null,
+    cost_per_serving: Number(r.cost_per_serving ?? 0),
+    selling_price: Number(r.selling_price ?? r.cost_per_serving ?? 0),
+    servings: Number(r.servings ?? 0),
   }));
 
   return (

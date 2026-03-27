@@ -67,7 +67,7 @@ export function AssistantPageClient() {
               <MessageSquare className="w-3.5 h-3.5 text-[#7A8BA8] flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm truncate">{conv.title}</div>
-                <div className="text-[10px] text-[#7A8BA8]">{new Date(conv.updated_at).toLocaleDateString()}</div>
+                <div className="text-[10px] text-[#7A8BA8]" suppressHydrationWarning>{new Date(conv.updated_at).toLocaleDateString()}</div>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteConversation(conv.id); }}

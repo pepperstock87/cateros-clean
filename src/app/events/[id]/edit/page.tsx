@@ -9,6 +9,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import type { Event } from "@/types";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedBanner } from "@/components/ui/UnsavedBanner";
+import { SmartTimeInput } from "@/components/ui/SmartTimeInput";
 
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -71,11 +72,11 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Start time</label>
-              <input name="start_time" type="time" className="input" defaultValue={event.start_time ?? ""} />
+              <SmartTimeInput name="start_time" value={event.start_time ?? ""} placeholder="e.g. 5:00 PM" />
             </div>
             <div>
               <label className="label">End time</label>
-              <input name="end_time" type="time" className="input" defaultValue={event.end_time ?? ""} />
+              <SmartTimeInput name="end_time" value={event.end_time ?? ""} placeholder="e.g. 10:00 PM" />
             </div>
           </div>
           <div>
