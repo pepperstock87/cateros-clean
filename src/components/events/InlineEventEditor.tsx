@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarDays, Clock, Users, MapPin, Mail, Phone, FileText } from "lucide-react";
+import { safeParseDate } from "@/lib/utils";
 import { InlineEditField } from "./InlineEditField";
 
 type EventData = {
@@ -56,7 +57,7 @@ export function InlineEventEditor({ event }: Props) {
               <span className="stat-label text-[10px] uppercase tracking-wider text-[#D4A373]">Date</span>
             </div>
             <InlineEditField
-              value={event.event_date}
+              value={event.event_date ? safeParseDate(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) : event.event_date}
               type="date"
               onSave={(v) => patchField("event_date", v)}
             />

@@ -17,6 +17,8 @@ import { ClientDate, ClientGreeting } from "@/components/dashboard/ClientDate";
 import { SuggestionsWidget } from "@/components/cain/SuggestionsWidget";
 import { getCurrentOrg } from "@/lib/organizations";
 import { isDemoSession } from "@/lib/demo";
+import { VenueDashboardCards } from "@/components/dashboard/VenueDashboardCards";
+import { VenueUpcomingBookings, type VenueBooking } from "@/components/dashboard/VenueUpcomingBookings";
 
 async function getDashboardData(userId: string, orgId: string | null) {
   const supabase = await createClient();
@@ -216,6 +218,135 @@ async function getDashboardData(userId: string, orgId: string | null) {
   };
 }
 
+async function getVenueDashboardData(userId: string, orgId: string | null) {
+  const supabase = await createClient();
+  const now = new Date();
+  const thirtyDaysOut = addDays(now, 30).toISOString();
+  const monthStart = startOfMonth(now).toISOString();
+  const monthEnd = endOfMonth(now).toISOString();
+
+  try {
+    // Fetch upcoming bookings (next 5, within 30 days)
+    let bookingsQuery = supabase
+      .from("venue_bookings")
+      .select("id, title, booking_date, start_time, end_time, status, venue_spaces(name)")
+      .gt("booking_date", now.toISOString())
+      .lt("booking_date", thirtyDaysOut)
+      .order("booking_date", { ascending: true })
+      .limit(5);
+
+    if (orgId) {
+      bookingsQuery = bookingsQuery.eq("organization_id", orgId);
+    } else {
+      bookingsQuery = bookingsQuery.eq("user_id", userId);
+    }
+
+    const { data: bookingsData } = await bookingsQuery;
+
+    const upcomingBookings: VenueBooking[] = (bookingsData ?? []).map((b: any) => ({
+      id: b.id,
+      title: b.title,
+      booking_date: b.booking_date,
+      start_time: b.start_time,
+      end_time: b.end_time,
+      status: b.status,
+      space_name: b.venue_spaces?.name || "Unknown Space",
+    }));
+
+    // Count today's bookings
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    let todayQuery = supabase
+      .from("venue_bookings")
+      .select("id", { count: "exact", head: true })
+      .gte("booking_date", todayStart.toISOString())
+      .lte("booking_date", todayEnd.toISOString());
+
+    if (orgId) {
+      todayQuery = todayQuery.eq("organization_id", orgId);
+    } else {
+      todayQuery = todayQuery.eq("user_id", userId);
+    }
+
+    const { count: todayCount } = await todayQuery;
+
+    // Count this week's bookings
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() + 1);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    let weekQuery = supabase
+      .from("venue_bookings")
+      .select("id", { count: "exact", head: true })
+      .gte("booking_date", weekStart.toISOString())
+      .lte("booking_date", weekEnd.toISOString());
+
+    if (orgId) {
+      weekQuery = weekQuery.eq("organization_id", orgId);
+    } else {
+      weekQuery = weekQuery.eq("user_id", userId);
+    }
+
+    const { count: weekCount } = await weekQuery;
+
+    // Count pending quotes (proposals with status 'sent' or 'draft')
+    let quotesQuery = supabase
+      .from("proposals")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["draft", "sent"]);
+
+    if (orgId) {
+      quotesQuery = quotesQuery.eq("organization_id", orgId);
+    } else {
+      quotesQuery = quotesQuery.eq("user_id", userId);
+    }
+
+    const { count: pendingQuotesCount } = await quotesQuery;
+
+    // Sum revenue from confirmed bookings this month
+    let revenueQuery = supabase
+      .from("venue_bookings")
+      .select("rental_rate")
+      .eq("status", "confirmed")
+      .gte("booking_date", monthStart)
+      .lte("booking_date", monthEnd);
+
+    if (orgId) {
+      revenueQuery = revenueQuery.eq("organization_id", orgId);
+    } else {
+      revenueQuery = revenueQuery.eq("user_id", userId);
+    }
+
+    const { data: revenueData } = await revenueQuery;
+    const monthlyRevenue =
+      (revenueData ?? []).reduce((sum: number, b: any) => sum + (b.rental_rate || 0), 0);
+
+    return {
+      upcomingBookings,
+      todayBookings: todayCount ?? 0,
+      weekBookings: weekCount ?? 0,
+      pendingQuotes: pendingQuotesCount ?? 0,
+      monthlyRevenue,
+    };
+  } catch (error) {
+    // Tables may not exist yet, return empty/zero values
+    console.error("Error fetching venue dashboard data:", error);
+    return {
+      upcomingBookings: [],
+      todayBookings: 0,
+      weekBookings: 0,
+      pendingQuotes: 0,
+      monthlyRevenue: 0,
+    };
+  }
+}
+
 const STATUS_CLASSES: Record<string, string> = {
   draft: "badge-draft", proposed: "badge-proposed",
   confirmed: "badge-confirmed", completed: "badge-completed", canceled: "badge-canceled",
@@ -239,6 +370,12 @@ export default async function DashboardPage() {
 
   // Role-aware terminology
   const businessType = profile?.business_type || "caterer";
+
+  // Fetch venue-specific data if this is a venue
+  let venueData = null;
+  if (businessType === "venue") {
+    venueData = await getVenueDashboardData(user.id, org?.orgId ?? null);
+  }
   const ROLE_TERMS: Record<string, { event: string; proposal: string }> = {
     caterer: { event: "Event", proposal: "Proposal" },
     restaurant: { event: "Private Event", proposal: "Proposal" },
@@ -390,116 +527,136 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-        {[
-          { icon: DollarSign, label: "Revenue", fullLabel: "Revenue this month", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
-          { icon: CalendarDays, label: terms.event + "s", fullLabel: terms.event + "s this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
-          { icon: Percent, label: "Margin", fullLabel: "Avg. Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
-          { icon: FileText, label: "Proposals", fullLabel: "Pending Proposals", value: stats.pendingProposalsCount, prev: null, color: "text-[#D4A373]", raw: true, noDelta: true },
-        ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw, noDelta }: any) => {
-          const current = value as number;
-          const previous = (prev ?? 0) as number;
-          const delta = previous > 0
-            ? ((current - previous) / previous) * 100
-            : current > 0 ? 100 : 0;
-          const isUp = current > previous;
-          const isDown = current < previous;
-          const isEqual = current === previous || (previous === 0 && current === 0);
+      {/* Quick Stats Row — Venue or Caterer specific */}
+      {businessType === "venue" && venueData ? (
+        <VenueDashboardCards
+          todayBookings={venueData.todayBookings}
+          weekBookings={venueData.weekBookings}
+          pendingQuotes={venueData.pendingQuotes}
+          monthlyRevenue={venueData.monthlyRevenue}
+        />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+          {[
+            { icon: DollarSign, label: "Revenue", fullLabel: "Revenue this month", value: stats.totalRevenueThisMonth, prev: stats.lastMonthRevenue, color: "text-brand-400" },
+            { icon: CalendarDays, label: terms.event + "s", fullLabel: terms.event + "s this month", value: stats.totalEventsThisMonth, prev: stats.lastMonthEvents, color: "text-brand-400", raw: true },
+            { icon: Percent, label: "Margin", fullLabel: "Avg. Margin", value: stats.avgMarginThisMonth, prev: stats.lastMonthMargin, color: "text-brand-400", pct: true },
+            { icon: FileText, label: "Proposals", fullLabel: "Pending Proposals", value: stats.pendingProposalsCount, prev: null, color: "text-[#D4A373]", raw: true, noDelta: true },
+          ].map(({ icon: Icon, label, fullLabel, value, prev, color, green, pct, raw, noDelta }: any) => {
+            const current = value as number;
+            const previous = (prev ?? 0) as number;
+            const delta = previous > 0
+              ? ((current - previous) / previous) * 100
+              : current > 0 ? 100 : 0;
+            const isUp = current > previous;
+            const isDown = current < previous;
+            const isEqual = current === previous || (previous === 0 && current === 0);
 
-          return (
-            <div key={label} className="stat-card">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon className={`w-4 h-4 ${color}`} />
-                <span className="stat-label">
-                  <span className="hidden sm:inline">{fullLabel}</span>
-                  <span className="sm:hidden">{label}</span>
-                </span>
-              </div>
-              <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
-                {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
-              </div>
-              {!noDelta ? (
-                <div className="flex items-center gap-1 mt-1.5">
-                  {isEqual ? (
-                    <>
-                      <Minus className="w-3 h-3 text-[#7A8BA8]" />
-                      <span className="text-[10px] md:text-xs text-[#7A8BA8]">No change</span>
-                    </>
-                  ) : isUp ? (
-                    <>
-                      <TrendingUp className="w-3 h-3 text-green-400" />
-                      <span className="text-[10px] md:text-xs text-green-400">
-                        {raw ? `+${current - previous}` : `+${Math.round(Math.abs(delta))}%`} vs last month
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <TrendingDown className="w-3 h-3 text-red-400" />
-                      <span className="text-[10px] md:text-xs text-red-400">
-                        {raw ? `${current - previous}` : `-${Math.round(Math.abs(delta))}%`} vs last month
-                      </span>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 mt-1.5">
-                  <span className="text-[10px] md:text-xs text-[#7A8BA8]">
-                    {stats.proposedPipeline.count} proposed, {stats.confirmedPipeline.count} confirmed {terms.event.toLowerCase()}s
+            return (
+              <div key={label} className="stat-card">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon className={`w-4 h-4 ${color}`} />
+                  <span className="stat-label">
+                    <span className="hidden sm:inline">{fullLabel}</span>
+                    <span className="sm:hidden">{label}</span>
                   </span>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Revenue Goal + Next Event */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-        <RevenueGoal currentRevenue={stats.totalRevenueThisMonth} />
-        {stats.upcomingEvents.length > 0 && (() => {
-          const next = stats.upcomingEvents[0];
-          const daysUntil = Math.ceil((safeParseDate(next.event_date).getTime() - Date.now()) / 86400000);
-          return (
-            <div className="card p-4 md:p-5 flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-2">
-                <CalendarDays className="w-4 h-4 text-[#D4A373]" />
-                <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Next Event</span>
+                <div className={`stat-value text-lg md:text-2xl ${green ? "text-green-400" : ""}`}>
+                  {raw ? value : pct ? formatPercent(value as number) : formatCurrency(value as number)}
+                </div>
+                {!noDelta ? (
+                  <div className="flex items-center gap-1 mt-1.5">
+                    {isEqual ? (
+                      <>
+                        <Minus className="w-3 h-3 text-[#7A8BA8]" />
+                        <span className="text-[10px] md:text-xs text-[#7A8BA8]">No change</span>
+                      </>
+                    ) : isUp ? (
+                      <>
+                        <TrendingUp className="w-3 h-3 text-green-400" />
+                        <span className="text-[10px] md:text-xs text-green-400">
+                          {raw ? `+${current - previous}` : `+${Math.round(Math.abs(delta))}%`} vs last month
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="w-3 h-3 text-red-400" />
+                        <span className="text-[10px] md:text-xs text-red-400">
+                          {raw ? `${current - previous}` : `-${Math.round(Math.abs(delta))}%`} vs last month
+                        </span>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <span className="text-[10px] md:text-xs text-[#7A8BA8]">
+                      {stats.proposedPipeline.count} proposed, {stats.confirmedPipeline.count} confirmed {terms.event.toLowerCase()}s
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="text-lg md:text-xl font-semibold font-display">
-                {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
-              </div>
-              <Link href={`/events/${next.id}`} className="text-xs text-brand-400 hover:text-brand-300 mt-1 transition-colors">
-                {next.name} — {next.client_name}
-              </Link>
-            </div>
-          );
-        })()}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Pipeline */}
-      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-        <div className="card p-4 md:p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-[#D4A373]" />
-            <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Proposed Pipeline</span>
+      {/* Venue-specific: Upcoming Bookings */}
+      {businessType === "venue" && venueData && (
+        <div className="mb-6 md:mb-8">
+          <VenueUpcomingBookings bookings={venueData.upcomingBookings} />
+        </div>
+      )}
+
+      {/* Revenue Goal + Next Event (for non-venue) */}
+      {businessType !== "venue" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+          <RevenueGoal currentRevenue={stats.totalRevenueThisMonth} />
+          {stats.upcomingEvents.length > 0 && (() => {
+            const next = stats.upcomingEvents[0];
+            const daysUntil = Math.ceil((safeParseDate(next.event_date).getTime() - Date.now()) / 86400000);
+            return (
+              <div className="card p-4 md:p-5 flex flex-col justify-center">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="w-4 h-4 text-[#D4A373]" />
+                  <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Next Event</span>
+                </div>
+                <div className="text-lg md:text-xl font-semibold font-display">
+                  {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
+                </div>
+                <Link href={`/events/${next.id}`} className="text-xs text-brand-400 hover:text-brand-300 mt-1 transition-colors">
+                  {next.name} — {next.client_name}
+                </Link>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Pipeline (for non-venue) */}
+      {businessType !== "venue" && (
+        <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="card p-4 md:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-[#D4A373]" />
+              <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Proposed Pipeline</span>
+            </div>
+            <div className="text-lg md:text-2xl font-semibold font-display">{formatCurrency(stats.proposedPipeline.total)}</div>
+            <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
+              {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
+            </div>
           </div>
-          <div className="text-lg md:text-2xl font-semibold font-display">{formatCurrency(stats.proposedPipeline.total)}</div>
-          <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
-            {stats.proposedPipeline.count} {stats.proposedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
+          <div className="card p-4 md:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-green-400" />
+              <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Confirmed Pipeline</span>
+            </div>
+            <div className="text-lg md:text-2xl font-semibold font-display text-green-400">{formatCurrency(stats.confirmedPipeline.total)}</div>
+            <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
+              {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
+            </div>
           </div>
         </div>
-        <div className="card p-4 md:p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-green-400" />
-            <span className="font-medium text-xs md:text-sm text-[#D4A373] uppercase tracking-wider">Confirmed Pipeline</span>
-          </div>
-          <div className="text-lg md:text-2xl font-semibold font-display text-green-400">{formatCurrency(stats.confirmedPipeline.total)}</div>
-          <div className="text-[10px] md:text-xs text-[#7A8BA8] mt-1">
-            {stats.confirmedPipeline.count} {stats.confirmedPipeline.count === 1 ? terms.event.toLowerCase() : terms.event.toLowerCase() + "s"}
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Action Alerts */}
       <div className="mb-6 md:mb-8">

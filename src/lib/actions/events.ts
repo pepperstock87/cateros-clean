@@ -64,6 +64,46 @@ export async function createEventAction(_prevState: unknown, formData: FormData)
     organizationId: org?.orgId || null,
   });
 
+  // Auto-create client if client_email is provided and doesn't exist
+  if (data.client_email) {
+    try {
+      // Check if client with this email already exists
+      const { data: existingClient, error: checkError } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("email", data.client_email)
+        .eq("user_id", user.id)
+        .single();
+
+      // If no client exists with this email, create one
+      if (checkError && checkError.code === "PGRST116") {
+        // Parse client_name into first_name and last_name if available
+        const nameParts = (data.client_name || "").trim().split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ");
+
+        const { error: createClientError } = await supabase
+          .from("clients")
+          .insert({
+            user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: data.client_email,
+            phone: data.client_phone || null,
+            organization_id: org?.orgId || null,
+            status: "active",
+          });
+
+        if (createClientError) {
+          console.error("[events] Auto-create client failed:", createClientError.message);
+        }
+      }
+    } catch (err) {
+      // Non-blocking — event was already created
+      console.error("[events] Auto-create client error:", err instanceof Error ? err.message : err);
+    }
+  }
+
   // If a template was selected, apply its pricing_data to the new event
   const templateId = formData.get("template_id") as string;
   if (templateId && data) {

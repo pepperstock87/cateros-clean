@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent, safeParseDate } from "@/lib/utils";
 import { EventReadinessFlags } from "@/components/events/EventReadinessFlags";
@@ -38,6 +39,8 @@ function PaymentBadge({ pricing, payment }: { pricing: PricingData | null; payme
 }
 
 export function EventsTable({ events, depositStatusMap }: { events: Event[]; depositStatusMap?: Record<string, DepositStatus> }) {
+  const router = useRouter();
+
   return (
     <>
       {/* Mobile card view */}
@@ -85,7 +88,11 @@ export function EventsTable({ events, depositStatusMap }: { events: Event[]; dep
                   const p = event.pricing_data as PricingData | null;
                   const pay = event.payment_data as PaymentData | null;
                   return (
-                    <tr key={event.id} className="border-b border-[#1A2538] hover:bg-[#1A2538] transition-colors">
+                    <tr
+                      key={event.id}
+                      className="border-b border-[#1A2538] hover:bg-[#1A2538] transition-colors cursor-pointer"
+                      onClick={() => router.push(`/events/${event.id}`)}
+                    >
                       <td className="px-5 py-3.5 font-medium text-sm max-w-[180px]">
                         <Link
                           href={`/events/${event.id}`}

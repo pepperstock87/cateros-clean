@@ -14,14 +14,17 @@ export async function assignStaffAction(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+  const org = await getCurrentOrg();
 
-  // Check for existing assignment
-  const { data: existing } = await supabase
+  // Check for existing assignment (org-scoped)
+  let checkQuery = supabase
     .from("event_staff_assignments")
     .select("id")
     .eq("event_id", eventId)
-    .eq("staff_member_id", staffMemberId)
-    .single();
+    .eq("staff_member_id", staffMemberId);
+  if (org?.orgId) checkQuery = checkQuery.eq("organization_id", org.orgId);
+
+  const { data: existing } = await checkQuery.single();
 
   if (existing) return { error: "Staff member already assigned to this event" };
 
@@ -29,6 +32,7 @@ export async function assignStaffAction(
     event_id: eventId,
     staff_member_id: staffMemberId,
     user_id: user.id,
+    organization_id: org?.orgId || null,
     role: role || null,
     start_time: startTime || null,
     end_time: endTime || null,

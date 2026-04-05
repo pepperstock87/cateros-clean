@@ -8,14 +8,16 @@ type Props = {
   margin: number;
   totalCost: number;
   totalPrice: number;
+  targetMargin?: number;
 };
 
-export function MarginWarning({ margin, totalCost, totalPrice }: Props) {
+export function MarginWarning({ margin, totalCost, totalPrice, targetMargin = 28 }: Props) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || margin >= 35) return null;
+  // Only show warning if margin is strictly less than target
+  if (dismissed || margin >= targetMargin) return null;
 
-  const isLow = margin < 20;
+  const isLow = margin < targetMargin - 10;
   const borderColor = isLow ? "border-red-800/50" : "border-yellow-800/50";
   const bgColor = isLow ? "bg-red-900/20" : "bg-yellow-900/20";
   const textColor = isLow ? "text-red-400" : "text-yellow-400";

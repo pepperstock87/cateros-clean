@@ -7,7 +7,8 @@ import { EventsExport } from "@/components/events/EventsExport";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { getCurrentOrg } from "@/lib/organizations";
 import { getDepositStatus } from "@/lib/utils";
-import type { Event, DepositStatus, PaymentScheduleItem } from "@/types";
+import { getPageLabel } from "@/lib/roleLabels";
+import type { Event, DepositStatus, PaymentScheduleItem, BusinessType } from "@/types";
 
 export default async function EventsListPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const supabase = await createClient();
@@ -33,11 +34,13 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
 
   const [eventsRes, profileRes, countRes] = await Promise.all([
     eventsQuery.order("event_date", { ascending: false }).range(from, to),
-    supabase.from("profiles").select("company_name").eq("id", user.id).single(),
+    supabase.from("profiles").select("company_name, business_type").eq("id", user.id).single(),
     countQuery,
   ]);
   const events: Event[] = eventsRes.data ?? [];
   const companyName = profileRes.data?.company_name ?? "My Company";
+  const businessType = (profileRes.data?.business_type as BusinessType) || "caterer";
+  const pageTitle = getPageLabel(businessType, "/events", "Events");
   const totalCount = countRes.count ?? 0;
   const totalPages = Math.ceil(totalCount / pageSize);
   const { isPro } = await getUserEntitlements();
@@ -67,8 +70,8 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Events</h1>
-          <p className="text-sm text-[#D4A373] mt-1">{events.length} total events</p>
+          <h1 className="font-display text-2xl font-semibold">{pageTitle}</h1>
+          <p className="text-sm text-[#D4A373] mt-1">{events.length} total {pageTitle.toLowerCase()}</p>
         </div>
         <div className="flex items-center gap-3">
           {events.length > 0 && <EventsExport events={events} companyName={companyName} isPro={isPro} />}

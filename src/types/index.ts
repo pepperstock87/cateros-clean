@@ -425,6 +425,67 @@ export type VenueProfile = {
   organization?: Organization;
 };
 
+export type SpaceType = 'ballroom' | 'conference_room' | 'outdoor_garden' | 'patio' | 'rooftop' | 'dining_room' | 'ceremony_space' | 'cocktail_lounge' | 'tent' | 'other';
+
+export type VenueSpace = {
+  id: string;
+  venue_profile_id: string;
+  organization_id: string;
+  name: string;
+  description: string | null;
+  space_type: SpaceType | null;
+  capacity_seated: number | null;
+  capacity_standing: number | null;
+  square_footage: number | null;
+  hourly_rate: number | null;
+  daily_rate: number | null;
+  half_day_rate: number | null;
+  setup_time_minutes: number;
+  teardown_time_minutes: number;
+  indoor_outdoor: 'indoor' | 'outdoor' | 'covered_outdoor' | null;
+  amenities: string[];
+  photos: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type VenueBooking = {
+  id: string;
+  space_id: string;
+  organization_id: string;
+  event_id: string | null;
+  title: string;
+  client_name: string | null;
+  client_email: string | null;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  setup_start: string | null;
+  teardown_end: string | null;
+  status: 'hold' | 'confirmed' | 'canceled';
+  rental_fee: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  space?: VenueSpace;
+};
+
+export type VenueAvailabilityBlock = {
+  id: string;
+  space_id: string;
+  organization_id: string;
+  day_of_week: number | null;
+  specific_date: string | null;
+  start_time: string;
+  end_time: string;
+  block_type: 'available' | 'blocked' | 'maintenance';
+  label: string | null;
+  is_recurring: boolean;
+  created_at: string;
+};
+
 export type EventInvite = {
   id: string;
   event_id: string;

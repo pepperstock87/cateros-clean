@@ -15,7 +15,7 @@ export default async function CainPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("plan_tier, subscription_status")
+    .select("plan_tier, subscription_status, business_type")
     .eq("id", user.id)
     .single();
 
@@ -29,5 +29,5 @@ export default async function CainPage() {
     redirect("/billing?upgrade=pro&feature=cain");
   }
 
-  return <CainPageClient userId={user.id} />;
+  return <CainPageClient userId={user.id} businessType={profile?.business_type || "caterer"} />;
 }

@@ -12,6 +12,7 @@ import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { OrgSwitcher } from "@/components/layout/OrgSwitcher";
 import { ActionBadge } from "@/components/cain/ActionBadge";
+import { ROLE_LABELS } from "@/lib/roleLabels";
 import type { BusinessType } from "@/types";
 
 const SIDEBAR_COLLAPSED_KEY = "cateros-sidebar-collapsed";
@@ -39,6 +40,8 @@ const ALL_NAV: NavItem[] = [
   { href: "/staff", icon: Users, label: "Staff", module: "staff" },
   { href: "/rentals", icon: Package, label: "Rentals", module: "rentals" },
   { href: "/venues", icon: MapPin, label: "Venues", module: "venues" },
+  { href: "/availability", icon: Calendar, label: "Availability", module: "availability" },
+  { href: "/spaces", icon: Store, label: "Spaces", module: "spaces" },
   { href: "/vendor-profile", icon: Store, label: "Vendor Profile" },
   { href: "/branding", icon: Palette, label: "Branding" },
   { href: "/proposals", icon: FileText, label: "Proposals", module: "proposals" },
@@ -66,6 +69,8 @@ const MODULE_TO_HREF: Record<string, string> = {
   billing: "/billing",
   inventory: "/inventory",
   venues: "/venues",
+  availability: "/availability",
+  spaces: "/spaces",
   templates: "/templates",
   reports: "/reports",
   spending: "/spending",
@@ -77,6 +82,8 @@ const NAV_SECTIONS: Record<string, string> = {
   "/dashboard": "operations",
   "/cain": "operations",
   "/events": "operations",
+  "/availability": "operations",
+  "/spaces": "operations",
   "/recipes": "kitchen",
   "/recipes/analytics": "kitchen",
   "/shopping": "kitchen",
@@ -100,26 +107,13 @@ const SECTION_TITLES: Record<string, string> = {
   admin: "Admin",
 };
 
-// Role-specific label overrides
-const ROLE_LABELS: Record<BusinessType, Record<string, string>> = {
-  caterer: {},
-  restaurant: { "/events": "Private Events" },
-  private_chef: { "/events": "Dinners" },
-  venue: { "/events": "Bookings", "/proposals": "Quotes", "/clients": "Guests" },
-  event_planner: { "/staff": "Vendors" },
-  florist: { "/events": "Jobs", "/inventory": "Stems & Supplies", "/proposals": "Floral Quotes" },
-  band_entertainment: { "/events": "Gigs", "/proposals": "Contracts", "/staff": "Band Members" },
-  rental_company: { "/events": "Reservations", "/inventory": "Equipment", "/proposals": "Rental Quotes" },
-  hospitality_management: {},
-  other: {},
-};
 
 // Nav order per role — items in this list appear first, in this order
 const ROLE_NAV_ORDER: Record<BusinessType, string[]> = {
   caterer: ["events", "cain", "recipes", "staff", "proposals", "shopping", "production", "schedule"],
   restaurant: ["events", "recipes", "staff", "inventory", "spending"],
   private_chef: ["events", "recipes", "shopping", "proposals", "clients"],
-  venue: ["events", "schedule", "venues", "proposals", "templates", "staff"],
+  venue: ["events", "spaces", "availability", "schedule", "venues", "proposals", "templates", "staff"],
   event_planner: ["events", "clients", "staff", "proposals", "templates", "schedule"],
   florist: ["events", "inventory", "schedule", "proposals", "templates"],
   band_entertainment: ["events", "schedule", "proposals", "billing"],

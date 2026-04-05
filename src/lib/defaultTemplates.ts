@@ -149,4 +149,88 @@ export const DEFAULT_TEMPLATES: DefaultTemplate[] = [
       },
     },
   },
+  {
+    name: "Venue Rental",
+    description: "Space rental for private events with external catering",
+    template_data: {
+      guest_count: 100,
+      event_type: "venue",
+      pricing_data: {
+        menuItems: [],
+        staffing: [
+          { role: "Event Coordinator", hourlyRate: 30, hours: 10, count: 1 },
+          { role: "Setup/Breakdown Crew", hourlyRate: 18, hours: 4, count: 3 },
+        ],
+        rentals: [
+          { name: "Venue Space (all-day)", unitCost: 500, quantity: 1 },
+          { name: "Tables & Chairs", unitCost: 100, quantity: 1 },
+          { name: "Lighting & AV Setup", unitCost: 300, quantity: 1 },
+        ],
+        barPackage: "none",
+        adminPercent: 15,
+        taxPercent: 8.875,
+        targetMargin: 40,
+      },
+    },
+  },
+  {
+    name: "Corporate Meeting",
+    description: "Business meeting or conference with AV and catering",
+    template_data: {
+      guest_count: 40,
+      event_type: "corporate",
+      pricing_data: {
+        menuItems: [
+          { name: "Continental Breakfast", costPerUnit: 12, quantity: 40 },
+          { name: "Lunch Buffet", costPerUnit: 18, quantity: 40 },
+          { name: "Afternoon Break Snacks & Beverages", costPerUnit: 6, quantity: 40 },
+        ],
+        staffing: [
+          { role: "Event Coordinator", hourlyRate: 28, hours: 8, count: 1 },
+          { role: "AV Technician", hourlyRate: 35, hours: 8, count: 1 },
+          { role: "Server", hourlyRate: 25, hours: 6, count: 2 },
+        ],
+        rentals: [
+          { name: "AV Equipment & Screen", unitCost: 150, quantity: 1 },
+          { name: "Meeting Room Setup (tables/chairs)", unitCost: 200, quantity: 1 },
+        ],
+        barPackage: "none",
+        adminPercent: 18,
+        taxPercent: 8.875,
+        targetMargin: 32,
+      },
+    },
+  },
+  {
+    name: "Ceremony & Reception",
+    description: "Full ceremony and reception venue package",
+    template_data: {
+      guest_count: 150,
+      event_type: "wedding",
+      pricing_data: {
+        menuItems: [
+          { name: "Cocktail Hour Appetizers", costPerUnit: 10, quantity: 150 },
+          { name: "Plated Dinner (choice of 2)", costPerUnit: 50, quantity: 150 },
+          { name: "Dessert & Coffee Service", costPerUnit: 6, quantity: 150 },
+        ],
+        staffing: [
+          { role: "Event Coordinator", hourlyRate: 32, hours: 12, count: 1 },
+          { role: "Server", hourlyRate: 25, hours: 8, count: 8 },
+          { role: "Chef", hourlyRate: 35, hours: 10, count: 1 },
+          { role: "Sous Chef", hourlyRate: 28, hours: 10, count: 1 },
+          { role: "Bartender", hourlyRate: 25, hours: 6, count: 2 },
+        ],
+        rentals: [
+          { name: "Ceremony & Reception Space", unitCost: 800, quantity: 1 },
+          { name: "Tables & Chairs", unitCost: 150, quantity: 1 },
+          { name: "Linens & Centerpieces Setup", unitCost: 250, quantity: 1 },
+          { name: "Lighting & Decor", unitCost: 300, quantity: 1 },
+        ],
+        barPackage: "full",
+        adminPercent: 20,
+        taxPercent: 8.875,
+        targetMargin: 35,
+      },
+    },
+  },
 ];

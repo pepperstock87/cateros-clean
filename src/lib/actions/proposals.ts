@@ -58,6 +58,7 @@ export async function updateProposalStatusAction(
       .from("proposals")
       .select("event_id")
       .eq("id", proposalId)
+      .eq("user_id", user.id)
       .single();
 
     if (proposal?.event_id) {
@@ -79,6 +80,7 @@ export async function updateProposalStatusAction(
       .from("proposals")
       .select("event_id")
       .eq("id", proposalId)
+      .eq("user_id", user.id)
       .single();
 
     if (proposal?.event_id) {

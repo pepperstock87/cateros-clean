@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ClientList } from "./ClientList";
 import { getCurrentOrg } from "@/lib/organizations";
-import type { Client, Event, PricingData } from "@/types";
+import { getPageLabel } from "@/lib/roleLabels";
+import type { Client, Event, PricingData, BusinessType } from "@/types";
 
 export type ClientWithStats = Client & {
   eventCount: number;
@@ -19,9 +20,15 @@ export default async function ClientsPage() {
   // Fetch clients from the dedicated clients table
   let clientsQuery = supabase.from("clients").select("*").eq("user_id", user.id);
   if (org?.orgId) clientsQuery = clientsQuery.eq("organization_id", org.orgId);
-  const { data: clientsData } = await clientsQuery.order("created_at", { ascending: false });
+
+  const [{ data: clientsData }, profileRes] = await Promise.all([
+    clientsQuery.order("created_at", { ascending: false }),
+    supabase.from("profiles").select("business_type").eq("id", user.id).single(),
+  ]);
 
   const clients: Client[] = clientsData ?? [];
+  const businessType = (profileRes.data?.business_type as BusinessType) || "caterer";
+  const pageTitle = getPageLabel(businessType, "/clients", "Clients");
 
   // Fetch all events to compute per-client stats (event count, revenue, last event)
   let eventsQuery = supabase.from("events").select("*").eq("user_id", user.id);
@@ -57,9 +64,9 @@ export default async function ClientsPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-xl md:text-2xl font-semibold">Clients</h1>
+          <h1 className="font-display text-xl md:text-2xl font-semibold">{pageTitle}</h1>
           <p className="text-sm text-[#D4A373] mt-1">
-            {clientsWithStats.length} {clientsWithStats.length === 1 ? "client" : "clients"}
+            {clientsWithStats.length} {clientsWithStats.length === 1 ? pageTitle.slice(0, -1).toLowerCase() : pageTitle.toLowerCase()}
           </p>
         </div>
       </div>

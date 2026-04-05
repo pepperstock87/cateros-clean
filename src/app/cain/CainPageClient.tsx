@@ -7,12 +7,30 @@ import { DefaultChatTransport, isToolUIPart, type UIMessage } from "ai";
 import { toast } from "sonner";
 import { Send, Loader2, RotateCcw, Sparkles, PanelRight } from "lucide-react";
 import type { CainEventPlan, CainDraftSnapshot, ExtractedEntities } from "@/lib/cain/types";
+import type { BusinessType } from "@/types";
 import { createEntityState, mergeEntityUpdate } from "@/lib/cain/entity-extractor";
 import { PlanReview } from "./components/PlanReview";
 import { DraftStatusIndicator } from "./components/DraftStatusIndicator";
 import { ExtractionPanel, countEntities } from "./components/ExtractionPanel";
 import { useCainDraft } from "@/hooks/useCainDraft";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+
+/** Map business type to CAIN navigator title */
+function getNavigatorTitle(businessType: BusinessType): string {
+  const titleMap: Record<BusinessType, string> = {
+    caterer: "CATERING AI NAVIGATOR",
+    venue: "VENUE AI NAVIGATOR",
+    event_planner: "EVENT AI NAVIGATOR",
+    florist: "FLORAL AI NAVIGATOR",
+    restaurant: "EVENT AI NAVIGATOR",
+    private_chef: "EVENT AI NAVIGATOR",
+    band_entertainment: "EVENT AI NAVIGATOR",
+    rental_company: "EVENT AI NAVIGATOR",
+    hospitality_management: "EVENT AI NAVIGATOR",
+    other: "EVENT AI NAVIGATOR",
+  };
+  return titleMap[businessType] || "EVENT AI NAVIGATOR";
+}
 
 const QUICK_PROMPTS = [
   "Corporate event",
@@ -28,16 +46,18 @@ const DEMO_RESPONSES: string[] = [
   "I can also analyze your menu costs in real-time, suggest pricing adjustments to hit your margin targets, and flag any staffing gaps based on the event type and guest count.\n\nThis sandbox gives you a preview of the workflow. For the full AI-powered experience — including live event building, automated proposals, and smart costing — reach out to your Cateros contact.",
 ];
 
-const WELCOME_MESSAGE: UIMessage = {
-  id: "welcome",
-  role: "assistant",
-  parts: [
-    {
-      type: "text",
-      text: "Hi, I'm C.A.I.N. — your AI event planning assistant. Tell me about the event you'd like to plan, and I'll help you build the menu, staffing, timeline, and pricing.\n\nWhat are you working on?",
-    },
-  ],
-};
+function createWelcomeMessage(): UIMessage {
+  return {
+    id: "welcome",
+    role: "assistant",
+    parts: [
+      {
+        type: "text",
+        text: "Hi, I'm C.A.I.N. — your AI event planning assistant. Tell me about the event you'd like to plan, and I'll help you plan your event — from setup and staffing to timeline and pricing.\n\nWhat are you working on?",
+      },
+    ],
+  };
+}
 
 /** Extract plain text from a UIMessage's parts */
 function getMessageText(message: UIMessage): string {
@@ -113,8 +133,11 @@ function isTextStreaming(message: UIMessage): boolean {
   );
 }
 
-export function CainPageClient({ userId }: { userId: string }) {
+export function CainPageClient({ userId, businessType }: { userId: string; businessType: BusinessType }) {
   const router = useRouter();
+  const navigatorTitle = getNavigatorTitle(businessType);
+  const welcomeMessage = createWelcomeMessage();
+
   const {
     draftId,
     initialState,
@@ -149,7 +172,7 @@ export function CainPageClient({ userId }: { userId: string }) {
     error,
   } = useChat({
     transport: new DefaultChatTransport({ api: "/api/cain/chat" }),
-    messages: [WELCOME_MESSAGE],
+    messages: [welcomeMessage],
     onToolCall: async ({ toolCall }: { toolCall: { toolName: string; input: unknown } }) => {
       if (toolCall.toolName === "finalize_plan") {
         const toolInput = toolCall.input as { plan?: CainEventPlan };
@@ -234,7 +257,7 @@ export function CainPageClient({ userId }: { userId: string }) {
   function startFresh() {
     setShowResumeBanner(false);
     abandonDraft();
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([welcomeMessage]);
     setPlan(null);
     setShowReview(false);
     setInputText("");
@@ -360,14 +383,14 @@ export function CainPageClient({ userId }: { userId: string }) {
 
   const handleStartOver = useCallback(() => {
     abandonDraft();
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([welcomeMessage]);
     setPlan(null);
     setShowReview(false);
     setInputText("");
     setExtractedEntities(createEntityState());
     setShowExtractionPanel(false);
     markClean();
-  }, [abandonDraft, markClean, setMessages]);
+  }, [abandonDraft, markClean, setMessages, welcomeMessage]);
 
   const handleCorrectEntity = useCallback(
     (category: string, key: string, newValue: string) => {
@@ -441,7 +464,7 @@ export function CainPageClient({ userId }: { userId: string }) {
                 C.A.I.N
               </h1>
               <p className="text-[10px] text-[var(--text-muted)] tracking-wide uppercase">
-                Catering AI Navigator
+                {navigatorTitle}
               </p>
             </div>
             <DraftStatusIndicator status={saveStatus} />

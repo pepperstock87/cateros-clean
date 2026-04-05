@@ -427,6 +427,7 @@ export default async function EventDetailPage({ params }: Props) {
                   margin={pricing.projectedMargin}
                   totalCost={pricing.totalCost}
                   totalPrice={pricing.suggestedPrice}
+                  targetMargin={pricing.targetMarginPercent}
                 />
               )}
             </div>

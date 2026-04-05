@@ -12,6 +12,7 @@ import {
   DollarSign,
   Store,
   Check,
+  MapPin,
 } from "lucide-react";
 import FAQSection from "@/components/landing/FAQSection";
 
@@ -32,6 +33,11 @@ const FEATURES = [
     desc: "Accept deposits, track payments, and send invoices. Integrated Stripe processing keeps cash flow moving.",
   },
   {
+    icon: MapPin,
+    title: "Venue Management",
+    desc: "Manage spaces, track availability, and coordinate vendors. From booking to breakdown, keep every event running smoothly.",
+  },
+  {
     icon: BookOpen,
     title: "Recipe Management",
     desc: "Build a recipe library with cost tracking. Know your food cost per plate and protect margins on every menu.",
@@ -50,11 +56,6 @@ const FEATURES = [
     icon: Store,
     title: "Client Portal",
     desc: "Give clients a branded, professional planning experience. Digital approvals, menus, and seamless communication.",
-  },
-  {
-    icon: BarChart3,
-    title: "Reports & Analytics",
-    desc: "See revenue, margins, and event performance at a glance. Data-driven decisions for a more profitable operation.",
   },
 ];
 
@@ -333,7 +334,7 @@ export default function LandingPage() {
             Ready to streamline your event operations?
           </h2>
           <p className="text-[#D4A373] text-lg mb-10 max-w-xl mx-auto">
-            Join hospitality professionals using Cateros to plan, price, and execute events profitably.
+            Join catering, venue, and event professionals using Cateros to plan, price, and execute events profitably.
           </p>
           <Link href="/signup" className="btn-primary px-10 py-3.5 text-base font-medium inline-flex items-center gap-2">
             Start Free
