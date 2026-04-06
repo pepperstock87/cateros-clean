@@ -139,6 +139,11 @@ export async function acceptEventInviteAction(inviteToken: string) {
 
   if (fetchError || !invite) return { error: "Invite not found" };
 
+  // Verify the authenticated user's email matches the invite email if specified
+  if (invite.invited_email && user.email && invite.invited_email !== user.email) {
+    return { error: "Unauthorized: This invite was sent to a different email address" };
+  }
+
   if (invite.status === "accepted") return { error: "This invite has already been accepted" };
   if (invite.status === "revoked") return { error: "This invite has been revoked" };
   if (invite.status === "expired") return { error: "This invite has expired" };

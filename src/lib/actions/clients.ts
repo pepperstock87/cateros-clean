@@ -16,6 +16,13 @@ export async function createClientAction(formData: FormData) {
     .eq("id", user.id)
     .single();
 
+  let tags = [];
+  try {
+    tags = formData.get("tags") ? JSON.parse(formData.get("tags") as string) : [];
+  } catch {
+    tags = [];
+  }
+
   const { data, error } = await supabase.from("clients").insert({
     user_id: user.id,
     first_name: (formData.get("first_name") as string)?.trim() || "",
@@ -28,7 +35,7 @@ export async function createClientAction(formData: FormData) {
     city: (formData.get("city") as string)?.trim() || null,
     state: (formData.get("state") as string)?.trim() || null,
     zip: (formData.get("zip") as string)?.trim() || null,
-    tags: formData.get("tags") ? JSON.parse(formData.get("tags") as string) : [],
+    tags,
     dietary_notes: (formData.get("dietary_notes") as string)?.trim() || null,
     communication_preferences: (formData.get("communication_preferences") as string)?.trim() || null,
     notes: (formData.get("notes") as string)?.trim() || null,
@@ -56,7 +63,21 @@ export async function updateClientAction(clientId: string, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { error } = await supabase.from("clients").update({
+  // Get current org for scoping
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_organization_id")
+    .eq("id", user.id)
+    .single();
+
+  let tags = [];
+  try {
+    tags = formData.get("tags") ? JSON.parse(formData.get("tags") as string) : [];
+  } catch {
+    tags = [];
+  }
+
+  let updateQuery = supabase.from("clients").update({
     first_name: (formData.get("first_name") as string)?.trim() || "",
     last_name: (formData.get("last_name") as string)?.trim() || "",
     company_name: (formData.get("company_name") as string)?.trim() || null,
@@ -67,13 +88,15 @@ export async function updateClientAction(clientId: string, formData: FormData) {
     city: (formData.get("city") as string)?.trim() || null,
     state: (formData.get("state") as string)?.trim() || null,
     zip: (formData.get("zip") as string)?.trim() || null,
-    tags: formData.get("tags") ? JSON.parse(formData.get("tags") as string) : [],
+    tags,
     dietary_notes: (formData.get("dietary_notes") as string)?.trim() || null,
     communication_preferences: (formData.get("communication_preferences") as string)?.trim() || null,
     notes: (formData.get("notes") as string)?.trim() || null,
     status: (formData.get("status") as string) || "active",
     updated_at: new Date().toISOString(),
   }).eq("id", clientId).eq("user_id", user.id);
+  if (profile?.current_organization_id) updateQuery = updateQuery.eq("organization_id", profile.current_organization_id);
+  const { error } = await updateQuery;
 
   if (error) throw new Error(error.message);
 
@@ -94,7 +117,16 @@ export async function deleteClientAction(clientId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { error } = await supabase.from("clients").delete().eq("id", clientId).eq("user_id", user.id);
+  // Get current org for scoping
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_organization_id")
+    .eq("id", user.id)
+    .single();
+
+  let deleteQuery = supabase.from("clients").delete().eq("id", clientId).eq("user_id", user.id);
+  if (profile?.current_organization_id) deleteQuery = deleteQuery.eq("organization_id", profile.current_organization_id);
+  const { error } = await deleteQuery;
   if (error) throw new Error(error.message);
 
   logAudit({

@@ -76,6 +76,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid author_type" }, { status: 400 });
   }
 
+  // Validate input lengths to prevent abuse
+  if (author_name.trim().length > 255) {
+    return NextResponse.json({ error: "Author name is too long" }, { status: 400 });
+  }
+  if (message.trim().length > 5000) {
+    return NextResponse.json({ error: "Message is too long" }, { status: 400 });
+  }
+
   const serviceSupabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -121,13 +129,17 @@ export async function POST(req: Request) {
     }
   }
 
+  // Sanitize user-provided strings
+  const sanitizedAuthorName = author_name.trim().slice(0, 255).replace(/[<>"'&]/g, "");
+  const sanitizedMessage = message.trim().slice(0, 5000);
+
   const { data: comment, error } = await serviceSupabase
     .from("proposal_comments")
     .insert({
       proposal_id,
-      author_name: author_name.trim(),
+      author_name: sanitizedAuthorName,
       author_type,
-      message: message.trim(),
+      message: sanitizedMessage,
     })
     .select()
     .single();

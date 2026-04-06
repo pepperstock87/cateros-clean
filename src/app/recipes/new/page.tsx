@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createRecipeAction } from "@/lib/actions/recipes";
 import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
@@ -10,8 +11,17 @@ import type { RecipeIngredient } from "@/types";
 
 const UNITS = ["oz", "lb", "g", "kg", "cup", "qt", "gal", "each", "bunch", "pkg", "tsp", "tbsp"] as const;
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className="btn-primary">
+      {pending ? "Creating..." : "Create Recipe"}
+    </button>
+  );
+}
+
 export default function NewRecipePage() {
-  const [state, action, pending] = useActionState(createRecipeAction, { error: "" });
+  const [state, action] = useActionState(createRecipeAction, { error: "" });
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const [servingsValue, setServingsValue] = useState("4");
   const [casePrice, setCasePrice] = useState("");
@@ -69,7 +79,7 @@ export default function NewRecipePage() {
             <div>
               <label className="block text-sm font-medium mb-1.5">Category</label>
               <select name="category" required className="input">
-                <option value="">Select...</option>
+                <option value="" disabled>Select...</option>
                 <option value="Appetizers">Appetizers</option>
                 <option value="Entrees">Entrees</option>
                 <option value="Sides">Sides</option>
@@ -223,9 +233,7 @@ export default function NewRecipePage() {
         )}
 
         <div className="flex gap-3">
-          <button type="submit" disabled={pending} className="btn-primary">
-            {pending ? "Creating..." : "Create Recipe"}
-          </button>
+          <SubmitButton />
         </div>
       </form>
     </div>

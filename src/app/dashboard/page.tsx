@@ -177,6 +177,7 @@ async function getDashboardData(userId: string, orgId: string | null) {
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(10);
+  if (orgId) activityQuery = activityQuery.eq("organization_id", orgId);
   const { data: recentActivity } = await activityQuery;
 
   const activityItems = (recentActivity ?? []).map((a: any) => ({

@@ -75,7 +75,9 @@ export async function updateInventoryItem(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { error } = await supabase
+  const org = await getCurrentOrg();
+
+  let updateQuery = supabase
     .from("inventory")
     .update({
       ingredient_name: formData.ingredient_name,
@@ -90,6 +92,9 @@ export async function updateInventoryItem(
     })
     .eq("id", id)
     .eq("user_id", user.id);
+  if (org?.orgId) updateQuery = updateQuery.eq("organization_id", org.orgId);
+
+  const { error } = await updateQuery;
 
   if (error) throw new Error(error.message);
   revalidatePath("/inventory");

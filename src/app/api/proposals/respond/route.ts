@@ -54,6 +54,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Signer name is required" }, { status: 400 });
   }
 
+  // Validate and sanitize signer inputs
+  if (signer_name && signer_name.trim().length > 255) {
+    return NextResponse.json({ error: "Signer name is too long" }, { status: 400 });
+  }
+  if (signer_email && signer_email.trim().length > 320) {
+    return NextResponse.json({ error: "Signer email is too long" }, { status: 400 });
+  }
+  if (message && message.trim().length > 5000) {
+    return NextResponse.json({ error: "Message is too long" }, { status: 400 });
+  }
+
   // Capture client IP address
   const clientIp =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -205,13 +216,17 @@ export async function POST(req: Request) {
 
   // ── Handle "signed" action — record contract acceptance ──
   if (action === "signed") {
+    // Sanitize user-provided strings to prevent stored XSS
+    const sanitizedName = signer_name.trim().slice(0, 255).replace(/[<>"'&]/g, "");
+    const sanitizedEmail = signer_email?.trim().slice(0, 320) || null;
+
     await supabase.from("contract_acceptances").insert({
       proposal_id: proposal.id,
       event_id: proposal.event_id,
-      accepted_by_name: signer_name.trim(),
-      accepted_by_email: signer_email?.trim() || null,
+      accepted_by_name: sanitizedName,
+      accepted_by_email: sanitizedEmail,
       ip_address: clientIp,
-      user_agent: req.headers.get("user-agent") || null,
+      user_agent: req.headers.get("user-agent")?.slice(0, 500) || null,
       accepted_at: new Date().toISOString(),
     });
   }

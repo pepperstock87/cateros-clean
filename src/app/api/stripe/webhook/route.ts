@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
               eventName: paymentEventName,
               eventUrl: `/events/${eventId}`,
             },
-          }).catch((err) => {
+          }).catch((err: unknown) => {
             console.error("[webhook] Payment notification error:", err);
           });
         }

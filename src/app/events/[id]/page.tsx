@@ -70,7 +70,7 @@ export default async function EventDetailPage({ params }: Props) {
   if (org?.orgId) proposalsQuery = proposalsQuery.eq("organization_id", org.orgId);
   let receiptsQuery = supabase.from("receipts").select("id, vendor, total_amount, receipt_date, category").eq("event_id", id).eq("user_id", user.id);
   if (org?.orgId) receiptsQuery = receiptsQuery.eq("organization_id", org.orgId);
-  let invoicesQuery = supabase.from("distributor_invoices").select("id, distributor, total_amount, invoice_date").eq("user_id", user.id);
+  let invoicesQuery = supabase.from("distributor_invoices").select("id, distributor, total_amount, invoice_date").eq("event_id", id).eq("user_id", user.id);
   if (org?.orgId) invoicesQuery = invoicesQuery.eq("organization_id", org.orgId);
   let assignmentsQuery = supabase.from("event_staff_assignments").select("id, staff_member_id, role, start_time, end_time, confirmed, notes, created_at, staff_members(name, role, hourly_rate, phone)").eq("event_id", id).eq("user_id", user.id);
   if (org?.orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", org.orgId);

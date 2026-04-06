@@ -82,9 +82,7 @@ export async function POST(request: Request) {
 
     // Convert UIMessages to model messages for streamText
     const modelMessages = await convertToModelMessages(uiMessages);
-    console.log(`[CAIN] Received ${uiMessages.length} UI messages, converted to ${modelMessages.length} model messages`);
-    console.log(`[CAIN] Last user message parts:`, JSON.stringify(uiMessages[uiMessages.length - 1]?.parts?.slice(0, 2)));
-    console.log(`[CAIN] Model messages:`, JSON.stringify(modelMessages.map(m => ({ role: m.role, contentLength: JSON.stringify(m.content).length }))));
+    console.log(`[CAIN] Received ${uiMessages.length} messages`);
 
     const result = streamText({
       model: anthropic("claude-sonnet-4-20250514"),

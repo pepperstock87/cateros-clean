@@ -11,9 +11,10 @@ export default async function TeamPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // For demo sessions, use service role to bypass RLS recursion on organization_members
+  // Use service role to bypass RLS recursion on organization_members
+  // (RLS on org_members checks membership, which causes infinite recursion)
   const isDemo = await isDemoSession();
-  const db = isDemo && process.env.SUPABASE_SERVICE_ROLE_KEY
+  const db = process.env.SUPABASE_SERVICE_ROLE_KEY
     ? createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
     : supabase;
 

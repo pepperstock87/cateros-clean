@@ -23,6 +23,7 @@ export default async function SchedulePage() {
   let assignmentsQuery = supabase
     .from("event_staff_assignments")
     .select("id, staff_member_id, event_id, role, start_time, end_time, confirmed, notes, created_at, staff_members(id, name, role, email, phone, hourly_rate, pay_type)")
+    .eq("user_id", user.id)
     .order("created_at");
   if (orgId) assignmentsQuery = assignmentsQuery.eq("organization_id", orgId);
 

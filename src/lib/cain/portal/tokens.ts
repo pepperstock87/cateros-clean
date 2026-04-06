@@ -65,8 +65,13 @@ export async function validatePortalToken(token: string): Promise<{
   };
   error?: string;
 }> {
+  // Validate token format before querying — must be a hex string from crypto.randomBytes
+  if (!token || typeof token !== "string" || !/^[a-f0-9]{32,128}$/.test(token)) {
+    return { valid: false, error: "Invalid or expired token" };
+  }
+
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("client_portal_tokens")
     .select("*")
@@ -80,12 +85,12 @@ export async function validatePortalToken(token: string): Promise<{
       error: "Invalid or expired token",
     };
   }
-  
-  // Check expiration
+
+  // Check expiration — use same generic error to prevent token enumeration
   if (data.expires_at && new Date(data.expires_at) < new Date()) {
     return {
       valid: false,
-      error: "Token has expired",
+      error: "Invalid or expired token",
     };
   }
   

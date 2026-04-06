@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
+import crypto from "crypto";
 
 const DEMO_COOKIE = "cateros-demo-session";
 
@@ -62,9 +63,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Demo environment misconfigured" }, { status: 500 });
     }
 
-    // 3. Sign in as demo user with pre-set password (public endpoint, no bearer token needed)
-    //    Password was set once during sandbox provisioning — no admin API call required
-    const demoPassword = `cd-${sandbox.id.slice(0, 8)}`;
+    // 3. Sign in as demo user with a cryptographically derived password
+    //    Password is deterministic per sandbox but not guessable without the secret key
+    const hmac = crypto.createHmac("sha256", serviceKey);
+    hmac.update(`demo-password:${sandbox.id}`);
+    const demoPassword = `cd-${hmac.digest("hex").slice(0, 32)}`;
     const response = NextResponse.json({ success: true, redirect: "/dashboard" });
 
     const supabase = createServerClient(serviceUrl, anonKey, {
@@ -92,7 +95,7 @@ export async function POST(request: Request) {
 
     if (signInErr) {
       console.error("[Demo Auth] signInWithPassword error:", signInErr.message);
-      return NextResponse.json({ error: "Failed to create demo session", detail: signInErr.message }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create demo session" }, { status: 500 });
     }
 
     // 4. Increment use count
@@ -117,7 +120,7 @@ export async function POST(request: Request) {
     // 6. Set demo session cookie (2 hour TTL)
     response.cookies.set(DEMO_COOKIE, sandbox.id, {
       path: "/",
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 2,

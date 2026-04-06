@@ -16,7 +16,12 @@ export async function createRecipeAction(_prevState: unknown, formData: FormData
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const servings = Number(formData.get("servings"));
-  const ingredients: RecipeIngredient[] = JSON.parse(formData.get("ingredients") as string || "[]");
+  let ingredients: RecipeIngredient[] = [];
+  try {
+    ingredients = JSON.parse(formData.get("ingredients") as string || "[]");
+  } catch {
+    ingredients = [];
+  }
   const { total_cost, cost_per_serving } = calcCosts(ingredients, servings);
   const casePriceRaw = formData.get("case_price") as string;
   const unitsPerCaseRaw = formData.get("units_per_case") as string;
@@ -41,7 +46,12 @@ export async function updateRecipeAction(recipeId: string, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const servings = Number(formData.get("servings"));
-  const ingredients: RecipeIngredient[] = JSON.parse(formData.get("ingredients") as string || "[]");
+  let ingredients: RecipeIngredient[] = [];
+  try {
+    ingredients = JSON.parse(formData.get("ingredients") as string || "[]");
+  } catch {
+    ingredients = [];
+  }
   const { total_cost, cost_per_serving } = calcCosts(ingredients, servings);
   const org = await getCurrentOrg();
   let updateQuery = supabase.from("recipes").update({

@@ -8,7 +8,7 @@ registerDomainEventHandlers();
 
 function verifyGustoSignature(rawBody: string, signature: string): boolean {
   const secret = process.env.GUSTO_WEBHOOK_SECRET;
-  if (!secret) return true; // Skip verification if secret not configured (dev)
+  if (!secret) throw new Error("GUSTO_WEBHOOK_SECRET is not configured");
 
   const expected = crypto
     .createHmac("sha256", secret)

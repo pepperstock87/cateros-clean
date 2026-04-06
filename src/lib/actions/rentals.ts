@@ -12,12 +12,17 @@ export async function createRentalItemAction(_prevState: unknown, formData: Form
 
   const org = await getCurrentOrg();
 
+  const unitCost = Number(formData.get("unit_cost")) || 0;
+  if (unitCost < 0 || unitCost > 100000) {
+    return { error: "Unit cost must be between 0 and 100000" };
+  }
+
   const { error } = await supabase.from("rental_items").insert({
     user_id: user.id,
     organization_id: org?.orgId || null,
     name: formData.get("name") as string,
     category: formData.get("category") as string || null,
-    unit_cost: Number(formData.get("unit_cost")) || 0,
+    unit_cost: unitCost,
     vendor: formData.get("vendor") as string || null,
     notes: formData.get("notes") as string || null,
   });
@@ -56,6 +61,13 @@ export async function updateRentalItemAction(itemId: string, data: {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
+
+  // Validate unit_cost if provided
+  if (data.unit_cost !== undefined) {
+    if (data.unit_cost < 0 || data.unit_cost > 100000) {
+      return { error: "Unit cost must be between 0 and 100000" };
+    }
+  }
 
   const org = await getCurrentOrg();
   let updateQuery = supabase

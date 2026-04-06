@@ -64,12 +64,13 @@ export async function inviteMemberAction(data: {
   if (!profile?.current_organization_id) return { error: "No organization" };
   const orgId = profile.current_organization_id;
 
-  // Check caller is admin/owner
+  // Check caller is active admin/owner
   const { data: callerMembership } = await supabase
     .from("organization_members")
-    .select("role")
+    .select("role, status")
     .eq("organization_id", orgId)
     .eq("user_id", user.id)
+    .eq("status", "active")
     .single();
 
   if (!callerMembership || !["owner", "admin"].includes(callerMembership.role)) {
@@ -136,7 +137,7 @@ export async function updateMemberRoleAction(memberId: string, newRole: OrgMembe
     return { error: "Insufficient permissions" };
   }
 
-  // Can't change owner role
+  // Can't change owner role or assign owner role if caller is not owner
   const { data: target } = await supabase
     .from("organization_members")
     .select("role")
@@ -144,6 +145,11 @@ export async function updateMemberRoleAction(memberId: string, newRole: OrgMembe
     .single();
 
   if (target?.role === "owner") return { error: "Cannot change owner role" };
+
+  // Prevent non-owners from assigning the owner role
+  if (newRole === "owner" && callerMembership.role !== "owner") {
+    return { error: "Only owners can assign the owner role" };
+  }
 
   await supabase
     .from("organization_members")
@@ -213,9 +219,31 @@ export async function updateOrganizationAction(data: {
 
   if (!profile?.current_organization_id) return { error: "No organization" };
 
+  // Verify caller is active owner/admin before allowing org updates
+  const { data: callerMembership } = await supabase
+    .from("organization_members")
+    .select("role, status")
+    .eq("organization_id", profile.current_organization_id)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (!callerMembership || !["owner", "admin"].includes(callerMembership.role)) {
+    return { error: "Insufficient permissions" };
+  }
+
+  // Sanitize org name to prevent XSS
+  const sanitizedData = {
+    ...data,
+    name: data.name?.trim().slice(0, 200),
+    primary_contact_name: data.primary_contact_name?.trim().slice(0, 200),
+    primary_contact_phone: data.primary_contact_phone?.trim().slice(0, 30),
+    updated_at: new Date().toISOString(),
+  };
+
   const { error } = await supabase
     .from("organizations")
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update(sanitizedData)
     .eq("id", profile.current_organization_id);
 
   if (error) return { error: "Failed to update organization" };

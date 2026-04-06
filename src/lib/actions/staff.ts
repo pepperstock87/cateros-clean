@@ -12,13 +12,18 @@ export async function createStaffAction(_prevState: unknown, formData: FormData)
 
   const org = await getCurrentOrg();
 
+  const hourlyRate = Number(formData.get("hourly_rate")) || 25;
+  if (hourlyRate < 0 || hourlyRate > 100000) {
+    return { error: "Hourly rate must be between 0 and 100000" };
+  }
+
   const { error } = await supabase.from("staff_members").insert({
     user_id: user.id,
     organization_id: org?.orgId || null,
     name: formData.get("name") as string,
     role: formData.get("role") as string,
     pay_type: (formData.get("pay_type") as string) || "hourly",
-    hourly_rate: Number(formData.get("hourly_rate")) || 25,
+    hourly_rate: hourlyRate,
     phone: formData.get("phone") as string || null,
     email: formData.get("email") as string || null,
     notes: formData.get("notes") as string || null,

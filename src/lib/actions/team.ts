@@ -1,8 +1,21 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import type { OrgMemberRole } from "@/types";
+
+// ---------------------------------------------------------------------------
+// Helper: service role client to bypass RLS recursion on organization_members
+// ---------------------------------------------------------------------------
+
+function getServiceDb() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Helper: get current user + org context + verify admin
@@ -13,7 +26,10 @@ async function getAdminContext() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" } as const;
 
-  const { data: profile } = await supabase
+  // Use service role to avoid RLS recursion on organization_members
+  const db = getServiceDb() || supabase;
+
+  const { data: profile } = await db
     .from("profiles")
     .select("current_organization_id")
     .eq("id", user.id)
@@ -22,7 +38,7 @@ async function getAdminContext() {
   if (!profile?.current_organization_id) return { error: "No organization" } as const;
   const orgId = profile.current_organization_id;
 
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from("organization_members")
     .select("role")
     .eq("organization_id", orgId)
@@ -33,7 +49,7 @@ async function getAdminContext() {
     return { error: "Insufficient permissions" } as const;
   }
 
-  return { supabase, user, orgId, role: membership.role as OrgMemberRole };
+  return { supabase: db, user, orgId, role: membership.role as OrgMemberRole };
 }
 
 // ---------------------------------------------------------------------------
@@ -124,8 +140,11 @@ export async function acceptInvite(inviteId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  // Use service role to bypass RLS on organization tables
+  const db = getServiceDb() || supabase;
+
   // Fetch the invite
-  const { data: invite } = await supabase
+  const { data: invite } = await db
     .from("organization_invites")
     .select("id, organization_id, invited_email, role, status, expires_at")
     .eq("id", inviteId)
@@ -136,7 +155,7 @@ export async function acceptInvite(inviteId: string) {
 
   // Check expiry
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-    await supabase
+    await db
       .from("organization_invites")
       .update({ status: "expired" })
       .eq("id", inviteId);
@@ -144,7 +163,7 @@ export async function acceptInvite(inviteId: string) {
   }
 
   // Verify the logged-in user's email matches the invite
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("profiles")
     .select("email")
     .eq("id", user.id)
@@ -155,7 +174,7 @@ export async function acceptInvite(inviteId: string) {
   }
 
   // Check not already a member
-  const { data: existingMember } = await supabase
+  const { data: existingMember } = await db
     .from("organization_members")
     .select("id")
     .eq("organization_id", invite.organization_id)
@@ -164,7 +183,7 @@ export async function acceptInvite(inviteId: string) {
 
   if (existingMember) {
     // Mark invite as accepted anyway
-    await supabase
+    await db
       .from("organization_invites")
       .update({ status: "accepted", accepted_at: new Date().toISOString(), accepted_by: user.id })
       .eq("id", inviteId);
@@ -172,7 +191,7 @@ export async function acceptInvite(inviteId: string) {
   }
 
   // Add to organization_members
-  const { error: memberErr } = await supabase
+  const { error: memberErr } = await db
     .from("organization_members")
     .insert({
       organization_id: invite.organization_id,
@@ -184,7 +203,7 @@ export async function acceptInvite(inviteId: string) {
   if (memberErr) return { error: "Failed to join organization" };
 
   // Update the invite
-  await supabase
+  await db
     .from("organization_invites")
     .update({
       status: "accepted",
@@ -194,14 +213,14 @@ export async function acceptInvite(inviteId: string) {
     .eq("id", inviteId);
 
   // Set as current org if user doesn't have one
-  const { data: userProfile } = await supabase
+  const { data: userProfile } = await db
     .from("profiles")
     .select("current_organization_id")
     .eq("id", user.id)
     .single();
 
   if (!userProfile?.current_organization_id) {
-    await supabase
+    await db
       .from("profiles")
       .update({ current_organization_id: invite.organization_id })
       .eq("id", user.id);
@@ -221,7 +240,9 @@ export async function declineInvite(inviteId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { data: invite } = await supabase
+  const db = getServiceDb() || supabase;
+
+  const { data: invite } = await db
     .from("organization_invites")
     .select("id, invited_email, status")
     .eq("id", inviteId)
@@ -230,7 +251,7 @@ export async function declineInvite(inviteId: string) {
   if (!invite) return { error: "Invite not found" };
   if (invite.status !== "pending") return { error: "This invite is no longer valid" };
 
-  await supabase
+  await db
     .from("organization_invites")
     .update({ status: "declined" })
     .eq("id", inviteId);
@@ -376,7 +397,9 @@ export async function getPendingInvites() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized", invites: [] };
 
-  const { data: profile } = await supabase
+  const db = getServiceDb() || supabase;
+
+  const { data: profile } = await db
     .from("profiles")
     .select("current_organization_id")
     .eq("id", user.id)
@@ -384,7 +407,7 @@ export async function getPendingInvites() {
 
   if (!profile?.current_organization_id) return { error: "No organization", invites: [] };
 
-  const { data: invites } = await supabase
+  const { data: invites } = await db
     .from("organization_invites")
     .select("id, invited_email, role, status, created_at, expires_at, invited_by, invite_token, inviter:profiles!organization_invites_invited_by_fkey(full_name, email)")
     .eq("organization_id", profile.current_organization_id)

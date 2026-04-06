@@ -43,7 +43,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800/40">Case pricing</span>
             )}
           </div>
-          {recipe.description && <p className="text-xs text-[#D4A373] mt-0.5 truncate">{recipe.description}</p>}
+          {recipe.description && <p className="text-xs text-[#D4A373] mt-0.5 truncate whitespace-pre-wrap">{recipe.description}</p>}
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0 ml-2" onClick={(e) => e.preventDefault()}>
           <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); router.push(`/recipes/${recipe.id}/edit`); }} className="text-[#7A8BA8] hover:text-brand-400 transition-colors p-1">

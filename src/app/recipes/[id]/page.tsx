@@ -77,7 +77,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl font-semibold">{recipe.name}</h1>
-            {recipe.description && <p className="text-sm text-[#D4A373] mt-1">{recipe.description}</p>}
+            {recipe.description && <p className="text-sm text-[#D4A373] mt-1 whitespace-pre-wrap">{recipe.description}</p>}
           </div>
           <div className="flex items-center gap-2">
             {recipe.category && (

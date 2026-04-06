@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { JoinClient } from "./JoinClient";
 
@@ -6,8 +7,13 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   const { token } = await params;
   const supabase = await createClient();
 
+  // Use service role to bypass RLS when looking up invites by token
+  const db = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : supabase;
+
   // Look up the invite by token
-  const { data: invite } = await supabase
+  const { data: invite } = await db
     .from("organization_invites")
     .select(`
       id,
